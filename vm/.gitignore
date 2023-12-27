@@ -1,0 +1,10 @@
+*
+!ReadMe.txt
+!Makefile
+!colors.hh
+!instructions.hh
+!lexer.l
+!parser.y
+!mw.cc
+!mw-cln.cc
+!main.cc
