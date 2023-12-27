@@ -1,16 +1,17 @@
 FLAGS = -W -pedantic -std=c++17 -O3
 
+VM_OUT 	   = vm-run
+CLN_VM_OUT = cln-vm-run
+
 .PHONY = all clean cleanall
 
-all: maszyna-wirtualna maszyna-wirtualna-cln
+all: vm cln-vm
 
-maszyna-wirtualna: lexer.o parser.o mw.o main.o
-	$(CXX) $^ -o $@
-	strip $@
+vm: lexer.o parser.o mw.o main.o
+	$(CXX) $^ -o $(VM_OUT)
 
-maszyna-wirtualna-cln: lexer.o parser.o mw-cln.o main.o
-	$(CXX) $^ -o $@ -l cln
-	strip $@
+cln-vm: lexer.o parser.o mw-cln.o main.o
+	$(CXX) $^ -o $(CLN_VM_OUT) -l cln
 
 %.o: %.cc
 	$(CXX) $(FLAGS) -c $^
@@ -25,4 +26,4 @@ clean:
 	rm -f *.o parser.cc parser.hh lexer.cc
 
 cleanall: clean
-	rm -f maszyna-wirtualna maszyna-wirtualna-cln
+	rm -f $(VM_OUT) $(CLN_VM_OUT)
