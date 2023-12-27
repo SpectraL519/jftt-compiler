@@ -31,12 +31,12 @@ all: parser lexer
 
 # TODO: $(BB) -d -o <parser-out-file> <bison-yacc-file>
 parser:
-	@echo Generating grammar parser
+	@echo Generating grammar parser [TODO]
 
 
 # TODO: $(FF) -o <lexer-out-file> <flex-file>
 lexer:
-	@echo Generating lexer
+	@echo Generating lexer [TODO]
 
 
 # TODO: <lexer-out-file> <parser-out-header-file> <parser-out-file>
