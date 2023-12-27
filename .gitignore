@@ -1,2 +1,5 @@
 # editor
 .vscode/
+
+# project executable
+compiler
