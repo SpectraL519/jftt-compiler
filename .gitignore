@@ -3,3 +3,6 @@
 
 # project executable
 compiler
+
+# other
+tmp/

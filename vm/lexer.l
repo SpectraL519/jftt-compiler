@@ -5,17 +5,22 @@
  * http://ki.pwr.edu.pl/gebala/
  * 2023-11-15
 */
+
 %option noyywrap
 %option yylineno
 %option nounput
+
 %{
 #include "parser.hh"
 #include "instructions.hh"
 
 int yylex();
 %}
+
+p_newline (\r\n)|\n
+
 %%
-\#.*\n		;
+\#.*{p_newline} ;
 [ \t]+          ;
 READ            { yylval = READ;  return COM_0; };
 WRITE           { yylval = WRITE; return COM_0; };
@@ -34,7 +39,7 @@ JPOS            { yylval = JPOS;  return JUMP_1; };
 JZERO           { yylval = JZERO; return JUMP_1; };
 JUMPR           { yylval = JUMPR; return JUMP_1; };
 JUMP            { yylval = JUMP;  return JUMP_1; };
-STRK		{ yylval = STRK;  return COM_1; };
+STRK		    { yylval = STRK;  return COM_1; };
 HALT            { yylval = HALT;  return STOP; };
 a               { yylval = 0;     return REG; };
 b               { yylval = 1;     return REG; };
@@ -44,7 +49,7 @@ e               { yylval = 4;     return REG; };
 f               { yylval = 5;     return REG; };
 g               { yylval = 6;     return REG; };
 h               { yylval = 7;     return REG; };
-[0-9]+		{ yylval = atoi( yytext );  return NUMBER; };
-\n              ;
+[0-9]+		    { yylval = atoi( yytext );  return NUMBER; };
+{p_newline}     ;
 .               return ERROR;
 %%
