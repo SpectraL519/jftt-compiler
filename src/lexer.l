@@ -15,7 +15,7 @@ uint64_t program_line_no{1};
 static constexpr uint64_t default_token_line_no{0};
 static constexpr uint64_t default_token_value{0};
 
-static int std_token(int token);
+static int normal_token(int token);
 static int identifier_token(int token);
 static int value_token(int token);
 
@@ -48,259 +48,259 @@ p_number [0-9]+
 }
 
 
-PROGRAM { 
+PROGRAM {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_PROGRAM", yytext);
 #endif
-    return std_token(T_PROGRAM);
+    return normal_token(T_PROGRAM);
 }
 
-PROCEDURE { 
+PROCEDURE {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_PROCEDURE", yytext);
 #endif
-    return std_token(T_PROCEDURE);
+    return normal_token(T_PROCEDURE);
 }
 
-IS { 
+IS {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_IS", yytext);
 #endif
-    return std_token(T_IS);
+    return normal_token(T_IS);
 }
 
-IN { 
+IN {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_IN", yytext);
 #endif
-    return std_token(T_IN);
+    return normal_token(T_IN);
 }
 
-END { 
+END {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_END", yytext);
 #endif
-    return std_token(T_END);
+    return normal_token(T_END);
 }
 
 
-IF { 
+IF {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_IF", yytext);
 #endif
-    return std_token(T_IF);
+    return normal_token(T_IF);
 }
 
-THEN { 
+THEN {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_THEN", yytext);
 #endif
-    return std_token(T_THEN);
+    return normal_token(T_THEN);
 }
 
-ELSE { 
+ELSE {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_ELSE", yytext);
 #endif
-    return std_token(T_ELSE);
+    return normal_token(T_ELSE);
 }
 
-ENDIF { 
+ENDIF {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_ENDIF", yytext);
 #endif
-    return std_token(T_ENDIF);
+    return normal_token(T_ENDIF);
 }
 
 
-WHILE { 
+WHILE {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_WHILE", yytext);
 #endif
-    return std_token(T_WHILE);
+    return normal_token(T_WHILE);
 }
 
-DO { 
+DO {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_DO", yytext);
 #endif
-    return std_token(T_DO);
+    return normal_token(T_DO);
 }
 
-ENDWHILE { 
+ENDWHILE {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_ENDWHILE", yytext);
 #endif
-    return std_token(T_ENDWHILE);
+    return normal_token(T_ENDWHILE);
 }
 
 
-REPEAT { 
+REPEAT {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_REPEAT", yytext);
 #endif
-    return std_token(T_REPEAT);
+    return normal_token(T_REPEAT);
 }
 
-UNTIL { 
+UNTIL {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_UNTIL", yytext);
 #endif
-    return std_token(T_UNTIL);
+    return normal_token(T_UNTIL);
 }
 
 
-READ { 
+READ {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_READ", yytext);
 #endif
-    return std_token(T_READ);
+    return normal_token(T_READ);
 }
 
-WRITE { 
+WRITE {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_WRITE", yytext);
 #endif
-    return std_token(T_WRITE);
+    return normal_token(T_WRITE);
 }
 
 
-\( { 
+\( {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_LPAREN", yytext);
 #endif
-    return std_token(T_LPAREN);
+    return normal_token(T_LPAREN);
 }
 
-\) { 
+\) {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_RPAREN", yytext);
 #endif
-    return std_token(T_RPAREN);
+    return normal_token(T_RPAREN);
 }
 
-\[ { 
+\[ {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_LBRACKET", yytext);
 #endif
-    return std_token(T_LBRACKET);
+    return normal_token(T_LBRACKET);
 }
 
-\] { 
+\] {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_RBRACKET", yytext);
 #endif
-    return std_token(T_RBRACKET);
+    return normal_token(T_RBRACKET);
 }
 
-\:\= { 
+\:\= {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_ASSIGN", yytext);
 #endif
-    return std_token(T_ASSIGN);
+    return normal_token(T_ASSIGN);
 }
 
-\; { 
+\; {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_SEMICOLON", yytext);
 #endif
-    return std_token(T_SEMICOLON);
+    return normal_token(T_SEMICOLON);
 }
 
-\, { 
+\, {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_COMMA", yytext);
 #endif
-    return std_token(T_COMMA);
+    return normal_token(T_COMMA);
 }
 
 
-\= { 
+\= {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_EQ", yytext);
 #endif
-    return std_token(T_EQ);
+    return normal_token(T_EQ);
 }
 
-\!\= { 
+\!\= {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_NEQ", yytext);
 #endif
-    return std_token(T_NEQ);
+    return normal_token(T_NEQ);
 }
 
-\< { 
+\< {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_LE", yytext);
 #endif
-    return std_token(T_LE);
+    return normal_token(T_LE);
 }
 
-\<\= { 
+\<\= {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_LEQ", yytext);
 #endif
-    return std_token(T_LEQ);
+    return normal_token(T_LEQ);
 }
 
-\> { 
+\> {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_GE", yytext);
 #endif
-    return std_token(T_GE);
+    return normal_token(T_GE);
 }
 
-\>\= { 
+\>\= {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_GEQ", yytext);
 #endif
-    return std_token(T_GEQ);
+    return normal_token(T_GEQ);
 }
 
-\+ { 
+\+ {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_ADD", yytext);
 #endif
-    return std_token(T_ADD);
+    return normal_token(T_ADD);
 }
 
-\- { 
+\- {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_SUB", yytext);
 #endif
-    return std_token(T_SUB);
+    return normal_token(T_SUB);
 }
 
-\* { 
+\* {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_MUL", yytext);
 #endif
-    return std_token(T_MUL);
+    return normal_token(T_MUL);
 }
 
-\/ { 
+\/ {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_DIV", yytext);
 #endif
-    return std_token(T_DIV);
+    return normal_token(T_DIV);
 }
 
-\% { 
+\% {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_MOD", yytext);
 #endif
-    return std_token(T_MOD);
+    return normal_token(T_MOD);
 }
 
 
-{p_identifier} { 
+{p_identifier} {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_IDENTIFIER", yytext);
 #endif
     return identifier_token(T_IDENTIFIER);
 }
 
-{p_number} { 
+{p_number} {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_NUMBER", yytext);
 #endif
@@ -317,8 +317,8 @@ WRITE {
 
 /* function definitions */
 
-int std_token(int token) {
-    yylval.token.discriminator = jftt::token_discriminator::std;
+int normal_token(int token) {
+    yylval.token.discriminator = jftt::token_discriminator::normal;
     yylval.token.line_no = program_line_no;
     return token;
 }
@@ -343,4 +343,3 @@ void print_lexer_debug_info(
     std::cout << "[DEBUG = lexer | line = " << line_no << " | " << description
               << "]\n\tvalue = `" << value << '`' << std::endl;
 }
-

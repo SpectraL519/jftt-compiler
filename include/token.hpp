@@ -7,7 +7,7 @@
 
 namespace jftt {
 
-enum class token_discriminator { std, value, identifier };
+enum class token_discriminator { normal, value, identifier };
 
 struct token {
     token() = default;
