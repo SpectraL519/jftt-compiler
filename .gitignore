@@ -1,8 +1,12 @@
 # editor
 .vscode/
 
-# project executable
+# build files
 compiler
+
+# compiler generated files
+!out/
+out/*
 
 # other
 tmp/

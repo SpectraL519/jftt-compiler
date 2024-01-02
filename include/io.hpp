@@ -6,7 +6,7 @@
 
 
 
-namespace io {
+namespace jftt::io {
 
 std::pair<std::string, std::string> parse(int, char**);
 
@@ -22,8 +22,11 @@ void write_lines(
 
 namespace detail {
 
+constexpr int expected_argc{3};
+constexpr int in_idx{1}, out_idx{2};
+
 std::string join(const std::vector<std::string>&, const std::string& = " ");
 
 } // namespace detail
 
-} // namespace io
+} // namespace jftt::io

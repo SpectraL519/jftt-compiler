@@ -2,23 +2,21 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 
 
 
-namespace io {
+namespace jftt::io {
 
 std::pair<std::string, std::string> parse(int argc, char** argv) {
-    constexpr int expected_argc{3};
-    constexpr int in_idx{1}, out_idx{2};
+    if (argc != detail::expected_argc) {
+        std::cerr << "Compiler usage: " << std::endl 
+                  << "./compiler <src-code-file> <asm-out-file>" << std::endl;
+        std::exit(1); 
+    }
 
-    if (argc != expected_argc)
-        throw std::runtime_error(
-            "Invlid number of arguments: expected - " + std::to_string(expected_argc) +
-            ", got - " + std::to_string(argc)
-        );
-
-    return std::make_pair(argv[in_idx], argv[out_idx]);
+    return std::make_pair(argv[detail::in_idx], argv[detail::out_idx]);
 }
 
 
@@ -77,4 +75,4 @@ std::string join(const std::vector<std::string>& str_list, const std::string& de
 
 } // namespace detail
 
-} // namespace io
+} // namespace jftt::io

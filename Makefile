@@ -2,12 +2,11 @@
 APP_DIR 	= ./app
 INCLUDE_DIR = ./include
 SOURCE_DIR  = ./src
-OUT 		= compiler
+EXEC 		= compiler
 
 # Source files
-SOURCE_FILES := $(wildcard $(SOURCE_DIR)/*.cpp)
-APP_SOURCE_FILES := $(wildcard $(APP_DIR)/*.cpp) $(SRC)
-
+SOURCE_FILES 	 := $(wildcard $(SOURCE_DIR)/*.cpp)
+APP_SOURCE_FILES := $(wildcard $(APP_DIR)/*.cpp)
 
 # Generators
 FF := flex
@@ -16,30 +15,38 @@ BB := bison
 # Compiler
 CXX := g++
 CXX_STD := c++17
-CXX_FLAGS += -std=$(CXX_STD)
+CXX_FLAGS += -std=$(CXX_STD) -O3 -Wall
+
+# CMD
+RM = rm -rf
 
 
 # Rules
-.PHONY: all parser lexer clean
+# TODO: vm
+.PHONY: all compiler parser lexer clean
 
-# TODO: <lexer-out-file> <parser-out-file>
-all: parser lexer
+all: compiler
+
+
+compiler: parser lexer
 	@echo Building the compiler
-	@$(CXX) -o $(OUT) $(APP_SOURCE_FILES) $(SOURCE_FILES) -I $(INCLUDE_DIR) $(CXX_FLAGS)
+	@$(CXX) -o $(EXEC) -I $(INCLUDE_DIR) $(CXX_FLAGS) \
+		$(APP_SOURCE_FILES) $(SOURCE_FILES) $(SOURCE_DIR)/parser.cpp $(SOURCE_DIR)/lexer.cpp
 	@echo Build successful!
 
 
-# TODO: $(BB) -d -o <parser-out-file> <bison-yacc-file>
 parser:
-	@echo Generating grammar parser [TODO]
+	@echo Generating parser
+	@$(BB) -o $(SOURCE_DIR)/parser.cpp --defines=$(INCLUDE_DIR)/parser.hpp $(SOURCE_DIR)/parser.y
 
 
-# TODO: $(FF) -o <lexer-out-file> <flex-file>
 lexer:
-	@echo Generating lexer [TODO]
+	@echo Generating lexer
+	@$(FF) -o $(SOURCE_DIR)/lexer.cpp $(SOURCE_DIR)/lexer.l
 
 
-# TODO: <lexer-out-file> <parser-out-header-file> <parser-out-file>
 clean:
 	@echo Removing all generated files
-	@rm $(OUT)
+	@$(RM) $(EXEC)
+	@$(RM) $(SOURCE_DIR)/lexer.cpp
+	@$(RM) $(SOURCE_DIR)/parser.cpp $(INCLUDE_DIR)/parser.hpp

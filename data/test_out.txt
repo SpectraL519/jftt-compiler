@@ -1,11 +1,0 @@
-this
-is
-a
-io::input
-test
-filethis
-is
-a
-io::input
-test
-file
