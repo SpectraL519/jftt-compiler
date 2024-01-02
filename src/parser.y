@@ -9,9 +9,10 @@
 int yylex();
 int yyparse();
 int yyerror(const char* msg);
+extern FILE *yyin;
 
 // debugging
-#define PARSER_DEBUG
+#define DEBUG_PARSER
 
 }
 
@@ -289,18 +290,16 @@ rvalue:
 
 
 int yyerror(const char* msg) {
-    constexpr int todo_line_in_yylval = 0;
-    std::cerr << "[ERROR] : " << msg << "\n\tIn line: " << todo_line_in_yylval << std::endl;
+    std::cerr << "[ERROR] : [line = " << yylval.token.line_no << "] " << msg << std::endl;
     return 1;
 }
 
 int compile(const std::string& infile, const std::string& outfile) {
-    std::cout << infile << " " << outfile << std::endl;
-    return 0;
-
-    // const auto yy_str_buffer = yy_scan_string(jftt::io::read(infile));
-    // const int yy_result = yyparse();
-    // yy_delete_buffer(yy_str_buffer);
+    yyin = fopen(infile.c_str(), "r");
+    const int yy_result = yyparse();
+    fclose(yyin);
 
     // TODO: io::write_lines(code, outfile)
+
+    return yy_result;
 }

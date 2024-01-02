@@ -28,21 +28,21 @@ RM = rm -rf
 all: compiler
 
 
-compiler: parser lexer
+compiler: lexer
 	@echo Building the compiler
 	@$(CXX) -o $(EXEC) -I $(INCLUDE_DIR) $(CXX_FLAGS) \
 		$(APP_SOURCE_FILES) $(SOURCE_FILES) $(SOURCE_DIR)/parser.cpp $(SOURCE_DIR)/lexer.cpp
 	@echo Build successful!
 
 
+lexer: parser
+	@echo Generating lexer
+	@$(FF) -o $(SOURCE_DIR)/lexer.cpp $(SOURCE_DIR)/lexer.l
+
+
 parser:
 	@echo Generating parser
 	@$(BB) -o $(SOURCE_DIR)/parser.cpp --defines=$(INCLUDE_DIR)/parser.hpp $(SOURCE_DIR)/parser.y
-
-
-lexer:
-	@echo Generating lexer
-	@$(FF) -o $(SOURCE_DIR)/lexer.cpp $(SOURCE_DIR)/lexer.l
 
 
 clean:

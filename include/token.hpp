@@ -7,6 +7,8 @@
 
 namespace jftt {
 
+enum class token_discriminator { std, value, identifier };
+
 struct token {
     token() = default;
     token(const token&) = default;
@@ -16,9 +18,10 @@ struct token {
 
     ~token() = default;
 
+    token_discriminator discriminator;
     uint64_t line_no;
     uint64_t value;
-    std::string* str;
+    std::string* str_ptr;
 };
 
 } // namespace jftt
