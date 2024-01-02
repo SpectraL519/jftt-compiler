@@ -1,14 +1,12 @@
 %code {
 
 #include "io.hpp"
-#include "token.hpp"
 
 #include <iostream>
 
 // Flex & Bison utility
 int yylex();
 int yyparse();
-int yyerror(const char* msg);
 extern FILE *yyin;
 
 // debugging
@@ -21,13 +19,15 @@ extern FILE *yyin;
 
 #include "token.hpp"
 
+int yyerror(const char* msg);
+
 }
 
 
 /* yylval type */
 %union {
     jftt::token token;
-    int value; // TODO
+    int value; // TODO identifiers & array identifiers
 }
 
 
@@ -54,7 +54,7 @@ extern FILE *yyin;
 
 
 /* non-terminal symbols */
-%type <value> value lvalue rvalue
+%type <value> value identifier
 
 
 /* grammar */
@@ -103,7 +103,7 @@ commands:
 
 
 command:
-    lvalue T_ASSIGN expression T_SEMICOLON {
+    identifier T_ASSIGN expression T_SEMICOLON {
         // TODO
     }
     |
@@ -127,7 +127,7 @@ command:
         // TODO
     }
     |
-    T_READ lvalue T_SEMICOLON {
+    T_READ identifier T_SEMICOLON {
         // TODO
     }
     |
@@ -138,52 +138,52 @@ command:
 
 
 procedure_head:
-    lvalue T_LPAREN procedure_args_decl T_RPAREN {
+    identifier T_LPAREN procedure_args_decl T_RPAREN {
         // TODO
     }
     ;
 
 
 procedure_call:
-    lvalue T_LPAREN procedure_args T_RPAREN {
+    identifier T_LPAREN procedure_args T_RPAREN {
 
     }
     ;
 
 
 declarations:
-    declarations T_SEMICOLON T_IDENTIFIER {
+    declarations T_COMMA T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
         // TODO
     }
     |
-    declarations T_SEMICOLON T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
-        // TODO
-    }
-    |
-    T_IDENTIFIER {
+    declarations T_COMMA T_IDENTIFIER {
         // TODO
     }
     |
     T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
         // TODO
     }
+    |
+    T_IDENTIFIER {
+        // TODO
+    }
     ;
 
 
 procedure_args_decl:
-    procedure_args_decl T_COMMA lvalue {
+    procedure_args_decl T_COMMA identifier {
         // TODO
     }
     |
-    procedure_args_decl T_COMMA "T" lvalue {
+    procedure_args_decl T_COMMA "T" identifier {
         // TODO
     }
     |
-    lvalue {
+    identifier {
         // TODO
     }
     |
-    "T" lvalue {
+    "T" identifier {
         // TODO
     }
     ;
@@ -255,17 +255,17 @@ condition:
 
 
 value:
-    lvalue {
+    T_NUMBER {
         // TODO
     }
     |
-    rvalue {
+    identifier {
         // TODO
     }
     ;
 
 
-lvalue:
+identifier:
     T_IDENTIFIER {
         // TODO
     }
@@ -275,13 +275,6 @@ lvalue:
     }
     |
     T_IDENTIFIER T_LBRACKET T_IDENTIFIER T_RBRACKET {
-        // TODO
-    }
-    ;
-
-
-rvalue:
-    T_NUMBER {
         // TODO
     }
     ;
@@ -296,6 +289,11 @@ int yyerror(const char* msg) {
 
 int compile(const std::string& infile, const std::string& outfile) {
     yyin = fopen(infile.c_str(), "r");
+    if (yyin == NULL) {
+        std::cerr << "[ERROR] Failed to open file: " << infile << std::endl;
+        std::exit(1);
+    }
+
     const int yy_result = yyparse();
     fclose(yyin);
 

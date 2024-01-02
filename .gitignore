@@ -3,6 +3,10 @@
 
 # build files
 compiler
+include/parser.hpp
+src/parser.cpp
+src/lexer.cpp
+
 
 # compiler generated files
 !out/
