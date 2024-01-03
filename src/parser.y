@@ -17,7 +17,9 @@ extern FILE *yyin;
 
 %code requires {
 
+#include "identifiers.hpp"
 #include "token.hpp"
+#include "architecture/vm_params.hpp"
 
 int yyerror(const char* msg);
 
@@ -27,7 +29,7 @@ int yyerror(const char* msg);
 /* yylval type */
 %union {
     jftt::token token;
-    int value; // TODO identifiers & array identifiers
+    jftt::architecture::value_type value;
 }
 
 
@@ -47,13 +49,15 @@ int yyerror(const char* msg);
 %token <token> T_ADD T_SUB T_MUL T_DIV T_MOD
 
 /* terminal symbols - identifiers & values */
-%token <token> T_IDENTIFIER T_NUMBER 
+%token <token> T_IDENTIFIER T_NUMBER
 
 /* terminal symbols - error */
 %token <token> T_ERROR
 
 
 /* non-terminal symbols */
+// %type <token> identifier
+// %type <value> value
 %type <value> value identifier
 
 

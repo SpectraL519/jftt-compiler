@@ -14,12 +14,14 @@ public:
     vm_register& operator=(const vm_register&) = delete;
     vm_register& operator=(vm_register&&) = delete;
 
-    vm_register(register_discriminator discriminator)
+    vm_register(vm_register_discriminator discriminator)
     : _discriminator(discriminator) {}
 
-    [[nodiscard]] register_discriminator discriminator() const noexcept {
+    [[nodiscard]] vm_register_discriminator discriminator() const noexcept {
         return this->_discriminator;
     }
+
+    // TODO: name
 
     [[nodiscard]] bool is_free() const noexcept {
         return this->_free;
@@ -44,7 +46,7 @@ public:
     }
 
 private:
-    register_discriminator _discriminator;
+    vm_register_discriminator _discriminator;
     bool _free;
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "identifiers.hpp"
+#include "architecture/vm_memory_manager.hpp"
 
 #include <iostream>
 #include <memory>
@@ -22,11 +23,15 @@ public:
     ~identifier_manager() = default;
 
     void add_variable(const std::string& name) noexcept {
-        this->_identifiers[name] = std::make_unique<variable_identifier>(name);
+        variable_identifier* variable = new variable_identifier(name);
+        variable->set_address(this->_memory_manager.allocate(variable->size()));
+        this->_identifiers[name] = std::make_unique<variable_identifier>(*variable);
     }
 
     void add_vararray(const std::string& name, const architecture::memory_size_type size) noexcept {
-        this->_identifiers[name] = std::make_unique<vararray_identifier>(name, size);
+        vararray_identifier* vararray = new vararray_identifier(name, size);
+        vararray->set_address(this->_memory_manager.allocate(size));
+        this->_identifiers[name] = std::make_unique<vararray_identifier>(*vararray);
     }
 
     void add_procedure(const std::string& name) noexcept {
@@ -57,6 +62,7 @@ public:
 
 private:
     std::map<std::string, std::unique_ptr<abstract_identifier_base>> _identifiers;
+    architecture::vm_memory_manager& _memory_manager{architecture::vm_memory_manager::instance()};
 };
 
 } // namespace jftt
