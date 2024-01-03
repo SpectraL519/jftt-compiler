@@ -32,14 +32,6 @@ public:
         return this->_discriminator;
     }
 
-    [[nodiscard]] bool is_procedure() const noexcept {
-        return this->_discriminator == identifier_discriminator::procedure;
-    }
-
-    [[nodiscard]] bool is_variable() const noexcept {
-        return !this->is_procedure();
-    }
-
     [[nodiscard]] const std::string& name() const noexcept {
         return this->_name;
     }

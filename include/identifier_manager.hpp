@@ -37,9 +37,12 @@ public:
         return this->_identifiers.find(name) != this->_identifiers.cend();
     }
 
-    [[nodiscard]] bool has_variable(const std::string& name) const noexcept {
+    [[nodiscard]] bool has(
+        const std::string& name, const identifier_discriminator discriminator
+    ) const noexcept {
         const auto& identifier = this->_identifiers.find(name);
-        return identifier != this->_identifiers.end() && identifier->second->is_variable();
+        return identifier != this->_identifiers.end() &&
+               identifier->second->discriminator() == discriminator;
     }
 
     [[nodiscard]] const std::unique_ptr<abstract_identifier_base>& get(

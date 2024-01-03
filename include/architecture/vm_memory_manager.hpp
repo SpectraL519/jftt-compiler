@@ -63,14 +63,14 @@ private:
     vm_memory_manager() = default;
 
     std::array<vm_register, VM_REGISTER_NO> _registers{
-        vm_register(vm_register_discriminator::a),
-        vm_register(vm_register_discriminator::b),
-        vm_register(vm_register_discriminator::c),
-        vm_register(vm_register_discriminator::d),
-        vm_register(vm_register_discriminator::e),
-        vm_register(vm_register_discriminator::f),
-        vm_register(vm_register_discriminator::g),
-        vm_register(vm_register_discriminator::h)
+        vm_register(register_discriminator::a),
+        vm_register(register_discriminator::b),
+        vm_register(register_discriminator::c),
+        vm_register(register_discriminator::d),
+        vm_register(register_discriminator::e),
+        vm_register(register_discriminator::f),
+        vm_register(register_discriminator::g),
+        vm_register(register_discriminator::h)
     };
 
     memory_address_type _first_free_address{0ull};
