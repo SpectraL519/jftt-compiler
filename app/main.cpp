@@ -7,6 +7,7 @@
 #include "architecture/vm_params.hpp"
 #include "architecture/vm_memory_manager.hpp"
 #include "architecture/vm_register.hpp"
+#include "assembly/instructions.hpp"
 #include "identifier_manager.hpp"
 #include "identifiers.hpp"
 #include "token.hpp"
