@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 #include <string>
 
 
@@ -12,8 +13,7 @@ enum class vm_register_discriminator : uint8_t {
 };
 
 [[nodiscard]] inline std::string as_string(const vm_register_discriminator rd) {
-    // TODO: return str instead of uint
-    return std::to_string(static_cast<uint8_t>(rd));
+    return std::string(1, 'a' + static_cast<uint8_t>(rd));
 }
 
 
@@ -23,8 +23,9 @@ using memory_size_type = uint64_t;
 using value_type = uint64_t;
 
 
-static constexpr memory_address_type VM_MEMORY_SIZE{0x4000000000000000ull}; // 2^62
-static constexpr uint8_t VM_REGISTER_NO{
+constexpr memory_address_type VM_MEMORY_SIZE{0x4000000000000000ull}; // 2^62
+constexpr uint8_t VM_REGISTER_NO{
     static_cast<uint8_t>(vm_register_discriminator::h) + 1};
+constexpr int VM_VALUE_BITSIZE{std::numeric_limits<value_type>::digits};
 
 } // namespace jftt::architecture

@@ -28,26 +28,26 @@ public:
 
     virtual ~abstract_identifier_base() = default;
 
-    [[nodiscard]] identifier_discriminator discriminator() const noexcept {
+    [[nodiscard]] identifier_discriminator discriminator() const {
         return this->_discriminator;
     }
 
-    [[nodiscard]] const std::string& name() const noexcept {
+    [[nodiscard]] const std::string& name() const {
         return this->_name;
     }
 
-    [[nodiscard]] bool is_used() const noexcept {
+    [[nodiscard]] bool is_used() const {
         return this->_used;
     }
 
-    void set_used() noexcept {
+    void set_used() {
         this->_used = true;
     }
 
-    virtual architecture::memory_address_type address() const noexcept = 0;
-    virtual architecture::memory_size_type size() const noexcept = 0;
+    virtual architecture::memory_address_type address() const = 0;
+    virtual architecture::memory_size_type size() const = 0;
 
-    virtual void set_address(const architecture::memory_address_type) noexcept = 0;
+    virtual void set_address(const architecture::memory_address_type) = 0;
 
 protected:
     abstract_identifier_base(identifier_discriminator discriminator, const std::string& name)
@@ -74,15 +74,15 @@ public:
     variable_identifier(const std::string& name)
     : abstract_identifier_base(identifier_discriminator::variable, name) {}
 
-    architecture::memory_address_type address() const noexcept override {
+    architecture::memory_address_type address() const override {
         return this->_address;
     }
 
-    architecture::memory_size_type size() const noexcept override {
+    architecture::memory_size_type size() const override {
         return this->_size;
     }
 
-    void set_address(const architecture::memory_address_type address) noexcept override {
+    void set_address(const architecture::memory_address_type address) override {
         this->_address = address;
     }
 
@@ -107,15 +107,15 @@ public:
     vararray_identifier(const std::string& name, const architecture::memory_size_type size)
     : abstract_identifier_base(identifier_discriminator::vararray, name), _size(size) {}
 
-    architecture::memory_address_type address() const noexcept override {
+    architecture::memory_address_type address() const override {
         return this->_address;
     }
 
-    architecture::memory_size_type size() const noexcept override {
+    architecture::memory_size_type size() const override {
         return this->_size;
     }
 
-    void set_address(const architecture::memory_address_type address) noexcept override {
+    void set_address(const architecture::memory_address_type address) override {
         this->_address = address;
     }
 
@@ -140,19 +140,19 @@ public:
     procedure_identifier(const std::string& name)
     : abstract_identifier_base(identifier_discriminator::procedure, name) {}
 
-    architecture::memory_address_type address() const noexcept override {
+    architecture::memory_address_type address() const override {
         std::cerr << "[ERROR] Cannot get memory address of a procedure identifier: "
                   << this->_name << std::endl;
         std::exit(1);
     }
 
-    architecture::memory_size_type size() const noexcept override {
+    architecture::memory_size_type size() const override {
         std::cerr << "[ERROR] Cannot assign get memory size of a procedure identifier: "
                   << this->_name << std::endl;
         std::exit(1);
     }
 
-    void set_address(const architecture::memory_address_type) noexcept override {
+    void set_address(const architecture::memory_address_type) override {
         std::cerr << "[ERROR] Cannot set memory address of a procedure identifier: "
                   << this->_name << std::endl;
         std::exit(1);

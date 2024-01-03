@@ -22,29 +22,29 @@ public:
     identifier_manager() = default;
     ~identifier_manager() = default;
 
-    void add_variable(const std::string& name) noexcept {
+    void add_variable(const std::string& name) {
         variable_identifier* variable = new variable_identifier(name);
         variable->set_address(this->_memory_manager.allocate(variable->size()));
         this->_identifiers[name] = std::make_unique<variable_identifier>(*variable);
     }
 
-    void add_vararray(const std::string& name, const architecture::memory_size_type size) noexcept {
+    void add_vararray(const std::string& name, const architecture::memory_size_type size) {
         vararray_identifier* vararray = new vararray_identifier(name, size);
         vararray->set_address(this->_memory_manager.allocate(size));
         this->_identifiers[name] = std::make_unique<vararray_identifier>(*vararray);
     }
 
-    void add_procedure(const std::string& name) noexcept {
+    void add_procedure(const std::string& name) {
         this->_identifiers[name] = std::make_unique<procedure_identifier>(name);
     }
 
-    [[nodiscard]] bool has(const std::string& name) const noexcept {
+    [[nodiscard]] bool has(const std::string& name) const {
         return this->_identifiers.find(name) != this->_identifiers.cend();
     }
 
     [[nodiscard]] bool has(
         const std::string& name, const identifier_discriminator discriminator
-    ) const noexcept {
+    ) const {
         const auto& identifier = this->_identifiers.find(name);
         return identifier != this->_identifiers.end() &&
                identifier->second->discriminator() == discriminator;
@@ -56,7 +56,7 @@ public:
         return this->_identifiers.at(name);
     }
 
-    void remove(const std::string& name) noexcept {
+    void remove(const std::string& name) {
         this->_identifiers.erase(name);
     }
 

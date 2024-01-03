@@ -17,17 +17,17 @@ public:
     vm_register(vm_register_discriminator discriminator)
     : _discriminator(discriminator) {}
 
-    [[nodiscard]] vm_register_discriminator discriminator() const noexcept {
+    [[nodiscard]] vm_register_discriminator discriminator() const {
         return this->_discriminator;
     }
 
     // TODO: name
 
-    [[nodiscard]] bool is_free() const noexcept {
+    [[nodiscard]] bool is_free() const {
         return this->_free;
     }
 
-    [[nodiscard]] bool acquire() noexcept {
+    [[nodiscard]] bool acquire() {
         // maybe throw exception ?
         if (!this->_free)
             return false;
@@ -36,7 +36,7 @@ public:
         return true;
     }
 
-    [[nodiscard]] bool release() noexcept {
+    [[nodiscard]] bool release() {
         // maybe throw exception
         if (this->_free)
             return false;
@@ -49,5 +49,10 @@ private:
     vm_register_discriminator _discriminator;
     bool _free;
 };
+
+
+[[nodiscard]] bool is_accumulator(const vm_register& reg) {
+    return reg.discriminator() == vm_register_discriminator::a;
+}
 
 } // namespace jftt::architecture
