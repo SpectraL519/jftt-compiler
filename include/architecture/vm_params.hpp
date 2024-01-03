@@ -7,6 +7,7 @@
 namespace jftt::architecture {
 
 using memory_address_type = uint64_t;
+using memory_size_type = uint64_t;
 
 enum class vm_register_discriminator : uint8_t {
     a, b, c, d, e, f, g, h

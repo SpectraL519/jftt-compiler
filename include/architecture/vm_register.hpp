@@ -15,7 +15,7 @@ public:
     vm_register& operator=(vm_register&&) = delete;
 
     vm_register(vm_register_discriminator discriminator)
-        : _discriminator(discriminator) {}
+    : _discriminator(discriminator) {}
 
     [[nodiscard]] vm_register_discriminator discriminator() const noexcept {
         return this->_discriminator;

@@ -47,7 +47,7 @@ public:
         std::exit(1);
     }
 
-    [[nodiscard]] memory_address_type allocate(memory_address_type chunk_size) noexcept {
+    [[nodiscard]] memory_address_type allocate(memory_size_type chunk_size) noexcept {
         if (this->_first_free_address + chunk_size > VM_MEMORY_SIZE) {
             std::cerr << "[ERROR] Cannot allocate memory chunk of size "
                       << chunk_size << std::endl;

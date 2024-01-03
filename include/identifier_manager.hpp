@@ -21,9 +21,16 @@ public:
     identifier_manager() = default;
     ~identifier_manager() = default;
 
-    void add(abstract_identifier_base&& identifier) noexcept {
-        this->_identifiers[identifier.name()] =
-            std::make_unique<abstract_identifier_base>(std::move(identifier));
+    void add_variable(const std::string& name) noexcept {
+        this->_identifiers[name] = std::make_unique<variable_identifier>(name);
+    }
+
+    void add_vararray(const std::string& name, const architecture::memory_size_type size) noexcept {
+        this->_identifiers[name] = std::make_unique<vararray_identifier>(name, size);
+    }
+
+    void add_procedure(const std::string& name) noexcept {
+        this->_identifiers[name] = std::make_unique<procedure_identifier>(name);
     }
 
     [[nodiscard]] bool has(const std::string& name) const noexcept {
