@@ -16,7 +16,7 @@ enum class vm_register_discriminator : uint8_t {
 }
 
 
-using instruction_counter_type = uint64_t;
+using instruction_counter_type = std::size_t;
 using memory_address_type = uint64_t;
 using memory_size_type = uint64_t;
 
