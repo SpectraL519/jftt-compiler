@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstdint>
+#include "architecture/vm_params.hpp"
+
 #include <string>
 
 
@@ -12,7 +13,6 @@ enum class identifier_discriminator : uint8_t {
     vararray,
     procedure
 };
-
 
 class abstract_identifier_base {
 public:
