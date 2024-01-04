@@ -2,7 +2,6 @@
 
 #include "architecture/vm_params.hpp"
 
-#include <iostream>
 #include <string>
 
 
@@ -28,21 +27,10 @@ public:
 
     virtual ~abstract_identifier_base() = default;
 
-    [[nodiscard]] identifier_discriminator discriminator() const {
-        return this->_discriminator;
-    }
-
-    [[nodiscard]] const std::string& name() const {
-        return this->_name;
-    }
-
-    [[nodiscard]] bool is_used() const {
-        return this->_used;
-    }
-
-    void set_used() {
-        this->_used = true;
-    }
+    [[nodiscard]] identifier_discriminator discriminator() const;
+    [[nodiscard]] const std::string& name() const;
+    [[nodiscard]] bool is_used() const;
+    void set_used();
 
     virtual architecture::memory_address_type address() const = 0;
     virtual architecture::memory_size_type size() const = 0;
@@ -50,8 +38,7 @@ public:
     virtual void set_address(const architecture::memory_address_type) = 0;
 
 protected:
-    abstract_identifier_base(identifier_discriminator discriminator, const std::string& name)
-    : _discriminator(discriminator), _name(name) {}
+    abstract_identifier_base(identifier_discriminator discriminator, const std::string& name);
 
     identifier_discriminator _discriminator;
     std::string _name;
@@ -71,20 +58,12 @@ public:
 
     ~variable_identifier() = default;
 
-    variable_identifier(const std::string& name)
-    : abstract_identifier_base(identifier_discriminator::variable, name) {}
+    variable_identifier(const std::string& name);
 
-    architecture::memory_address_type address() const override {
-        return this->_address;
-    }
+    [[nodiscard]] architecture::memory_address_type address() const override;
+    [[nodiscard]] architecture::memory_size_type size() const override;
 
-    architecture::memory_size_type size() const override {
-        return this->_size;
-    }
-
-    void set_address(const architecture::memory_address_type address) override {
-        this->_address = address;
-    }
+    void set_address(const architecture::memory_address_type address) override;
 
 private:
     architecture::memory_address_type _address;
@@ -104,20 +83,12 @@ public:
 
     ~vararray_identifier() = default;
 
-    vararray_identifier(const std::string& name, const architecture::memory_size_type size)
-    : abstract_identifier_base(identifier_discriminator::vararray, name), _size(size) {}
+    vararray_identifier(const std::string& name, const architecture::memory_size_type size);
 
-    architecture::memory_address_type address() const override {
-        return this->_address;
-    }
+    [[nodiscard]] architecture::memory_address_type address() const override;
+    [[nodiscard]] architecture::memory_size_type size() const override;
 
-    architecture::memory_size_type size() const override {
-        return this->_size;
-    }
-
-    void set_address(const architecture::memory_address_type address) override {
-        this->_address = address;
-    }
+    void set_address(const architecture::memory_address_type address) override;
 
 private:
     architecture::memory_address_type _address;
@@ -137,26 +108,12 @@ public:
 
     ~procedure_identifier() = default;
 
-    procedure_identifier(const std::string& name)
-    : abstract_identifier_base(identifier_discriminator::procedure, name) {}
+    procedure_identifier(const std::string& name);
 
-    architecture::memory_address_type address() const override {
-        std::cerr << "[ERROR] Cannot get memory address of a procedure identifier: "
-                  << this->_name << std::endl;
-        std::exit(1);
-    }
+    architecture::memory_address_type address() const override;
+    architecture::memory_size_type size() const override;
 
-    architecture::memory_size_type size() const override {
-        std::cerr << "[ERROR] Cannot assign get memory size of a procedure identifier: "
-                  << this->_name << std::endl;
-        std::exit(1);
-    }
-
-    void set_address(const architecture::memory_address_type) override {
-        std::cerr << "[ERROR] Cannot set memory address of a procedure identifier: "
-                  << this->_name << std::endl;
-        std::exit(1);
-    }
+    void set_address(const architecture::memory_address_type) override;
 };
 
 } // namespace jftt

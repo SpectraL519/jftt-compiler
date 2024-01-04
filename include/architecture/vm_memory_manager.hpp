@@ -4,7 +4,6 @@
 #include "vm_register.hpp"
 
 #include <array>
-#include <iostream>
 
 
 
@@ -21,43 +20,11 @@ public:
 
     ~vm_memory_manager() = default;
 
-    [[nodiscard]] static vm_memory_manager& instance() {
-        static vm_memory_manager instance;
-        return instance;
-    }
-
-    [[nodiscard]] vm_register& get_accumulator() {
-        return this->_registers[0u];
-    }
-
-    [[nodiscard]] bool has_free_registers() const {
-        for (uint8_t i = 1; i < VM_REGISTER_NO; i++)
-            if (this->_registers[i].is_free())
-                return true;
-
-        return false;
-    }
-
-    [[nodiscard]] vm_register& get_free_register() {
-        for (uint8_t i = 1; i < VM_REGISTER_NO; i++)
-            if (this->_registers[i].is_free())
-                return this->_registers[i];
-
-        std::cerr << "[ERROR] No free registers available" << std::endl;
-        std::exit(1);
-    }
-
-    [[nodiscard]] memory_address_type allocate(memory_size_type chunk_size) {
-        if (this->_first_free_address + chunk_size > VM_MEMORY_SIZE) {
-            std::cerr << "[ERROR] Cannot allocate memory chunk of size "
-                      << chunk_size << std::endl;
-            std::exit(1);
-        }
-
-        const memory_address_type allocated_memory_address = this->_first_free_address;
-        this->_first_free_address += chunk_size;
-        return allocated_memory_address;
-    }
+    [[nodiscard]] static vm_memory_manager& instance();
+    [[nodiscard]] vm_register& get_accumulator();
+    [[nodiscard]] bool has_free_registers() const;
+    [[nodiscard]] vm_register& get_free_register();
+    [[nodiscard]] memory_address_type allocate(const memory_size_type chunk_size);
 
 private:
     vm_memory_manager() = default;

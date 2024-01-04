@@ -4,8 +4,8 @@
 # build files
 compiler
 include/parser.hpp
-src/parser.cpp
-src/lexer.cpp
+source/parser.cpp
+source/lexer.cpp
 
 # compiler generated files
 !out/

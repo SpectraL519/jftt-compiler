@@ -3,7 +3,6 @@
 #include "identifiers.hpp"
 #include "architecture/vm_memory_manager.hpp"
 
-#include <iostream>
 #include <memory>
 #include <map>
 
@@ -22,43 +21,16 @@ public:
     identifier_manager() = default;
     ~identifier_manager() = default;
 
-    void add_variable(const std::string& name) {
-        variable_identifier* variable = new variable_identifier(name);
-        variable->set_address(this->_memory_manager.allocate(variable->size()));
-        this->_identifiers[name] = std::make_unique<variable_identifier>(*variable);
-    }
+    void add_variable(const std::string& name);
+    void add_vararray(const std::string& name, const architecture::memory_size_type size);
+    void add_procedure(const std::string& name);
 
-    void add_vararray(const std::string& name, const architecture::memory_size_type size) {
-        vararray_identifier* vararray = new vararray_identifier(name, size);
-        vararray->set_address(this->_memory_manager.allocate(size));
-        this->_identifiers[name] = std::make_unique<vararray_identifier>(*vararray);
-    }
-
-    void add_procedure(const std::string& name) {
-        this->_identifiers[name] = std::make_unique<procedure_identifier>(name);
-    }
-
-    [[nodiscard]] bool has(const std::string& name) const {
-        return this->_identifiers.find(name) != this->_identifiers.cend();
-    }
-
+    [[nodiscard]] bool has(const std::string& name) const;
     [[nodiscard]] bool has(
-        const std::string& name, const identifier_discriminator discriminator
-    ) const {
-        const auto& identifier = this->_identifiers.find(name);
-        return identifier != this->_identifiers.end() &&
-               identifier->second->discriminator() == discriminator;
-    }
-
+        const std::string& name, const identifier_discriminator discriminator) const;
     [[nodiscard]] const std::unique_ptr<abstract_identifier_base>& get(
-        const std::string& name
-    ) const {
-        return this->_identifiers.at(name);
-    }
-
-    void remove(const std::string& name) {
-        this->_identifiers.erase(name);
-    }
+        const std::string& name) const;
+    void remove(const std::string& name);
 
 private:
     std::map<std::string, std::unique_ptr<abstract_identifier_base>> _identifiers;

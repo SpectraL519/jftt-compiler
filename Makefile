@@ -1,11 +1,11 @@
 # Structure
 APP_DIR 	= ./app
 INCLUDE_DIR = ./include
-SOURCE_DIR  = ./src
+SOURCE_DIR  = ./source
 EXEC 		= compiler
 
 # Source files
-SOURCE_FILES 	 := $(wildcard $(SOURCE_DIR)/*.cpp)
+SOURCE_FILES 	 := $(wildcard $(SOURCE_DIR)/*.cpp) $(wildcard $(SOURCE_DIR)/**/*.cpp)
 APP_SOURCE_FILES := $(wildcard $(APP_DIR)/*.cpp)
 
 # Generators
@@ -28,14 +28,14 @@ RM = rm -rf
 all: compiler
 
 
-compiler: lexer
+compiler: parser lexer
 	@echo Building the compiler
 	@$(CXX) -o $(EXEC) -I $(INCLUDE_DIR) $(CXX_FLAGS) \
 		$(APP_SOURCE_FILES) $(SOURCE_FILES) $(SOURCE_DIR)/parser.cpp $(SOURCE_DIR)/lexer.cpp
 	@echo Build successful!
 
 
-lexer: parser
+lexer:
 	@echo Generating lexer
 	@$(FF) -o $(SOURCE_DIR)/lexer.cpp $(SOURCE_DIR)/lexer.l
 
