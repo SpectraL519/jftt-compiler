@@ -9,9 +9,7 @@
 namespace jftt {
 
 enum class identifier_discriminator : uint8_t {
-    variable,
-    vararray,
-    procedure
+    variable, vararray, procedure
 };
 
 

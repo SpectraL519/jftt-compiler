@@ -20,12 +20,12 @@ public:
 
     [[nodiscard]] vm_register_discriminator discriminator() const;
     [[nodiscard]] bool is_free() const;
-    bool acquire();
-    bool release();
+    void acquire();
+    void release();
 
 private:
     vm_register_discriminator _discriminator;
-    bool _free;
+    bool _free{true};
 };
 
 [[nodiscard]] bool is_accumulator(const vm_register&);

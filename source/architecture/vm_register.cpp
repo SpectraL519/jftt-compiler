@@ -1,5 +1,7 @@
 #include "architecture/vm_register.hpp"
 
+#include <iostream>
+
 
 
 namespace jftt::architecture {
@@ -15,22 +17,20 @@ bool vm_register::is_free() const {
     return this->_free;
 }
 
-bool vm_register::acquire() {
-    // maybe throw exception ?
-    if (!this->_free)
-        return false;
-
+void vm_register::acquire() {
+    if (!this->_free) {
+        std::cerr << "[ERROR] Register already acquired" << std::endl;
+        std::exit(1);
+    }
     this->_free = false;
-    return true;
 }
 
-bool vm_register::release() {
-    // maybe throw exception
-    if (this->_free)
-        return false;
-
+void vm_register::release() {
+    if (this->_free) {
+        std::cerr << "[ERROR] Register already released" << std::endl;
+        std::exit(1);
+    }
     this->_free = true;
-    return true;
 }
 
 bool is_accumulator(const vm_register& reg) {

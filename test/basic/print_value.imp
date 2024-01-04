@@ -1,0 +1,5 @@
+# Print an rvalue
+PROGRAM IS
+IN
+    WRITE 5;
+END

@@ -11,9 +11,9 @@ namespace jftt::io {
 
 std::pair<std::string, std::string> parse(int argc, char** argv) {
     if (argc != detail::expected_argc) {
-        std::cerr << "Compiler usage: " << std::endl 
+        std::cerr << "Compiler usage: " << std::endl
                   << "./compiler <src-code-file> <asm-out-file>" << std::endl;
-        std::exit(1); 
+        std::exit(1);
     }
 
     return std::make_pair(argv[detail::in_idx], argv[detail::out_idx]);
@@ -39,8 +39,12 @@ std::vector<std::string> read_lines(const std::string& file_name) {
 }
 
 
-void write(const std::string& str, const std::string& file_name) {
-    std::ofstream file(file_name);
+void write(
+    const std::string& str,
+    const std::string& file_name,
+    const std::ios::openmode openmode
+) {
+    std::ofstream file(file_name, openmode);
     if (!file.is_open())
         throw std::runtime_error("Cannot open file: " + file_name);
 

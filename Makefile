@@ -15,7 +15,7 @@ BB := bison
 # Compiler
 CXX := g++
 CXX_STD := c++17
-CXX_FLAGS += -std=$(CXX_STD) -O3 -Wall
+CXX_FLAGS += -std=$(CXX_STD) -O3 -Wall -Wno-unused-function -g
 
 # CMD
 RM = rm -rf
@@ -23,9 +23,9 @@ RM = rm -rf
 
 # Rules
 # TODO: vm
-.PHONY: all compiler parser lexer clean
+.PHONY: all compiler parser lexer clean vm cleanvm cleanall
 
-all: compiler
+all: cleanall compiler vm
 
 
 compiler: parser lexer
@@ -33,6 +33,7 @@ compiler: parser lexer
 	@$(CXX) -o $(EXEC) -I $(INCLUDE_DIR) $(CXX_FLAGS) \
 		$(APP_SOURCE_FILES) $(SOURCE_FILES) $(SOURCE_DIR)/parser.cpp $(SOURCE_DIR)/lexer.cpp
 	@echo Build successful!
+	@echo
 
 
 lexer:
@@ -46,7 +47,23 @@ parser:
 
 
 clean:
-	@echo Removing all generated files
+	@echo Removing compiler generated files
 	@$(RM) $(EXEC)
 	@$(RM) $(SOURCE_DIR)/lexer.cpp
 	@$(RM) $(SOURCE_DIR)/parser.cpp $(INCLUDE_DIR)/parser.hpp
+	@echo
+
+
+vm:
+	@echo Building the virtual machine
+	@cd vm && make all CXX=$(CXX) && cd ..
+
+
+cleanvm:
+	@echo Removing vm generated files
+	@cd vm && make cleanall && cd ..
+	@echo
+
+
+cleanall: clean cleanvm
+	@echo

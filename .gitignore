@@ -11,5 +11,9 @@ source/lexer.cpp
 !out/
 out/*
 
+# vm generated files
+run-vm
+run-cln-vm
+
 # other
 tmp/

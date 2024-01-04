@@ -1,13 +1,14 @@
 #pragma once
 
-#include <cstdint>
+#include "architecture/vm_params.hpp"
+
 #include <string>
 
 
 
-namespace jftt {
+namespace jftt::parser {
 
-enum class token_discriminator { normal, value, identifier };
+enum class token_discriminator : uint8_t { normal, value, identifier };
 
 struct token {
     token() = default;
@@ -19,9 +20,9 @@ struct token {
     ~token() = default;
 
     token_discriminator discriminator;
-    uint64_t line_no;
-    uint64_t value;
+    std::size_t line_no;
+    architecture::value_type value;
     std::string* str_ptr;
 };
 
-} // namespace jftt
+} // namespace jftt::parser

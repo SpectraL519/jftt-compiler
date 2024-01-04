@@ -4,8 +4,10 @@
 #define YY_NO_UNPUT
 #define YY_NO_INPUT
 
-#include "token.hpp"
+#include "parser/token.hpp"
 #include "parser.hpp"
+
+namespace parser = jftt::parser;
 
 #include <iostream>
 
@@ -21,9 +23,8 @@ static int value_token(int token);
 
 
 // debugging
-#define DEBUG_LEXER
-
-static void print_lexer_debug_info(const uint64_t, const std::string&, const std::string&);
+// #define DEBUG_LEXER
+static void print_lexer_debug_info(const std::size_t, const std::string&, const std::string&);
 
 %}
 
@@ -318,27 +319,27 @@ WRITE {
 /* function definitions */
 
 int normal_token(int token) {
-    yylval.token.discriminator = jftt::token_discriminator::normal;
+    yylval.token.discriminator = parser::token_discriminator::normal;
     yylval.token.line_no = program_line_no;
     return token;
 }
 
 int identifier_token(int token) {
-    yylval.token.discriminator = jftt::token_discriminator::identifier;
+    yylval.token.discriminator = parser::token_discriminator::identifier;
     yylval.token.line_no = program_line_no;
     yylval.token.str_ptr = new std::string(yytext);
     return token;
 }
 
 int value_token(int token) {
-    yylval.token.discriminator = jftt::token_discriminator::value;
+    yylval.token.discriminator = parser::token_discriminator::value;
     yylval.token.line_no = program_line_no;
     yylval.token.value = std::stoull(yytext);
     return token;
 }
 
 void print_lexer_debug_info(
-    const uint64_t line_no, const std::string& description, const std::string& value
+    const std::size_t line_no, const std::string& description, const std::string& value
 ) {
     std::cout << "[DEBUG = lexer | line = " << line_no << " | " << description
               << "]\n\tvalue = `" << value << '`' << std::endl;

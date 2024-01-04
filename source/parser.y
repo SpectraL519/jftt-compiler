@@ -1,8 +1,12 @@
 %code {
 
 #include "io.hpp"
+#include "compiler.hpp"
 
 #include <iostream>
+
+// utility
+jftt::compiler compiler;
 
 // Flex & Bison utility
 int yylex();
@@ -17,10 +21,12 @@ extern FILE *yyin;
 
 %code requires {
 
-#include "identifiers.hpp"
-#include "token.hpp"
-#include "architecture/vm_params.hpp"
+#include "parser/token.hpp"
+#include "parser/values.hpp"
 
+namespace parser = jftt::parser;
+
+// Flex & Bison utility
 int yyerror(const char* msg);
 
 }
@@ -28,8 +34,8 @@ int yyerror(const char* msg);
 
 /* yylval type */
 %union {
-    jftt::token token;
-    jftt::architecture::value_type value;
+    jftt::parser::token token;
+    jftt::parser::abstract_value_base* value;
 }
 
 
@@ -56,8 +62,6 @@ int yyerror(const char* msg);
 
 
 /* non-terminal symbols */
-// %type <token> identifier
-// %type <value> value
 %type <value> value identifier
 
 
@@ -66,7 +70,7 @@ int yyerror(const char* msg);
 
 program_all:
     procedures main {
-        // TODO
+        compiler.finish_code_generating();
     }
     ;
 
@@ -136,7 +140,20 @@ command:
     }
     |
     T_WRITE value T_SEMICOLON {
-        // TODO
+        parser::rvalue* rvalue{nullptr};
+        // parser::identifier* identifier{nullptr};
+
+        switch ($2->discriminator()) {
+            case parser::value_discriminator::rvalue:
+                rvalue = parser::as_rvalue($2);
+                compiler.print_value(rvalue->value());
+                delete rvalue;
+                break;
+
+            case parser::value_discriminator::identifier:
+                // TODO;
+                break;
+        }
     }
     ;
 
@@ -260,7 +277,7 @@ condition:
 
 value:
     T_NUMBER {
-        // TODO
+        $$ = new parser::rvalue($1.value);
     }
     |
     identifier {
@@ -298,10 +315,11 @@ int compile(const std::string& infile, const std::string& outfile) {
         std::exit(1);
     }
 
-    const int yy_result = yyparse();
+    const int yyresult = yyparse();
     fclose(yyin);
 
-    // TODO: io::write_lines(code, outfile)
+    const auto& code{compiler.asm_code()};
+    jftt::io::write_lines(code, outfile);
 
-    return yy_result;
+    return yyresult;
 }
