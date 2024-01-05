@@ -6,6 +6,8 @@
 
 namespace jftt::identifier {
 
+// ? TODO: should derive from abstract_lvalue_identifier
+//         |-> functions are lvalues
 class procedure_identifier : public abstract_identifier {
 public:
     procedure_identifier(const std::string& name)

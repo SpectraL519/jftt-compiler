@@ -27,4 +27,4 @@ struct token {
     std::string* str_ptr;
 };
 
-} // namespace jftt
+} // namespace jftt::parser

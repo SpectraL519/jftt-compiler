@@ -24,7 +24,8 @@ public:
     );
     void declare_procedure(const std::string& procedure_name);
 
-    void set_identifier_used(const std::string& identifier_name);
+    [[nodiscard]] identifier::abstract_identifier* get_identifier(const std::string& name);
+    // void set_identifier_used(const std::string& identifier_name);
 
     [[nodiscard]] architecture::memory_address_type get_address(const std::string& variable_name);
 

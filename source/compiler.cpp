@@ -46,10 +46,16 @@ void compiler::declare_vararray(
 //         std::make_unique<identifier::type<discriminator>>(name));
 // }
 
-void compiler::set_identifier_used(const std::string& identifier_name) {
-    this->_assert_identifier_defined(identifier_name);
-    this->_identifier_manager.get(identifier_name)->set_used();
+identifier::abstract_identifier* compiler::get_identifier(const std::string& name) {
+    return this->_identifier_manager.has(name)
+        ? this->_identifier_manager.get(name).get()
+        : nullptr;
 }
+
+// void compiler::set_identifier_used(const std::string& identifier_name) {
+//     this->_assert_identifier_defined(identifier_name);
+//     this->_identifier_manager.get(identifier_name)->set_used();
+// }
 
 void compiler::scan(identifier::abstract_identifier* identifier) {
     switch (identifier->discriminator()) {

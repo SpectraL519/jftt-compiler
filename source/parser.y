@@ -24,8 +24,12 @@ extern FILE *yyin;
 #include "identifier.hpp"
 #include "parser/token.hpp"
 
+// utility definitions
 namespace id = jftt::identifier;
 namespace parser = jftt::parser;
+
+void assert_identifier_token(const parser::token_discriminator);
+void assert_rvalue_token(const parser::token_discriminator);
 
 // Flex & Bison utility
 int yyerror(const char* msg);
@@ -139,12 +143,14 @@ command:
     T_READ identifier T_SEMICOLON {
         switch ($2->discriminator()) {
             case id::type_discriminator::variable:
-                // compiler.scan()
+                std::cout << "scanning: " << $2->name() << std::endl;
+                compiler.scan($2);
                 break;
 
             default:
                 break; // TODO
         }
+        delete $2;
     }
     |
     T_WRITE value T_SEMICOLON {
@@ -277,10 +283,7 @@ condition:
 
 value:
     T_NUMBER {
-        if ($1.discriminator != parser::token_discriminator::rvalue) {
-            std::cerr << "[ERROR] : Cannot initialize an rvalue from a non-rvalue token" << std::endl;
-            std::exit(1);
-        }
+        assert_rvalue_token($1.discriminator);
         $$ = new id::rvalue($1.value);
     }
     |
@@ -292,11 +295,9 @@ value:
 
 identifier:
     T_IDENTIFIER {
-        if ($1.discriminator != parser::token_discriminator::identifier) {
-            std::cerr << "[ERROR] : Cannot initialize an identifier from a non-identifier token" << std::endl;
-            std::exit(1);
-        }
-        $$ = new id::variable(*$1.str_ptr);
+        assert_identifier_token($1.discriminator);
+        $$ = new id::variable(*id::raw_ptr_cast<id::type_discriminator::variable>(
+                                compiler.get_identifier(*$1.str_ptr)));
     }
     |
     T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
@@ -315,6 +316,25 @@ int yyerror(const char* msg) {
     std::cerr << "[ERROR] : [line = " << yylval.token.line_no << "] " << msg << std::endl;
     return 1;
 }
+
+
+void assert_identifier_token(const parser::token_discriminator discriminator) {
+    if (discriminator == parser::token_discriminator::identifier)
+        return;
+
+    std::cerr << "[ERROR] : Cannot initialize an identifier from a non-identifier token" << std::endl;
+    std::exit(1);
+}
+
+void assert_rvalue_token(const parser::token_discriminator discriminator) {
+    if (discriminator == parser::token_discriminator::rvalue)
+        return;
+
+    std::cerr << "[ERROR] : Cannot initialize an rvalue from a non-rvalue token" << std::endl;
+    std::exit(1);
+}
+
+void assert_rvalue_token(const parser::token_discriminator);
 
 int compile(const std::string& infile, const std::string& outfile) {
     yyin = fopen(infile.c_str(), "r");
