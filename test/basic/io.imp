@@ -1,6 +1,6 @@
 # Simple IO test
 PROGRAM IS
-    a
+    a, t[100]
 IN
     WRITE 5;
     READ a;

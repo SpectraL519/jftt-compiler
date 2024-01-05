@@ -170,19 +170,23 @@ procedure_call:
 
 declarations:
     declarations T_COMMA T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
-        // TODO
+        compiler.set_line_no($3.line_no);
+        compiler.declare_vararray(*$3.str_ptr, $5.value);
     }
     |
     declarations T_COMMA T_IDENTIFIER {
-        // TODO
+        compiler.set_line_no($3.line_no);
+        compiler.declare_variable(*$3.str_ptr);
     }
     |
     T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
-        // TODO
+        compiler.set_line_no($1.line_no);
+        compiler.declare_vararray(*$3.str_ptr, $3.value);
     }
     |
     T_IDENTIFIER {
-        // TODO
+        compiler.set_line_no($1.line_no);
+        compiler.declare_variable(*$1.str_ptr);
     }
     ;
 
