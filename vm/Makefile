@@ -1,7 +1,7 @@
 FLAGS = -W -pedantic -std=c++17 -O3
 
 VM_OUT 	   = ../run-vm
-CLN_VM_OUT = ../run-cln-vm
+CLN_VM_OUT = ../cln-run-vm
 
 .PHONY = all clean cleanall
 

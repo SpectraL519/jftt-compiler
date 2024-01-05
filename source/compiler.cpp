@@ -22,23 +22,29 @@ void compiler::set_line_no(const std::size_t line_no) {
     this->_line_no = line_no;
 }
 
-void compiler::declare_variable(const std::string& variable_name) {
-    this->_assert_no_identifier_redeclaration(variable_name);
-    this->_identifier_manager.add_variable(variable_name);
+void compiler::declare_variable(const std::string& name) {
+    static constexpr auto discriminator{identifier_discriminator::variable};
+    this->_assert_no_identifier_redeclaration(name);
+    this->_identifier_manager.add<discriminator>(
+        std::make_unique<identifier::type<discriminator>>(name));
 }
 
 void compiler::declare_vararray(
-    const std::string& vararray_name,
+    const std::string& name,
     const architecture::memory_size_type size
 ) {
-    this->_assert_no_identifier_redeclaration(vararray_name);
-    this->_identifier_manager.add_vararray(vararray_name, size);
+    static constexpr auto discriminator{identifier_discriminator::vararray};
+    this->_assert_no_identifier_redeclaration(name);
+    this->_identifier_manager.add<discriminator>(
+        std::make_unique<identifier::type<discriminator>>(name, size));
 }
 
-void compiler::declare_procedure(const std::string& procedure_name) {
-    this->_assert_no_identifier_redeclaration(procedure_name);
-    this->_identifier_manager.add_procedure(procedure_name);
-}
+// void compiler::declare_procedure(const std::string& name) {
+//     static constexpr auto discriminator{identifier_discriminator::procedure};
+//     this->_assert_no_identifier_redeclaration(name);
+//     this->_identifier_manager.add<discriminator>(
+//         std::make_unique<identifier::type<discriminator>>(name));
+// }
 
 void compiler::set_identifier_used(const std::string& identifier_name) {
     this->_assert_identifier_defined(identifier_name);

@@ -13,7 +13,7 @@ out/*
 
 # vm generated files
 run-vm
-run-cln-vm
+cln-run-vm
 
 # other
 tmp/

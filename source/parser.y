@@ -21,10 +21,11 @@ extern FILE *yyin;
 
 %code requires {
 
-#include "parser/token.hpp"
-#include "parser/values.hpp"
+#include "identifier.hpp"
+#include "parser_token.hpp"
 
-namespace parser = jftt::parser;
+namespace id = jftt::identifier;
+using jftt::parser_token, jftt::parser_token_discriminator;
 
 // Flex & Bison utility
 int yyerror(const char* msg);
@@ -34,8 +35,8 @@ int yyerror(const char* msg);
 
 /* yylval type */
 %union {
-    jftt::parser::token token;
-    jftt::parser::abstract_value_base* value;
+    parser_token token;
+    id::abstract_identifier* identifier;
 }
 
 
@@ -62,7 +63,7 @@ int yyerror(const char* msg);
 
 
 /* non-terminal symbols */
-%type <value> value identifier
+%type <identifier> value identifier
 
 
 /* grammar */
@@ -140,19 +141,21 @@ command:
     }
     |
     T_WRITE value T_SEMICOLON {
-        parser::rvalue* rvalue{nullptr};
+        id::rvalue* rvalue{nullptr};
         // parser::identifier* identifier{nullptr};
 
         switch ($2->discriminator()) {
-            case parser::value_discriminator::rvalue:
-                rvalue = parser::as_rvalue($2);
+            case id::type_discriminator::rvalue:
+                rvalue = id::raw_ptr_cast<id::type_discriminator::rvalue>($2);
                 compiler.print_value(rvalue->value());
                 delete rvalue;
                 break;
 
-            case parser::value_discriminator::identifier:
-                // TODO;
-                break;
+            case id::type_discriminator::lvalue:
+                break; // TODO
+
+            default:
+                break; // TODO: error
         }
     }
     ;
@@ -277,18 +280,26 @@ condition:
 
 value:
     T_NUMBER {
-        $$ = new parser::rvalue($1.value);
+        if ($1.discriminator != parser_token_discriminator::rvalue) {
+            std::cerr << "[ERROR] : Cannot initialize an rvalue from a non-rvalue token" << std::endl;
+            std::exit(1);
+        }
+        $$ = new id::rvalue($1.value);
     }
     |
     identifier {
-        // TODO
+        $$ = $1;
     }
     ;
 
 
 identifier:
     T_IDENTIFIER {
-        // TODO
+        if ($1.discriminator != parser_token_discriminator::identifier) {
+            std::cerr << "[ERROR] : Cannot initialize an identifier from a non-identifier token" << std::endl;
+            std::exit(1);
+        }
+        $$ = new id::variable(*$1.str_ptr);
     }
     |
     T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {

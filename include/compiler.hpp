@@ -1,8 +1,8 @@
 #pragma once
 
-#include "identifier_manager.hpp"
 #include "architecture/vm_memory_manager.hpp"
 #include "assembly/code_builder.hpp"
+#include "identifier_manager.hpp"
 
 
 namespace jftt {
@@ -43,7 +43,8 @@ private:
     void _assert_no_identifier_redeclaration(const std::string& identifier_name) const;
     void _assert_identifier_defined(const std::string& identifier_name) const;
     void _assert_identifier_defined(
-        const std::string& identifier_name, const identifier_discriminator discriminator) const;
+        const std::string& identifier_name,
+        const identifier_discriminator discriminator) const;
 
     std::size_t _line_no{1u};
     architecture::vm_memory_manager& _memory_manager{architecture::vm_memory_manager::instance()};

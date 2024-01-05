@@ -9,11 +9,10 @@
 #include "architecture/vm_register.hpp"
 #include "assembly/code_builder.hpp"
 #include "assembly/instructions.hpp"
-#include "parser/token.hpp"
-#include "parser/values.hpp"
 #include "compiler.hpp"
 #include "identifier_manager.hpp"
-#include "identifiers.hpp"
+#include "identifier.hpp"
+#include "parser_token.hpp"
 
 
 // bison main function

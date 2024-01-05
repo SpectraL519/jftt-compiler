@@ -1,6 +1,6 @@
 #pragma once
 
-#include "identifiers.hpp"
+#include "identifier.hpp"
 #include "architecture/vm_memory_manager.hpp"
 
 #include <memory>
@@ -21,19 +21,42 @@ public:
     identifier_manager() = default;
     ~identifier_manager() = default;
 
-    void add_variable(const std::string& name);
-    void add_vararray(const std::string& name, const architecture::memory_size_type size);
-    void add_procedure(const std::string& name);
+    template <identifier_discriminator IdentifierDiscriminator>
+    void add(std::unique_ptr<identifier::type<IdentifierDiscriminator>> identifier) {
+        this->_identifiers[identifier->name()] = std::move(identifier);
+    }
 
-    [[nodiscard]] bool has(const std::string& name) const;
+    [[nodiscard]] bool has(const std::string& name) const {
+        return this->_identifiers.find(name) != this->_identifiers.cend();
+    }
+
     [[nodiscard]] bool has(
-        const std::string& name, const identifier_discriminator discriminator) const;
-    [[nodiscard]] const std::unique_ptr<abstract_identifier_base>& get(
-        const std::string& name) const;
-    void remove(const std::string& name);
+        const std::string& name, const identifier_discriminator discriminator
+    ) const {
+        const auto& identifier = this->_identifiers.find(name);
+        return identifier != this->_identifiers.end() &&
+               identifier->second->discriminator() == discriminator;
+    }
+
+    [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get(
+        const std::string& name
+    ) const {
+        return this->_identifiers.at(name);
+    }
+
+    template <identifier_discriminator IdentifierDiscriminator>
+    [[nodiscard]] const std::shared_ptr<identifier::type<IdentifierDiscriminator>>& get(
+        const std::string& name
+    ) const {
+        return identifier::shared_ptr_cast<IdentifierDiscriminator>(this->_identifiers.at(name));
+    }
+
+    void remove(const std::string& name) {
+        this->_identifiers.erase(name);
+    }
 
 private:
-    std::map<std::string, std::unique_ptr<abstract_identifier_base>> _identifiers;
+    std::map<std::string, std::shared_ptr<identifier::abstract_identifier>> _identifiers;
     architecture::vm_memory_manager& _memory_manager{architecture::vm_memory_manager::instance()};
 };
 
