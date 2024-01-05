@@ -25,9 +25,6 @@ public:
     void declare_procedure(const std::string& procedure_name);
 
     [[nodiscard]] identifier::abstract_identifier* get_identifier(const std::string& name);
-    // void set_identifier_used(const std::string& identifier_name);
-
-    [[nodiscard]] architecture::memory_address_type get_address(const std::string& variable_name);
 
     void scan(identifier::abstract_identifier* identifier);
     void print(identifier::abstract_identifier* identifier);
@@ -39,13 +36,14 @@ public:
         const architecture::memory_size_type vararray_idx,
         architecture::vm_register& value_register);
 
-private:
-    void _assert_no_identifier_redeclaration(const std::string& identifier_name) const;
-    void _assert_identifier_defined(const std::string& identifier_name) const;
-    void _assert_identifier_defined(
+    void assert_no_identifier_redeclaration(const std::string& identifier_name) const;
+    void assert_identifier_defined(const std::string& identifier_name) const;
+    void assert_identifier_defined(
         const std::string& identifier_name,
         const identifier_discriminator discriminator) const;
+    void assert_lvalue_initialized(const std::string& lvalue_name) const;
 
+private:
     std::size_t _line_no{1u};
     architecture::vm_memory_manager& _memory_manager{architecture::vm_memory_manager::instance()};
     identifier_manager _identifier_manager;

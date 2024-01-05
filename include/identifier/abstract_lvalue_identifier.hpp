@@ -29,11 +29,20 @@ public:
 
     virtual architecture::memory_size_type size() const = 0;
 
+    [[nodiscard]] virtual bool is_initialized() const {
+        return this->_initialized;
+    }
+
+    virtual void initialize() {
+        this->_initialized = true;
+    }
+
 protected:
     abstract_lvalue_identifier(type_discriminator discriminator, const std::string& name)
     : abstract_identifier(discriminator, name) {}
 
     architecture::memory_address_type _address;
+    bool _initialized{false};
 
 private:
     inline static const std::string _abstract_name{"lvalue"};

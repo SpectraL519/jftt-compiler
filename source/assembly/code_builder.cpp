@@ -18,10 +18,23 @@ const std::vector<std::string>& code_builder::code() const {
     return this->_code;
 }
 
-void code_builder::read_variable(const architecture::memory_address_type address) {
+void code_builder::read_variable(const std::shared_ptr<identifier::variable>& variable) {
     auto& address_register{this->_memory_manager.get_free_register()};
     address_register.acquire();
-    this->initialize_value_in_register(address, address_register);
+    this->initialize_value_in_register(variable->address(), address_register);
+
+    this->_add_instruction(instructions::read());
+    this->_add_instruction(instructions::store(address_register));
+
+    address_register.release();
+}
+
+void code_builder::read_vararray_element(const std::shared_ptr<identifier::vararray>& vararray) {
+    auto& address_register{this->_memory_manager.get_free_register()};
+    address_register.acquire();
+    this->initialize_value_in_register(vararray->address(), address_register);
+
+    // TODO: read at index
 
     this->_add_instruction(instructions::read());
     this->_add_instruction(instructions::store(address_register));

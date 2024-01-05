@@ -2,6 +2,8 @@
 
 #include "abstract_lvalue_identifier.hpp"
 
+#include <iostream>
+
 
 
 namespace jftt::identifier {
@@ -23,13 +25,27 @@ public:
         return this->_size;
     }
 
-    [[nodiscard]] architecture::memory_size_type index() const {
-        return this->_index;
+    [[nodiscard]] const std::shared_ptr<abstract_identifier>& indexer() const {
+        return this->_indexer_identifier;
+    }
+
+    void set_indexer(const std::shared_ptr<abstract_identifier>& indexer) {
+        switch (indexer->discriminator()) {
+        case type_discriminator::rvalue:
+            break; // valid indexer
+        case type_discriminator::variable:
+            break; // valid indexer
+        default:
+            std::cerr << "[ERROR] : Invalid array indexer type" << std::endl;
+            std::exit(1);
+        }
+
+        this->_indexer_identifier = indexer;
     }
 
 private:
     architecture::memory_size_type _size{1u};
-    architecture::memory_size_type _index{0u};
+    std::shared_ptr<abstract_identifier> _indexer_identifier;
 };
 
 } // namespace jftt::identifier

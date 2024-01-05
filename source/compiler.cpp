@@ -24,7 +24,7 @@ void compiler::set_line_no(const std::size_t line_no) {
 
 void compiler::declare_variable(const std::string& name) {
     static constexpr auto discriminator{identifier_discriminator::variable};
-    this->_assert_no_identifier_redeclaration(name);
+    this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
         std::make_unique<identifier::type<discriminator>>(name));
 }
@@ -34,14 +34,14 @@ void compiler::declare_vararray(
     const architecture::memory_size_type size
 ) {
     static constexpr auto discriminator{identifier_discriminator::vararray};
-    this->_assert_no_identifier_redeclaration(name);
+    this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
         std::make_unique<identifier::type<discriminator>>(name, size));
 }
 
 // void compiler::declare_procedure(const std::string& name) {
 //     static constexpr auto discriminator{identifier_discriminator::procedure};
-//     this->_assert_no_identifier_redeclaration(name);
+//     this->assert_no_identifier_redeclaration(name);
 //     this->_identifier_manager.add<discriminator>(
 //         std::make_unique<identifier::type<discriminator>>(name));
 // }
@@ -52,24 +52,28 @@ identifier::abstract_identifier* compiler::get_identifier(const std::string& nam
         : nullptr;
 }
 
-// void compiler::set_identifier_used(const std::string& identifier_name) {
-//     this->_assert_identifier_defined(identifier_name);
-//     this->_identifier_manager.get(identifier_name)->set_used();
-// }
-
 void compiler::scan(identifier::abstract_identifier* identifier) {
     switch (identifier->discriminator()) {
     case identifier_discriminator::variable: {
-        this->_assert_identifier_defined(identifier->name(), identifier_discriminator::variable);
         auto variable{
             this->_identifier_manager.get<identifier_discriminator::variable>(identifier->name())};
-        variable->set_used();
-        this->_asm_builder.read_variable(variable->address());
+        variable->initialize();
+        this->_asm_builder.read_variable(variable);
+        break;
+    }
+
+    case identifier_discriminator::vararray: {
+        auto vararray{
+            this->_identifier_manager.get<identifier_discriminator::vararray>(identifier->name())};
+        vararray->initialize();
+        this->_asm_builder.read_vararray_element(vararray);
         break;
     }
 
     default:
-        break; // TODO
+        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+                  << "\tCannot read identifier: " << identifier->name() << std::endl;
+        std::exit(1);
     }
 }
 
@@ -93,7 +97,7 @@ void compiler::print(identifier::abstract_identifier* identifier) {
 void compiler::assign_value_to_variable(
     const std::string& variable_name, architecture::vm_register& value_register
 ) {
-    this->_assert_identifier_defined(variable_name, identifier_discriminator::variable);
+    this->assert_identifier_defined(variable_name, identifier_discriminator::variable);
 
     // const auto& variable = this->_identifier_manager.get(variable_name);
     // TODO: this->_asm_builder.store(variable->address(), value_register);
@@ -104,13 +108,13 @@ void compiler::assign_value_to_vararrray_element(
     const architecture::memory_size_type vararray_idx,
     architecture::vm_register& value_register
 ) {
-    this->_assert_identifier_defined(vararray_name, identifier_discriminator::vararray);
+    this->assert_identifier_defined(vararray_name, identifier_discriminator::vararray);
 
     // const auto& variable = this->_identifier_manager.get(vararray_name);
     // TODO: this->_asm_builder.store(variable->address() + varraray_idx, value_register);
 }
 
-void compiler::_assert_no_identifier_redeclaration(
+void compiler::assert_no_identifier_redeclaration(
     const std::string& identifier_name
 ) const {
     if (!this->_identifier_manager.has(identifier_name))
@@ -121,7 +125,7 @@ void compiler::_assert_no_identifier_redeclaration(
     std::exit(1);
 }
 
-void compiler::_assert_identifier_defined(const std::string& identifier_name) const {
+void compiler::assert_identifier_defined(const std::string& identifier_name) const {
     if (this->_identifier_manager.has(identifier_name))
         return;
 
@@ -130,7 +134,7 @@ void compiler::_assert_identifier_defined(const std::string& identifier_name) co
     std::exit(1);
 }
 
-void compiler::_assert_identifier_defined(
+void compiler::assert_identifier_defined(
     const std::string& identifier_name, const identifier_discriminator discriminator
 ) const {
     if (this->_identifier_manager.has(identifier_name, discriminator))
@@ -140,5 +144,19 @@ void compiler::_assert_identifier_defined(
               << "\tUndefined identifier `" << identifier_name << '`' << std::endl;
     std::exit(1);
 }
+
+void compiler::assert_lvalue_initialized(const std::string& lvalue_name) const {
+    this->assert_identifier_defined(lvalue_name);
+
+    const auto& lvalue{identifier::shared_ptr_cast<identifier_discriminator::lvalue>(
+                        this->_identifier_manager.get(lvalue_name))};
+    if (lvalue->is_initialized())
+        return;
+
+    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+              << "\tUninitialized identifier `" << lvalue_name << '`' << std::endl;
+    std::exit(1);
+}
+
 
 } // namespace jftt

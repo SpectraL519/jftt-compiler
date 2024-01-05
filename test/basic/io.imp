@@ -5,4 +5,8 @@ IN
     WRITE 5;
     READ a;
     WRITE a;
+    READ t[0];
+    WRITE t[0];
+    READ t[a];
+    WRITE t[a];
 END

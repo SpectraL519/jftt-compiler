@@ -1,6 +1,7 @@
 #pragma once
 
 #include "instructions.hpp"
+#include "../identifier.hpp"
 #include "../architecture/vm_memory_manager.hpp"
 
 #include <vector>
@@ -17,7 +18,8 @@ public:
     void stop_building();
     const std::vector<std::string>& code() const;
 
-    void read_variable(const architecture::memory_address_type address);
+    void read_variable(const std::shared_ptr<identifier::variable>& variable);
+    void read_vararray_element(const std::shared_ptr<identifier::vararray>& vararray);
     void write_value(const architecture::value_type value);
     void write_variable(const architecture::memory_address_type address);
 
