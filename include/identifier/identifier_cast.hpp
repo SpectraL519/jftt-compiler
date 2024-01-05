@@ -60,7 +60,7 @@ template<type_discriminator Discriminator>
     const std::shared_ptr<abstract_identifier>& identifier
 ) {
     detail::assert_valid_identifier_cast<Discriminator>(identifier->discriminator());
-    return std::dynamic_pointer_cast<type<Discriminator>*>(identifier);
+    return std::dynamic_pointer_cast<type<Discriminator>>(identifier);
 }
 
 } // namespace jftt::identifier

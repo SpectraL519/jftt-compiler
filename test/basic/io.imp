@@ -1,0 +1,8 @@
+# Simple IO test
+PROGRAM IS
+    a
+IN
+    WRITE 5;
+    READ a;
+    WRITE a;
+END

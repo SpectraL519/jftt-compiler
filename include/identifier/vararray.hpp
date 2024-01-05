@@ -23,8 +23,13 @@ public:
         return this->_size;
     }
 
+    [[nodiscard]] architecture::memory_size_type index() const {
+        return this->_index;
+    }
+
 private:
-    const architecture::memory_size_type _size{1u};
+    architecture::memory_size_type _size{1u};
+    architecture::memory_size_type _index{0u};
 };
 
 } // namespace jftt::identifier

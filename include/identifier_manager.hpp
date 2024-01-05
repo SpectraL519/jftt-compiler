@@ -45,7 +45,7 @@ public:
     }
 
     template <identifier_discriminator IdentifierDiscriminator>
-    [[nodiscard]] const std::shared_ptr<identifier::type<IdentifierDiscriminator>>& get(
+    [[nodiscard]] std::shared_ptr<identifier::type<IdentifierDiscriminator>> get(
         const std::string& name
     ) const {
         return identifier::shared_ptr_cast<IdentifierDiscriminator>(this->_identifiers.at(name));

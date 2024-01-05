@@ -19,7 +19,7 @@ public:
 
     ~abstract_lvalue_identifier() = default;
 
-    [[nodiscard]] architecture::memory_address_type address() {
+    [[nodiscard]] architecture::memory_address_type address() const {
         return this->_address;
     }
 

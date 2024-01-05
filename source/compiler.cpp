@@ -51,13 +51,38 @@ void compiler::set_identifier_used(const std::string& identifier_name) {
     this->_identifier_manager.get(identifier_name)->set_used();
 }
 
-// TODO: read_varaiable
+void compiler::scan(identifier::abstract_identifier* identifier) {
+    switch (identifier->discriminator()) {
+    case identifier_discriminator::variable: {
+        this->_assert_identifier_defined(identifier->name(), identifier_discriminator::variable);
+        auto variable{
+            this->_identifier_manager.get<identifier_discriminator::variable>(identifier->name())};
+        variable->set_used();
+        this->_asm_builder.read_variable(variable->address());
+        break;
+    }
 
-void compiler::print_value(const architecture::value_type value) {
-    this->_asm_builder.write_value(value);
+    default:
+        break; // TODO
+    }
 }
 
-// TODO: write_variable
+void compiler::print(identifier::abstract_identifier* identifier) {
+    switch (identifier->discriminator()) {
+    case identifier_discriminator::rvalue:
+        this->_asm_builder.write_value(
+            identifier::raw_ptr_cast<identifier_discriminator::rvalue>(identifier)->value());
+        break;
+
+    case identifier_discriminator::variable:
+        this->_asm_builder.write_variable(
+            identifier::raw_ptr_cast<identifier_discriminator::variable>(identifier)->address());
+        break;
+
+    default:
+        break; // TODO
+    }
+}
 
 void compiler::assign_value_to_variable(
     const std::string& variable_name, architecture::vm_register& value_register
@@ -86,7 +111,7 @@ void compiler::_assert_no_identifier_redeclaration(
         return;
 
     std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                << "\tIdentifier `" << identifier_name << "` already defined" << std::endl;
+              << "\tIdentifier `" << identifier_name << "` already defined" << std::endl;
     std::exit(1);
 }
 
@@ -95,7 +120,7 @@ void compiler::_assert_identifier_defined(const std::string& identifier_name) co
         return;
 
     std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                << "\tUndefined identifier `" << identifier_name << '`' << std::endl;
+              << "\tUndefined identifier `" << identifier_name << '`' << std::endl;
     std::exit(1);
 }
 
@@ -106,7 +131,7 @@ void compiler::_assert_identifier_defined(
         return;
 
     std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                << "\tUndefined identifier `" << identifier_name << '`' << std::endl;
+              << "\tUndefined identifier `" << identifier_name << '`' << std::endl;
     std::exit(1);
 }
 

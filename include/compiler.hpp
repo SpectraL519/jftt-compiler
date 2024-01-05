@@ -28,9 +28,8 @@ public:
 
     [[nodiscard]] architecture::memory_address_type get_address(const std::string& variable_name);
 
-    void scan_variable(const std::string& variable_name);
-    void print_value(const architecture::value_type value);
-    void print_variable(const std::string& variable_name);
+    void scan(identifier::abstract_identifier* identifier);
+    void print(identifier::abstract_identifier* identifier);
 
     void assign_value_to_variable(
         const std::string& variable_name, architecture::vm_register& value_register);

@@ -12,7 +12,7 @@
 #include "compiler.hpp"
 #include "identifier_manager.hpp"
 #include "identifier.hpp"
-#include "parser_token.hpp"
+#include "parser/token.hpp"
 
 
 // bison main function

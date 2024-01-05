@@ -5,9 +5,9 @@
 #define YY_NO_INPUT
 
 #include "parser.hpp"
-#include "parser_token.hpp"
+#include "parser/token.hpp"
 
-using jftt::parser_token, jftt::parser_token_discriminator;
+namespace parser = jftt::parser;
 
 #include <iostream>
 
@@ -319,20 +319,20 @@ WRITE {
 /* function definitions */
 
 int normal_token(int token) {
-    yylval.token.discriminator = parser_token_discriminator::normal;
+    yylval.token.discriminator = parser::token_discriminator::normal;
     yylval.token.line_no = program_line_no;
     return token;
 }
 
 int identifier_token(int token) {
-    yylval.token.discriminator = parser_token_discriminator::identifier;
+    yylval.token.discriminator = parser::token_discriminator::identifier;
     yylval.token.line_no = program_line_no;
     yylval.token.str_ptr = new std::string(yytext);
     return token;
 }
 
 int value_token(int token) {
-    yylval.token.discriminator = parser_token_discriminator::rvalue;
+    yylval.token.discriminator = parser::token_discriminator::rvalue;
     yylval.token.line_no = program_line_no;
     yylval.token.value = std::stoull(yytext);
     return token;

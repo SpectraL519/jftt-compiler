@@ -22,10 +22,10 @@ extern FILE *yyin;
 %code requires {
 
 #include "identifier.hpp"
-#include "parser_token.hpp"
+#include "parser/token.hpp"
 
 namespace id = jftt::identifier;
-using jftt::parser_token, jftt::parser_token_discriminator;
+namespace parser = jftt::parser;
 
 // Flex & Bison utility
 int yyerror(const char* msg);
@@ -35,7 +35,7 @@ int yyerror(const char* msg);
 
 /* yylval type */
 %union {
-    parser_token token;
+    parser::token token;
     id::abstract_identifier* identifier;
 }
 
@@ -137,26 +137,19 @@ command:
     }
     |
     T_READ identifier T_SEMICOLON {
-        // TODO
+        switch ($2->discriminator()) {
+            case id::type_discriminator::variable:
+                // compiler.scan()
+                break;
+
+            default:
+                break; // TODO
+        }
     }
     |
     T_WRITE value T_SEMICOLON {
-        id::rvalue* rvalue{nullptr};
-        // parser::identifier* identifier{nullptr};
-
-        switch ($2->discriminator()) {
-            case id::type_discriminator::rvalue:
-                rvalue = id::raw_ptr_cast<id::type_discriminator::rvalue>($2);
-                compiler.print_value(rvalue->value());
-                delete rvalue;
-                break;
-
-            case id::type_discriminator::lvalue:
-                break; // TODO
-
-            default:
-                break; // TODO: error
-        }
+        compiler.print($2);
+        delete $2;
     }
     ;
 
@@ -280,7 +273,7 @@ condition:
 
 value:
     T_NUMBER {
-        if ($1.discriminator != parser_token_discriminator::rvalue) {
+        if ($1.discriminator != parser::token_discriminator::rvalue) {
             std::cerr << "[ERROR] : Cannot initialize an rvalue from a non-rvalue token" << std::endl;
             std::exit(1);
         }
@@ -295,7 +288,7 @@ value:
 
 identifier:
     T_IDENTIFIER {
-        if ($1.discriminator != parser_token_discriminator::identifier) {
+        if ($1.discriminator != parser::token_discriminator::identifier) {
             std::cerr << "[ERROR] : Cannot initialize an identifier from a non-identifier token" << std::endl;
             std::exit(1);
         }
