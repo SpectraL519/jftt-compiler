@@ -46,27 +46,30 @@ void compiler::declare_vararray(
 //         std::make_unique<identifier::type<discriminator>>(name));
 // }
 
-identifier::abstract_identifier* compiler::get_identifier(const std::string& name) {
-    return this->_identifier_manager.has(name)
-        ? this->_identifier_manager.get(name).get()
-        : nullptr;
+std::shared_ptr<identifier::abstract_identifier>& compiler::get_identifier(
+    const std::string& name
+) {
+    return this->_identifier_manager.get(name);
+}
+
+void compiler::initialize_lvalue_identifier(const std::string& name) {
+    this->assert_identifier_defined(name);
+    this->_identifier_manager.initialize_lvalue_identifier(name);
 }
 
 void compiler::scan(identifier::abstract_identifier* identifier) {
     switch (identifier->discriminator()) {
     case identifier_discriminator::variable: {
-        auto variable{
-            this->_identifier_manager.get<identifier_discriminator::variable>(identifier->name())};
-        variable->initialize();
-        this->_asm_builder.read_variable(variable);
+        this->initialize_lvalue_identifier(identifier->name());
+        this->_asm_builder.read_lvalue(
+            identifier::shared_ptr_cast<identifier_discriminator::variable>(identifier));
         break;
     }
 
     case identifier_discriminator::vararray: {
-        auto vararray{
-            this->_identifier_manager.get<identifier_discriminator::vararray>(identifier->name())};
-        vararray->initialize();
-        this->_asm_builder.read_vararray_element(vararray);
+        this->initialize_lvalue_identifier(identifier->name());
+        this->_asm_builder.read_lvalue(
+            identifier::shared_ptr_cast<identifier_discriminator::vararray>(identifier));
         break;
     }
 
@@ -79,15 +82,25 @@ void compiler::scan(identifier::abstract_identifier* identifier) {
 
 void compiler::print(identifier::abstract_identifier* identifier) {
     switch (identifier->discriminator()) {
-    case identifier_discriminator::rvalue:
-        this->_asm_builder.write_value(
+    case identifier_discriminator::rvalue: {
+        this->_asm_builder.write_rvalue(
             identifier::raw_ptr_cast<identifier_discriminator::rvalue>(identifier)->value());
         break;
+    }
 
-    case identifier_discriminator::variable:
-        this->_asm_builder.write_variable(
-            identifier::raw_ptr_cast<identifier_discriminator::variable>(identifier)->address());
+    case identifier_discriminator::variable: {
+        this->assert_lvalue_initialized(identifier->name());
+        this->_asm_builder.write_lvalue(
+            identifier::shared_ptr_cast<identifier_discriminator::variable>(identifier));
         break;
+    }
+
+    case identifier_discriminator::vararray: {
+        this->assert_lvalue_initialized(identifier->name());
+        this->_asm_builder.write_lvalue(
+            identifier::shared_ptr_cast<identifier_discriminator::vararray>(identifier));
+        break;
+    }
 
     default:
         break; // TODO
@@ -148,8 +161,8 @@ void compiler::assert_identifier_defined(
 void compiler::assert_lvalue_initialized(const std::string& lvalue_name) const {
     this->assert_identifier_defined(lvalue_name);
 
-    const auto& lvalue{identifier::shared_ptr_cast<identifier_discriminator::lvalue>(
-                        this->_identifier_manager.get(lvalue_name))};
+    const auto lvalue{
+        this->_identifier_manager.get<identifier_discriminator::lvalue>(lvalue_name)};
     if (lvalue->is_initialized())
         return;
 

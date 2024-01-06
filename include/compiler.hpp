@@ -24,7 +24,10 @@ public:
     );
     void declare_procedure(const std::string& procedure_name);
 
-    [[nodiscard]] identifier::abstract_identifier* get_identifier(const std::string& name);
+    [[nodiscard]] std::shared_ptr<identifier::abstract_identifier>& get_identifier(
+        const std::string& name);
+
+    void initialize_lvalue_identifier(const std::string& name);
 
     void scan(identifier::abstract_identifier* identifier);
     void print(identifier::abstract_identifier* identifier);

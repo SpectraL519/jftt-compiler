@@ -142,12 +142,12 @@ command:
     |
     T_READ identifier T_SEMICOLON {
         compiler.scan($2);
-        delete $2;
+        // ? why not ? delete $2;
     }
     |
     T_WRITE value T_SEMICOLON {
         compiler.print($2);
-        delete $2;
+        // ? why not ? delete $2;
     }
     ;
 
@@ -290,8 +290,9 @@ identifier:
         compiler.set_line_no($1.line_no);
         assert_identifier_token($1.discriminator);
 
-        $$ = new id::variable(*id::raw_ptr_cast<id::type_discriminator::variable>(
-                                compiler.get_identifier(*$1.str_ptr)));
+        $$ = new id::variable(
+            *id::shared_ptr_cast<id::type_discriminator::variable>(
+                compiler.get_identifier(*$1.str_ptr)));
         delete $1.str_ptr;
     }
     |
@@ -301,8 +302,9 @@ identifier:
         assert_rvalue_token($3.discriminator);
         compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::vararray);
 
-        auto vararray{new id::vararray(*id::raw_ptr_cast<id::type_discriminator::vararray>(
-                                        compiler.get_identifier(*$1.str_ptr)))};
+        auto vararray{new id::vararray(
+            *id::shared_ptr_cast<id::type_discriminator::vararray>(
+                compiler.get_identifier(*$1.str_ptr)))};
         vararray->set_indexer(std::make_shared<id::rvalue>($3.value));
         $$ = vararray;
 
@@ -317,9 +319,10 @@ identifier:
         compiler.assert_identifier_defined(*$3.str_ptr, id::type_discriminator::variable);
         compiler.assert_lvalue_initialized(*$3.str_ptr);
 
-        auto vararray{new id::vararray(*id::raw_ptr_cast<id::type_discriminator::vararray>(
-                                        compiler.get_identifier(*$1.str_ptr)))};
-        vararray->set_indexer(std::make_shared<id::rvalue>($3.value));
+        auto vararray{new id::vararray(
+            *id::shared_ptr_cast<id::type_discriminator::vararray>(
+                compiler.get_identifier(*$1.str_ptr)))};
+        vararray->set_indexer(compiler.get_identifier(*$3.str_ptr));
         $$ = vararray;
 
         delete $1.str_ptr;

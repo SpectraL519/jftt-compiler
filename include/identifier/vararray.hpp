@@ -25,11 +25,11 @@ public:
         return this->_size;
     }
 
-    [[nodiscard]] const std::shared_ptr<abstract_identifier>& indexer() const {
+    [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& indexer() const {
         return this->_indexer_identifier;
     }
 
-    void set_indexer(const std::shared_ptr<abstract_identifier>& indexer) {
+    void set_indexer(const std::shared_ptr<identifier::abstract_identifier>& indexer) {
         switch (indexer->discriminator()) {
         case type_discriminator::rvalue:
             break; // valid indexer
@@ -45,7 +45,7 @@ public:
 
 private:
     architecture::memory_size_type _size{1u};
-    std::shared_ptr<abstract_identifier> _indexer_identifier;
+    std::shared_ptr<identifier::abstract_identifier> _indexer_identifier;
 };
 
 } // namespace jftt::identifier

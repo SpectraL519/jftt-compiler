@@ -38,9 +38,11 @@ public:
                identifier->second->discriminator() == discriminator;
     }
 
-    [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get(
-        const std::string& name
-    ) const {
+    void initialize_lvalue_identifier(const std::string& name) {
+        this->get<identifier_discriminator::lvalue>(name)->initialize();
+    }
+
+    [[nodiscard]] std::shared_ptr<identifier::abstract_identifier>& get(const std::string& name) {
         return this->_identifiers.at(name);
     }
 

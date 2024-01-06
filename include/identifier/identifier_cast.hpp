@@ -66,7 +66,7 @@ inline void throw_invalid_identifier_cast_error() {
 
 template<type_discriminator Discriminator>
 [[nodiscard]] type<Discriminator>* raw_ptr_cast(abstract_identifier* identifier) {
-    auto cast_identifeir = dynamic_cast<type<Discriminator>*>(identifier);
+    auto cast_identifeir{dynamic_cast<type<Discriminator>*>(identifier)};
     if (!cast_identifeir)
         detail::throw_invalid_identifier_cast_error();
     return cast_identifeir;
@@ -74,7 +74,7 @@ template<type_discriminator Discriminator>
 
 template<type_discriminator Discriminator>
 [[nodiscard]] const type<Discriminator>* raw_ptr_cast(const abstract_identifier* identifier) {
-    const auto cast_identifeir = dynamic_cast<type<Discriminator>*>(identifier);
+    const auto cast_identifeir{dynamic_cast<type<Discriminator>*>(identifier)};
     if (!cast_identifeir)
         detail::throw_invalid_identifier_cast_error();
     return cast_identifeir;
@@ -85,10 +85,26 @@ template<type_discriminator Discriminator>
 [[nodiscard]] std::shared_ptr<type<Discriminator>> shared_ptr_cast(
     const std::shared_ptr<abstract_identifier>& identifier
 ) {
-    auto cast_identifeir = std::dynamic_pointer_cast<type<Discriminator>>(identifier);
+    auto cast_identifeir{std::dynamic_pointer_cast<type<Discriminator>>(identifier)};
     if (!cast_identifeir)
         detail::throw_invalid_identifier_cast_error();
     return cast_identifeir;
+}
+
+template<type_discriminator Discriminator>
+[[nodiscard]] std::shared_ptr<type<Discriminator>> shared_ptr_cast(
+    abstract_identifier* identifier
+) {
+    auto cast_identifeir{raw_ptr_cast<Discriminator>(identifier)};
+    return std::shared_ptr<type<Discriminator>>(cast_identifeir);
+}
+
+template<type_discriminator Discriminator>
+[[nodiscard]] const std::shared_ptr<type<Discriminator>> shared_ptr_cast(
+    const abstract_identifier* identifier
+) {
+    const auto cast_identifeir{raw_ptr_cast<Discriminator>(identifier)};
+    return std::shared_ptr<type<Discriminator>>(cast_identifeir);
 }
 
 } // namespace jftt::identifier
