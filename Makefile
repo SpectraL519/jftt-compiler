@@ -25,7 +25,7 @@ RM = rm -rf
 # TODO: vm
 .PHONY: all compiler parser lexer clean vm cleanvm cleanall
 
-all: cleanall compiler vm
+all: compiler vm
 
 
 compiler: parser lexer
@@ -51,6 +51,7 @@ clean:
 	@$(RM) $(EXEC)
 	@$(RM) $(SOURCE_DIR)/lexer.cpp
 	@$(RM) $(SOURCE_DIR)/parser.cpp $(INCLUDE_DIR)/parser.hpp
+	@$(RM) out/*
 	@echo
 
 

@@ -1,11 +1,15 @@
-# Simple IO test
+# Simple := operator test
 PROGRAM IS
-    a, b[2]
+    a, b, c, t[5]
 IN
-    a := 1;
-    WRITE a;
-    b[0] := a;
-    WRITE b[0];
-    b[a] := 5;
-    WRITE b[a];
+    READ a;
+    WRITE a; # in
+    b := 3;
+    WRITE b; # 3
+    c := a;
+    WRITE c; # in
+    t[0] := a;
+    WRITE t[0]; # in
+    t[b] := 5;
+    WRITE t[b]; # 5
 END

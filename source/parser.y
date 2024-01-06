@@ -227,7 +227,8 @@ expression:
     }
     |
     value T_ADD value {
-        // TODO
+        compiler.acquire_accumulator();
+        compiler.add($1, $3);
     }
     |
     value T_SUB value {

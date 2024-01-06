@@ -27,6 +27,9 @@ void compiler::declare_variable(const std::string& name) {
     this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
         std::make_unique<identifier::type<discriminator>>(name));
+
+    const auto& identifier{this->_identifier_manager.get<discriminator>(name)};
+    identifier->set_address(this->_memory_manager.allocate(identifier->size()));
 }
 
 void compiler::declare_vararray(
@@ -37,6 +40,9 @@ void compiler::declare_vararray(
     this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
         std::make_unique<identifier::type<discriminator>>(name, size));
+
+    const auto& identifier{this->_identifier_manager.get<discriminator>(name)};
+    identifier->set_address(this->_memory_manager.allocate(identifier->size()));
 }
 
 // void compiler::declare_procedure(const std::string& name) {
@@ -46,7 +52,7 @@ void compiler::declare_vararray(
 //         std::make_unique<identifier::type<discriminator>>(name));
 // }
 
-std::shared_ptr<identifier::abstract_identifier>& compiler::get_identifier(
+const std::shared_ptr<identifier::abstract_identifier>& compiler::get_identifier(
     const std::string& name
 ) {
     return this->_identifier_manager.get(name);
@@ -94,8 +100,16 @@ void compiler::release_accumulator() {
 
 void compiler::return_value(identifier::abstract_identifier* identifier) {
     // stores identifier's value in acc
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(identifier), this->_memory_manager.get_accumulator());
+    if (identifier->discriminator() == identifier_discriminator::rvalue) {
+        this->_asm_builder.initialize_value_in_register(
+            identifier::shared_ptr_cast<identifier_discriminator::rvalue>(identifier)->value(),
+            this->_memory_manager.get_accumulator());
+    }
+    else {
+        this->_asm_builder.initialize_identifier_value_in_register(
+            identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier),
+            this->_memory_manager.get_accumulator());
+    }
 }
 
 void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
@@ -104,15 +118,40 @@ void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
     auto lvalue{
         identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier)};
 
+    std::cout << "assigning to: " << lvalue->name() << " at " << lvalue->address() << std::endl;
+
     auto& lvalue_address_register{this->_memory_manager.get_free_register()};
     lvalue_address_register.acquire();
 
+    auto& tmp_register{this->_asm_builder._move_acc_content_to_tmp_register()};
     this->_asm_builder.initialize_addres_in_register(lvalue, lvalue_address_register);
-    this->_asm_builder.add_instruction(assembly::instructions::store(lvalue_address_register));
-    // this->_asm_builder.store_value_from_register(
-    //     this->_memory_manager.get_accumulator(), lvalue_address_register);
+    this->_asm_builder._move_tmp_register_content_to_acc(tmp_register);
+
+    // this->_asm_builder.add_instruction(assembly::instructions::write());
+
+    this->_asm_builder.store_value_from_register(
+        this->_memory_manager.get_accumulator(), lvalue_address_register);
 
     lvalue_address_register.release();
+}
+
+void compiler::add(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    auto& a_register{this->_memory_manager.get_free_register()};
+    a_register.acquire();
+    auto& b_register{this->_memory_manager.get_free_register()};
+    b_register.acquire();
+
+    // TODO: get instead of cast
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(a), a_register);
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(b), b_register);
+
+    this->_asm_builder.add_instruction(assembly::instructions::get(a_register));
+    this->_asm_builder.add_instruction(assembly::instructions::add(b_register));
+
+    a_register.release();
+    b_register.release();
 }
 
 

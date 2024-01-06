@@ -19,7 +19,7 @@ bool vm_register::is_free() const {
 
 void vm_register::acquire() {
     if (!this->_free) {
-        std::cerr << "[ERROR] Register already acquired" << std::endl;
+        std::cerr << "[ERROR] Register already acquired: " << as_string(*this) << std::endl;
         std::exit(1);
     }
     this->_free = false;
@@ -27,7 +27,7 @@ void vm_register::acquire() {
 
 void vm_register::release() {
     if (this->_free) {
-        std::cerr << "[ERROR] Register already released" << std::endl;
+        std::cerr << "[ERROR] Register already released: " << as_string(*this) << std::endl;
         std::exit(1);
     }
     this->_free = true;

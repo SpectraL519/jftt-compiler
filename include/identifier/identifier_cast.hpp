@@ -100,11 +100,11 @@ template<type_discriminator Discriminator = type_discriminator::base>
 }
 
 template<type_discriminator Discriminator = type_discriminator::base>
-[[nodiscard]] const std::shared_ptr<type<Discriminator>> shared_ptr_cast(
+[[nodiscard]] std::shared_ptr<type<Discriminator>> shared_ptr_cast(
     const abstract_identifier* identifier
 ) {
     const auto cast_identifeir{raw_ptr_cast<Discriminator>(identifier)};
-    return std::make_shared<type<Discriminator>>(cast_identifeir);
+    return std::shared_ptr<type<Discriminator>>(cast_identifeir);
 }
 
 } // namespace jftt::identifier

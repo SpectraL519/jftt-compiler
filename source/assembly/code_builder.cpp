@@ -41,7 +41,7 @@ void code_builder::read_lvalue(
     this->add_instruction(instructions::store(address_register));
     address_register.release();
 
-    if (tmp_register)
+    if (tmp_register != nullptr)
         this->_move_tmp_register_content_to_acc(*tmp_register);
 }
 
@@ -68,9 +68,17 @@ void code_builder::initialize_identifier_value_in_register(
             reg);
     }
     else {
+        architecture::vm_register* tmp_register{nullptr};
+        if (!this->_memory_manager.get_accumulator().is_free())
+            tmp_register = &this->_move_acc_content_to_tmp_register();
+
         this->initialize_addres_in_register(
             identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier), reg);
         this->add_instruction(instructions::load(reg));
+        this->add_instruction(instructions::put(reg));
+
+        if (tmp_register != nullptr)
+            this->_move_tmp_register_content_to_acc(*tmp_register);
     }
 }
 
@@ -100,10 +108,12 @@ void code_builder::initialize_addres_in_register(
     architecture::vm_register& reg
 ) {
     if (lvalue->discriminator() == identifier_discriminator::variable) {
+        std::cout << "initializing address: " << lvalue->address() << " of " << lvalue->name() << std::endl;
         this->initialize_value_in_register(lvalue->address(), reg);
         return;
     }
 
+    // TODO: FIX!!!
     // TODO: replace dynamic_cast here with a casting function
     const auto vararray{
         identifier::shared_ptr_cast<identifier_discriminator::vararray>(lvalue)};
@@ -111,10 +121,6 @@ void code_builder::initialize_addres_in_register(
 
     // initialize the index value in the accumulator
     auto& accumulator{this->_memory_manager.get_accumulator()};
-    architecture::vm_register* tmp_register{nullptr};
-    if (!accumulator.is_free())
-        tmp_register = &this->_move_acc_content_to_tmp_register();
-
     const auto& indexer{vararray->indexer()};
     if (indexer->discriminator() == identifier_discriminator::rvalue) {
         // acc = index_value
@@ -133,9 +139,6 @@ void code_builder::initialize_addres_in_register(
     // add the array[0] address to the index to get array[index] address
     this->add_instruction(instructions::add(reg));
     this->add_instruction(instructions::put(reg));
-
-    if (tmp_register)
-        this->_move_tmp_register_content_to_acc(*tmp_register);
 }
 
 // TODO: pass value register
@@ -156,7 +159,6 @@ void code_builder::load_value_from_address(architecture::vm_register& address_re
 
     value_register.release();
 }
-
 
 void code_builder::store_value_from_register(
     architecture::vm_register& value_register, architecture::vm_register& address_register
@@ -197,7 +199,7 @@ void code_builder::_write_lvalue(
     this->add_instruction(instructions::write());
     address_register.release();
 
-    if (tmp_register)
+    if (tmp_register != nullptr)
         this->_move_tmp_register_content_to_acc(*tmp_register);
 }
 
@@ -218,6 +220,7 @@ void code_builder::_write_rvalue(const architecture::value_type value) {
 architecture::vm_register& code_builder::_move_acc_content_to_tmp_register() {
     auto& tmp_register{this->_memory_manager.get_free_register()};
     tmp_register.acquire();
+    this->add_instruction(instructions::put(tmp_register));
     return tmp_register;
 }
 

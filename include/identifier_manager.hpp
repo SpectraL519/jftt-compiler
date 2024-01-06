@@ -22,7 +22,7 @@ public:
     ~identifier_manager() = default;
 
     template <identifier_discriminator IdentifierDiscriminator>
-    void add(std::unique_ptr<identifier::type<IdentifierDiscriminator>> identifier) {
+    void add(std::shared_ptr<identifier::type<IdentifierDiscriminator>> identifier) {
         this->_identifiers[identifier->name()] = std::move(identifier);
     }
 
@@ -42,7 +42,7 @@ public:
         this->get<identifier_discriminator::lvalue>(name)->initialize();
     }
 
-    [[nodiscard]] std::shared_ptr<identifier::abstract_identifier>& get(const std::string& name) {
+    [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get(const std::string& name) {
         return this->_identifiers.at(name);
     }
 

@@ -24,7 +24,7 @@ public:
     );
     void declare_procedure(const std::string& procedure_name);
 
-    [[nodiscard]] std::shared_ptr<identifier::abstract_identifier>& get_identifier(
+    [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get_identifier(
         const std::string& name);
 
     void initialize_lvalue_identifier(const std::string& name);
@@ -38,11 +38,11 @@ public:
     void return_value(identifier::abstract_identifier* identifier);
     void assign_value_to(identifier::abstract_identifier* identifier);
 
-    void add_value(identifier::abstract_identifier* identifier);
-    void sub_value(identifier::abstract_identifier* identifier);
-    void multiply_by(identifier::abstract_identifier* identifier);
-    void divide_by(identifier::abstract_identifier* identifier);
-    void take_modulo_with(identifier::abstract_identifier* identifier);
+    void add(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
+    void subtract(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
+    void multiply(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
+    void divide(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
+    void modulo(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
 
     void assert_no_identifier_redeclaration(const std::string& identifier_name) const;
     void assert_identifier_defined(const std::string& identifier_name) const;
