@@ -64,7 +64,7 @@ inline void throw_invalid_identifier_cast_error() {
 // }
 
 
-template<type_discriminator Discriminator>
+template<type_discriminator Discriminator = type_discriminator::base>
 [[nodiscard]] type<Discriminator>* raw_ptr_cast(abstract_identifier* identifier) {
     auto cast_identifeir{dynamic_cast<type<Discriminator>*>(identifier)};
     if (!cast_identifeir)
@@ -72,7 +72,7 @@ template<type_discriminator Discriminator>
     return cast_identifeir;
 }
 
-template<type_discriminator Discriminator>
+template<type_discriminator Discriminator = type_discriminator::base>
 [[nodiscard]] const type<Discriminator>* raw_ptr_cast(const abstract_identifier* identifier) {
     const auto cast_identifeir{dynamic_cast<type<Discriminator>*>(identifier)};
     if (!cast_identifeir)
@@ -81,7 +81,7 @@ template<type_discriminator Discriminator>
     return dynamic_cast<type<Discriminator>*>(identifier);
 }
 
-template<type_discriminator Discriminator>
+template<type_discriminator Discriminator = type_discriminator::base>
 [[nodiscard]] std::shared_ptr<type<Discriminator>> shared_ptr_cast(
     const std::shared_ptr<abstract_identifier>& identifier
 ) {
@@ -91,7 +91,7 @@ template<type_discriminator Discriminator>
     return cast_identifeir;
 }
 
-template<type_discriminator Discriminator>
+template<type_discriminator Discriminator = type_discriminator::base>
 [[nodiscard]] std::shared_ptr<type<Discriminator>> shared_ptr_cast(
     abstract_identifier* identifier
 ) {
@@ -99,12 +99,12 @@ template<type_discriminator Discriminator>
     return std::shared_ptr<type<Discriminator>>(cast_identifeir);
 }
 
-template<type_discriminator Discriminator>
+template<type_discriminator Discriminator = type_discriminator::base>
 [[nodiscard]] const std::shared_ptr<type<Discriminator>> shared_ptr_cast(
     const abstract_identifier* identifier
 ) {
     const auto cast_identifeir{raw_ptr_cast<Discriminator>(identifier)};
-    return std::shared_ptr<type<Discriminator>>(cast_identifeir);
+    return std::make_shared<type<Discriminator>>(cast_identifeir);
 }
 
 } // namespace jftt::identifier

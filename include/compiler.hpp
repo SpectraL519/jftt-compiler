@@ -32,12 +32,17 @@ public:
     void scan(identifier::abstract_identifier* identifier);
     void print(identifier::abstract_identifier* identifier);
 
-    void assign_value_to_variable(
-        const std::string& variable_name, architecture::vm_register& value_register);
-    void assign_value_to_vararrray_element(
-        const std::string& vararray_name,
-        const architecture::memory_size_type vararray_idx,
-        architecture::vm_register& value_register);
+    void acquire_accumulator();
+    void release_accumulator();
+
+    void return_value(identifier::abstract_identifier* identifier);
+    void assign_value_to(identifier::abstract_identifier* identifier);
+
+    void add_value(identifier::abstract_identifier* identifier);
+    void sub_value(identifier::abstract_identifier* identifier);
+    void multiply_by(identifier::abstract_identifier* identifier);
+    void divide_by(identifier::abstract_identifier* identifier);
+    void take_modulo_with(identifier::abstract_identifier* identifier);
 
     void assert_no_identifier_redeclaration(const std::string& identifier_name) const;
     void assert_identifier_defined(const std::string& identifier_name) const;

@@ -81,51 +81,30 @@ void compiler::scan(identifier::abstract_identifier* identifier) {
 }
 
 void compiler::print(identifier::abstract_identifier* identifier) {
-    switch (identifier->discriminator()) {
-    case identifier_discriminator::rvalue: {
-        this->_asm_builder.write_rvalue(
-            identifier::raw_ptr_cast<identifier_discriminator::rvalue>(identifier)->value());
-        break;
-    }
-
-    case identifier_discriminator::variable: {
-        this->assert_lvalue_initialized(identifier->name());
-        this->_asm_builder.write_lvalue(
-            identifier::shared_ptr_cast<identifier_discriminator::variable>(identifier));
-        break;
-    }
-
-    case identifier_discriminator::vararray: {
-        this->assert_lvalue_initialized(identifier->name());
-        this->_asm_builder.write_lvalue(
-            identifier::shared_ptr_cast<identifier_discriminator::vararray>(identifier));
-        break;
-    }
-
-    default:
-        break; // TODO
-    }
+    this->_asm_builder.write_identifier(identifier::shared_ptr_cast(identifier));
 }
 
-void compiler::assign_value_to_variable(
-    const std::string& variable_name, architecture::vm_register& value_register
-) {
-    this->assert_identifier_defined(variable_name, identifier_discriminator::variable);
-
-    // const auto& variable = this->_identifier_manager.get(variable_name);
-    // TODO: this->_asm_builder.store(variable->address(), value_register);
+void compiler::acquire_accumulator() {
+    this->_memory_manager.get_accumulator().acquire();
 }
 
-void compiler::assign_value_to_vararrray_element(
-    const std::string& vararray_name,
-    const architecture::memory_size_type vararray_idx,
-    architecture::vm_register& value_register
-) {
-    this->assert_identifier_defined(vararray_name, identifier_discriminator::vararray);
-
-    // const auto& variable = this->_identifier_manager.get(vararray_name);
-    // TODO: this->_asm_builder.store(variable->address() + varraray_idx, value_register);
+void compiler::release_accumulator() {
+    this->_memory_manager.get_accumulator().release();
 }
+
+void compiler::return_value(identifier::abstract_identifier* identifier) {
+    this->_asm_builder.initialize_identifier_in_register(
+        identifier::shared_ptr_cast(identifier), this->_memory_manager.get_accumulator());
+}
+
+void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
+    this->initialize_lvalue_identifier(identifier->name());
+    auto lvalue{
+        identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier)};
+    this->_asm_builder.store_value_from_register(
+        this->_memory_manager.get_accumulator(), lvalue->address());
+}
+
 
 void compiler::assert_no_identifier_redeclaration(
     const std::string& identifier_name

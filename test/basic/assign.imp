@@ -1,0 +1,11 @@
+# Simple IO test
+PROGRAM IS
+    a, b[2]
+IN
+    a := 1;
+    WRITE a;
+    b[0] := a;
+    WRITE b[0];
+    b[a] := 5;
+    WRITE b[a];
+END

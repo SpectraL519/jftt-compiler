@@ -20,7 +20,10 @@ int compile(const std::string& infile, const std::string& outfile);
 
 
 int main(int argc, char** argv) {
+    std::cout << std::boolalpha;
+
     const auto [infile, outfile] = jftt::io::parse(argc, argv);
     compile(infile, outfile);
+
     return 0;
 }

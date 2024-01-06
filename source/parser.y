@@ -117,7 +117,8 @@ commands:
 
 command:
     identifier T_ASSIGN expression T_SEMICOLON {
-        // TODO
+        compiler.assign_value_to($1);
+        compiler.release_accumulator();
     }
     |
     T_IF condition T_THEN commands T_ELSE commands T_ENDIF {
@@ -221,7 +222,8 @@ procedure_args:
 
 expression:
     value {
-        // TODO
+        compiler.acquire_accumulator();
+        compiler.return_value($1);
     }
     |
     value T_ADD value {
