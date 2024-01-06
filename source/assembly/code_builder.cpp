@@ -63,29 +63,46 @@ void code_builder::initialize_identifier_value_in_register(
     const std::shared_ptr<identifier::abstract_identifier>& identifier,
     architecture::vm_register& reg
 ) {
+    std::cout << "initializing identifier value\n";
     if (identifier->discriminator() == identifier_discriminator::rvalue) {
+        std::cout << "rvalue: "
+                  << identifier::shared_ptr_cast<identifier_discriminator::rvalue>(identifier)->value()
+                  << std::endl;
         this->initialize_value_in_register(
             identifier::shared_ptr_cast<identifier_discriminator::rvalue>(identifier)->value(),
             reg);
     }
     else {
-        architecture::vm_register* tmp_register{nullptr};
-        if (!this->_memory_manager.get_accumulator().is_free())
-            tmp_register = &this->_move_acc_content_to_tmp_register();
+        std::cout << "lvalue: " << identifier->name() << " | address: "
+                  << identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier)->address()
+                  << std::endl;
 
-        this->initialize_addres_in_register(
-            identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier), reg);
-        this->add_instruction(instructions::load(reg));
-        this->add_instruction(instructions::put(reg));
+        if (architecture::is_accumulator(reg)) {
+            this->initialize_addres_in_register(
+                identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier), reg);
+            this->add_instruction(instructions::load(reg));
+        }
+        else {
+            architecture::vm_register* tmp_register{nullptr};
+            if (!this->_memory_manager.get_accumulator().is_free())
+                tmp_register = &this->_move_acc_content_to_tmp_register();
 
-        if (tmp_register != nullptr)
-            this->_move_tmp_register_content_to_acc(*tmp_register);
+            this->initialize_addres_in_register(
+                identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier), reg);
+            this->add_instruction(instructions::load(reg));
+            this->add_instruction(instructions::put(reg));
+
+            if (tmp_register != nullptr)
+                this->_move_tmp_register_content_to_acc(*tmp_register);
+        }
     }
 }
 
 void code_builder::initialize_value_in_register(
     const architecture::value_type value, architecture::vm_register& reg
 ) {
+    std::cout << "initializing value: " << value << " in reg " << architecture::as_string(reg) << std::endl;
+
     this->add_instruction(instructions::rst(reg));
 
     // get the bit representation of the value
@@ -101,9 +118,8 @@ void code_builder::initialize_value_in_register(
         this->add_instruction(instructions::shl(reg));
         idx--;
     }
-    if (bits[idx]) {
+    if (bits[idx])
         this->add_instruction(instructions::inc(reg));
-    }
 }
 
 void code_builder::initialize_addres_in_register(
@@ -117,7 +133,9 @@ void code_builder::initialize_addres_in_register(
 
     const auto vararray{
         identifier::shared_ptr_cast<identifier_discriminator::vararray>(lvalue)};
-    this->initialize_value_in_register(vararray->address(), reg);
+    auto& address_register{this->_memory_manager.get_free_register()};
+    address_register.acquire();
+    this->initialize_value_in_register(vararray->address(), address_register);
 
     // initialize the index value in the accumulator
     auto& accumulator{this->_memory_manager.get_accumulator()};
@@ -137,8 +155,10 @@ void code_builder::initialize_addres_in_register(
     }
 
     // add the array[0] address to the index to get array[index] address
-    this->add_instruction(instructions::add(reg));
-    this->add_instruction(instructions::put(reg));
+    this->add_instruction(instructions::add(address_register));
+    address_register.release();
+    if (!architecture::is_accumulator(reg))
+        this->add_instruction(instructions::put(reg));
 }
 
 // TODO: pass value register

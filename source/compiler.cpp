@@ -91,6 +91,7 @@ void compiler::print(identifier::abstract_identifier* identifier) {
 }
 
 void compiler::acquire_accumulator() {
+    std::cout << "acquiring accumulator\n";
     this->_memory_manager.get_accumulator().acquire();
 }
 
@@ -100,16 +101,8 @@ void compiler::release_accumulator() {
 
 void compiler::return_value(identifier::abstract_identifier* identifier) {
     // stores identifier's value in acc
-    if (identifier->discriminator() == identifier_discriminator::rvalue) {
-        this->_asm_builder.initialize_value_in_register(
-            identifier::shared_ptr_cast<identifier_discriminator::rvalue>(identifier)->value(),
-            this->_memory_manager.get_accumulator());
-    }
-    else {
-        this->_asm_builder.initialize_identifier_value_in_register(
-            identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier),
-            this->_memory_manager.get_accumulator());
-    }
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(identifier), this->_memory_manager.get_accumulator());
 }
 
 void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
