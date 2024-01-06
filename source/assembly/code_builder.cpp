@@ -63,20 +63,12 @@ void code_builder::initialize_identifier_value_in_register(
     const std::shared_ptr<identifier::abstract_identifier>& identifier,
     architecture::vm_register& reg
 ) {
-    std::cout << "initializing identifier value\n";
     if (identifier->discriminator() == identifier_discriminator::rvalue) {
-        std::cout << "rvalue: "
-                  << identifier::shared_ptr_cast<identifier_discriminator::rvalue>(identifier)->value()
-                  << std::endl;
         this->initialize_value_in_register(
             identifier::shared_ptr_cast<identifier_discriminator::rvalue>(identifier)->value(),
             reg);
     }
     else {
-        std::cout << "lvalue: " << identifier->name() << " | address: "
-                  << identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier)->address()
-                  << std::endl;
-
         if (architecture::is_accumulator(reg)) {
             this->initialize_addres_in_register(
                 identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier), reg);
@@ -101,8 +93,6 @@ void code_builder::initialize_identifier_value_in_register(
 void code_builder::initialize_value_in_register(
     const architecture::value_type value, architecture::vm_register& reg
 ) {
-    std::cout << "initializing value: " << value << " in reg " << architecture::as_string(reg) << std::endl;
-
     this->add_instruction(instructions::rst(reg));
 
     // get the bit representation of the value

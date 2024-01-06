@@ -1,0 +1,15 @@
+# Simple + operator test
+PROGRAM IS
+    a, b, sum, diff, prod, quot, mod
+IN
+    READ a;
+    READ b;
+
+    sum := a + b;
+    WRITE sum;
+
+    diff := a - b;
+    WRITE diff;
+    diff := b - a;
+    WRITE diff;
+END

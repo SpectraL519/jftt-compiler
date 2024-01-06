@@ -91,7 +91,6 @@ void compiler::print(identifier::abstract_identifier* identifier) {
 }
 
 void compiler::acquire_accumulator() {
-    std::cout << "acquiring accumulator\n";
     this->_memory_manager.get_accumulator().acquire();
 }
 
@@ -111,8 +110,6 @@ void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
     auto lvalue{
         identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier)};
 
-    std::cout << "assigning to: " << lvalue->name() << " at " << lvalue->address() << std::endl;
-
     auto& lvalue_address_register{this->_memory_manager.get_free_register()};
     lvalue_address_register.acquire();
 
@@ -127,38 +124,26 @@ void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
 void compiler::add(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
     auto& a_register{this->_memory_manager.get_free_register()};
     a_register.acquire();
-    auto& b_register{this->_memory_manager.get_free_register()};
-    b_register.acquire();
 
-    // TODO: get instead of cast
     this->_asm_builder.initialize_identifier_value_in_register(
         identifier::shared_ptr_cast(a), a_register);
     this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(b), b_register);
+        identifier::shared_ptr_cast(b), this->_memory_manager.get_accumulator());
 
-    this->_asm_builder.add_instruction(assembly::instructions::get(a_register));
-    this->_asm_builder.add_instruction(assembly::instructions::add(b_register));
-
+    this->_asm_builder.add_instruction(assembly::instructions::add(a_register));
     a_register.release();
-    b_register.release();
 }
 
 void compiler::subtract(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
-    auto& a_register{this->_memory_manager.get_free_register()};
-    a_register.acquire();
     auto& b_register{this->_memory_manager.get_free_register()};
     b_register.acquire();
 
-    // TODO: get instead of cast
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(a), a_register);
     this->_asm_builder.initialize_identifier_value_in_register(
         identifier::shared_ptr_cast(b), b_register);
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(a), this->_memory_manager.get_accumulator());
 
-    this->_asm_builder.add_instruction(assembly::instructions::get(a_register));
     this->_asm_builder.add_instruction(assembly::instructions::sub(b_register));
-
-    a_register.release();
     b_register.release();
 }
 
