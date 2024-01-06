@@ -232,7 +232,8 @@ expression:
     }
     |
     value T_SUB value {
-        // TODO
+        compiler.acquire_accumulator();
+        compiler.subtract($1, $3);
     }
     |
     value T_MUL value {

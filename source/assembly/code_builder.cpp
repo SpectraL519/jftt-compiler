@@ -3,6 +3,7 @@
 #include "architecture/vm_memory_manager.hpp"
 #include "assembly/instructions.hpp"
 
+#include <algorithm>
 #include <bitset>
 #include <iostream>
 
@@ -95,12 +96,14 @@ void code_builder::initialize_value_in_register(
 
     // initialize the value bit by bit
     while (idx > 0) {
-        if (bits[idx--])
+        if (bits[idx])
             this->add_instruction(instructions::inc(reg));
         this->add_instruction(instructions::shl(reg));
+        idx--;
     }
-    if (bits[idx])
+    if (bits[idx]) {
         this->add_instruction(instructions::inc(reg));
+    }
 }
 
 void code_builder::initialize_addres_in_register(
@@ -108,13 +111,10 @@ void code_builder::initialize_addres_in_register(
     architecture::vm_register& reg
 ) {
     if (lvalue->discriminator() == identifier_discriminator::variable) {
-        std::cout << "initializing address: " << lvalue->address() << " of " << lvalue->name() << std::endl;
         this->initialize_value_in_register(lvalue->address(), reg);
         return;
     }
 
-    // TODO: FIX!!!
-    // TODO: replace dynamic_cast here with a casting function
     const auto vararray{
         identifier::shared_ptr_cast<identifier_discriminator::vararray>(lvalue)};
     this->initialize_value_in_register(vararray->address(), reg);

@@ -126,11 +126,7 @@ void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
     auto& tmp_register{this->_asm_builder._move_acc_content_to_tmp_register()};
     this->_asm_builder.initialize_addres_in_register(lvalue, lvalue_address_register);
     this->_asm_builder._move_tmp_register_content_to_acc(tmp_register);
-
-    // this->_asm_builder.add_instruction(assembly::instructions::write());
-
-    this->_asm_builder.store_value_from_register(
-        this->_memory_manager.get_accumulator(), lvalue_address_register);
+    this->_asm_builder.add_instruction(assembly::instructions::store(lvalue_address_register));
 
     lvalue_address_register.release();
 }
@@ -154,6 +150,24 @@ void compiler::add(identifier::abstract_identifier* a, identifier::abstract_iden
     b_register.release();
 }
 
+void compiler::subtract(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    auto& a_register{this->_memory_manager.get_free_register()};
+    a_register.acquire();
+    auto& b_register{this->_memory_manager.get_free_register()};
+    b_register.acquire();
+
+    // TODO: get instead of cast
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(a), a_register);
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(b), b_register);
+
+    this->_asm_builder.add_instruction(assembly::instructions::get(a_register));
+    this->_asm_builder.add_instruction(assembly::instructions::sub(b_register));
+
+    a_register.release();
+    b_register.release();
+}
 
 void compiler::assert_no_identifier_redeclaration(
     const std::string& identifier_name
