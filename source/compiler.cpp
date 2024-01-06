@@ -93,16 +93,26 @@ void compiler::release_accumulator() {
 }
 
 void compiler::return_value(identifier::abstract_identifier* identifier) {
-    this->_asm_builder.initialize_identifier_in_register(
+    // stores identifier's value in acc
+    this->_asm_builder.initialize_identifier_value_in_register(
         identifier::shared_ptr_cast(identifier), this->_memory_manager.get_accumulator());
 }
 
 void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
+    // assigns value from acc to an lvalue identifier
     this->initialize_lvalue_identifier(identifier->name());
     auto lvalue{
         identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier)};
-    this->_asm_builder.store_value_from_register(
-        this->_memory_manager.get_accumulator(), lvalue->address());
+
+    auto& lvalue_address_register{this->_memory_manager.get_free_register()};
+    lvalue_address_register.acquire();
+
+    this->_asm_builder.initialize_addres_in_register(lvalue, lvalue_address_register);
+    this->_asm_builder.add_instruction(assembly::instructions::store(lvalue_address_register));
+    // this->_asm_builder.store_value_from_register(
+    //     this->_memory_manager.get_accumulator(), lvalue_address_register);
+
+    lvalue_address_register.release();
 }
 
 
