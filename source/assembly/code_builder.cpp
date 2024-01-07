@@ -211,12 +211,23 @@ std::string code_builder::new_condition_jump_label(const std::string& label_name
     return this->_jump_manager.new_label(label_name);
 }
 
+// TODO: come up with a better name
 void code_builder::new_condition_branch_jump_point(const condition::branch& branch) {
     this->_jump_manager.insert_label(branch.false_eval_label);
 }
 
+// TODO: come up with a better name
 void code_builder::set_condition_branch_jump_point(const condition::branch& branch) {
     this->_jump_manager.jump_to_label(instructions::jump_label, branch.false_eval_label);
+}
+
+void code_builder::set_while_loop_begin_label(const loop::abstract_loop& loop) {
+    this->_jump_manager.insert_label(loop.begin_label());
+}
+
+void code_builder::set_while_loop_end_label(const loop::abstract_loop& loop) {
+    this->_jump_manager.jump_to_label(instructions::jump_label, loop.begin_label());
+    this->_jump_manager.insert_label(loop.end_label());
 }
 
 condition::branch code_builder::equal_condition(

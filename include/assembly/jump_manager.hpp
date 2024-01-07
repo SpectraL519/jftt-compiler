@@ -27,8 +27,8 @@ private:
         std::vector<std::size_t> jump_from_list;
     };
 
-    code_builder& _asm_builder; // ptr?
-    std::size_t _label_no{1u};
+    code_builder& _asm_builder;
+    std::size_t _label_no{0u};
 
     static constexpr std::size_t _invalid_jump_to{0u};
     inline static const std::string _default_label_name{"label"};

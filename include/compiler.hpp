@@ -4,6 +4,8 @@
 #include "assembly/code_builder.hpp"
 #include "condition/branch_manager.hpp"
 #include "identifier_manager.hpp"
+#include "loop_manager.hpp"
+
 
 
 namespace jftt {
@@ -40,11 +42,15 @@ public:
     void assign_value_to(identifier::abstract_identifier* identifier);
 
     void add_condition(
-        condition_discriminator discriminator,
+        const condition_discriminator discriminator,
         identifier::abstract_identifier* a,
         identifier::abstract_identifier* b);
     void end_latest_condition_without_else();
     void end_latest_condition_with_else();
+
+    void add_loop(const loop_discriminator discriminator);
+    void set_latest_while_loop_end_label();
+    void end_loop(const loop_discriminator discriminator);
 
     void add(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
     void subtract(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
@@ -62,9 +68,10 @@ public:
 private:
     std::size_t _line_no{1u};
     architecture::vm_memory_manager& _memory_manager{architecture::vm_memory_manager::instance()};
+    assembly::code_builder _asm_builder;
     condition::branch_manager _condition_manager;
     identifier_manager _identifier_manager;
-    assembly::code_builder _asm_builder;
+    loop_manager _loop_manager;
 };
 
 } // namespace jftt

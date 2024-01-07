@@ -117,7 +117,7 @@ void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
 }
 
 void compiler::add_condition(
-    condition_discriminator discriminator,
+    const condition_discriminator discriminator,
     identifier::abstract_identifier* a,
     identifier::abstract_identifier* b
 ) {
@@ -181,6 +181,44 @@ void compiler::end_latest_condition_with_else() {
 
     // add the cond_end_branch to the stack
     this->_condition_manager.add_branch(cond_end_branch);
+}
+
+
+void compiler::add_loop(const loop_discriminator discriminator) {
+    switch (discriminator) {
+    case loop_discriminator::while_do: {
+        const std::string begin_label{this->_asm_builder.new_condition_jump_label("while_begin")};
+        // end label will be defined as the condition end label
+        std::shared_ptr<loop::abstract_loop> loop{
+            std::make_shared<loop::while_loop>(begin_label, std::string{})};
+        this->_loop_manager.add_loop(loop);
+        this->_asm_builder.set_while_loop_begin_label(*loop);
+        break;
+    }
+
+    case loop_discriminator::repeat_until: {
+        break; // TODO
+    }
+    }
+}
+
+void compiler::set_latest_while_loop_end_label() {
+    const auto while_branch{this->_condition_manager.extract_branch()};
+    this->_loop_manager.get_loop()->set_end_label(while_branch.false_eval_label);
+}
+
+void compiler::end_loop(const loop_discriminator discriminator) {
+    switch (discriminator) {
+    case loop_discriminator::while_do: {
+        const auto loop{this->_loop_manager.extract_loop()};
+        this->_asm_builder.set_while_loop_end_label(*loop);
+        break;
+    }
+
+    case loop_discriminator::repeat_until: {
+        break; // TODO
+    }
+    }
 }
 
 // TODO: arithmetic_operation(discriminator, a, b)

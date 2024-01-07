@@ -4,12 +4,16 @@ PROGRAM IS
 IN
     READ a;
     WRITE a; # in
+
     b := 3;
     WRITE b; # 3
+
     c := a;
     WRITE c; # in
+
     t[0] := a;
     WRITE t[0]; # in
+
     t[b] := 5;
     WRITE t[b]; # 5
 END

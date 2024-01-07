@@ -4,6 +4,7 @@
 #include "jump_manager.hpp"
 #include "condition/branch.hpp"
 #include "../identifier.hpp"
+#include "../loop.hpp"
 #include "../architecture/vm_memory_manager.hpp"
 
 #include <vector>
@@ -47,6 +48,8 @@ public:
     [[nodiscard]] std::string new_condition_jump_label(const std::string& label_name);
     void new_condition_branch_jump_point(const condition::branch& branch);
     void set_condition_branch_jump_point(const condition::branch& branch);
+    void set_while_loop_begin_label(const loop::abstract_loop& loop);
+    void set_while_loop_end_label(const loop::abstract_loop& loop);
 
     [[nodiscard]] condition::branch equal_condition(
         architecture::vm_register& a_register, architecture::vm_register& b_register);

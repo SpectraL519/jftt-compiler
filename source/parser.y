@@ -125,9 +125,7 @@ command:
     |
     if_condition if_end {}
     |
-    T_WHILE condition T_DO commands T_ENDWHILE {
-        // TODO
-    }
+    while_loop while_loop_end {}
     |
     T_REPEAT commands T_UNTIL condition T_SEMICOLON {
         // TODO
@@ -262,6 +260,24 @@ if_end:
     commands T_ENDIF {
         compiler.end_latest_condition_without_else();
     }
+
+
+while_loop:
+    while_loop_begin condition T_DO {
+        compiler.set_latest_while_loop_end_label();
+    }
+
+while_loop_begin:
+    T_WHILE {
+        compiler.add_loop(jftt::loop_discriminator::while_do);
+    }
+    ;
+
+while_loop_end:
+    commands T_ENDWHILE {
+        compiler.end_loop(jftt::loop_discriminator::while_do);
+    }
+    ;
 
 
 condition:
