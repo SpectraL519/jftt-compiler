@@ -1,4 +1,5 @@
 #include "assembly/code_builder.hpp"
+#include "assembly/jump_manager.hpp"
 
 #include "architecture/vm_memory_manager.hpp"
 #include "assembly/instructions.hpp"
@@ -11,16 +12,24 @@
 
 namespace jftt::assembly {
 
+code_builder::code_builder()
+: _jump_manager(jump_manager{*this}) {}
+
 void code_builder::add_instruction(const std::string& instruction) {
     this->_code.emplace_back(instruction);
 }
 
 void code_builder::stop_building() {
     this->add_instruction(instructions::halt());
+    this->_jump_manager.fill_labels();
 }
 
 const std::vector<std::string>& code_builder::code() const {
     return this->_code;
+}
+
+const std::size_t code_builder::current_line() const {
+    return this->_code.size();
 }
 
 void code_builder::read_lvalue(

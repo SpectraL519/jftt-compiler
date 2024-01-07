@@ -110,4 +110,27 @@ std::string halt() {
     return instruction;
 }
 
+
+// label jump instructions
+
+std::string jump_label() {
+    static const std::string instruction{"JUMP "};
+    return instruction;
+}
+
+std::string jpos_label() {
+    static const std::string instruction{"JPOS "};
+    return instruction;
+}
+
+std::string jzero_label() {
+    static const std::string instruction{"JZERO "};
+    return instruction;
+}
+
+std::string jumpr_label() {
+    static const std::string instruction{"JUMPR "};
+    return instruction;
+}
+
 } // namespace jftt::assembly::instructions

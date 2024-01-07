@@ -34,4 +34,11 @@ namespace jftt::assembly::instructions {
 
 [[nodiscard]] std::string halt();
 
+
+// label jump instructions
+[[nodiscard]] std::string jump_label();
+[[nodiscard]] std::string jpos_label();
+[[nodiscard]] std::string jzero_label();
+[[nodiscard]] std::string jumpr_label();
+
 } // namespace jftt::assembly::instructions

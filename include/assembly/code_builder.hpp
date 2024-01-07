@@ -1,6 +1,7 @@
 #pragma once
 
 #include "instructions.hpp"
+#include "jump_manager.hpp"
 #include "../identifier.hpp"
 #include "../architecture/vm_memory_manager.hpp"
 
@@ -10,14 +11,18 @@
 
 namespace jftt::assembly {
 
+class jump_manager;
+
 class code_builder {
 public:
-    code_builder() = default;
+    code_builder();
+
     ~code_builder() = default;
 
     void add_instruction(const std::string& instruction);
     void stop_building();
-    const std::vector<std::string>& code() const;
+    [[nodiscard]] const std::vector<std::string>& code() const;
+    [[nodiscard]] const std::size_t current_line() const;
 
     void read_lvalue(const std::shared_ptr<identifier::abstract_lvalue_identifier>& lvalue);
     void write_identifier(const std::shared_ptr<identifier::abstract_identifier>& identifier);
@@ -38,11 +43,14 @@ public:
     architecture::vm_register& _move_acc_content_to_tmp_register();
     void _move_tmp_register_content_to_acc(architecture::vm_register& tmp_register);
 
+    friend class assembly::jump_manager;
+
 private:
     void _write_lvalue(const std::shared_ptr<identifier::abstract_lvalue_identifier>& lvalue);
     void _write_rvalue(const architecture::value_type value);
 
     std::vector<std::string> _code;
+    jump_manager _jump_manager;
     architecture::vm_memory_manager& _memory_manager{architecture::vm_memory_manager::instance()};
 };
 
