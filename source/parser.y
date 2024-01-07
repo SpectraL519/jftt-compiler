@@ -237,7 +237,8 @@ expression:
     }
     |
     value T_MUL value {
-        // TODO
+        compiler.acquire_accumulator();
+        compiler.multiply($1, $3);
     }
     |
     value T_DIV value {

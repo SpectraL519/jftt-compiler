@@ -12,4 +12,7 @@ IN
     WRITE diff;
     diff := b - a;
     WRITE diff;
+
+    prod := a * b;
+    WRITE prod;
 END

@@ -110,20 +110,18 @@ void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
     auto lvalue{
         identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier)};
 
-    auto& lvalue_address_register{this->_memory_manager.get_free_register()};
-    lvalue_address_register.acquire();
+    auto& lvalue_address_register{this->_memory_manager.acquire_free_register()};
 
-    auto& tmp_register{this->_asm_builder._move_acc_content_to_tmp_register()};
+    auto& tmp_register{this->_asm_builder.move_acc_content_to_tmp_register()};
     this->_asm_builder.initialize_addres_in_register(lvalue, lvalue_address_register);
-    this->_asm_builder._move_tmp_register_content_to_acc(tmp_register);
+    this->_asm_builder.move_tmp_register_content_to_acc(tmp_register);
     this->_asm_builder.add_instruction(assembly::instructions::store(lvalue_address_register));
 
     lvalue_address_register.release();
 }
 
 void compiler::add(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
-    auto& a_register{this->_memory_manager.get_free_register()};
-    a_register.acquire();
+    auto& a_register{this->_memory_manager.acquire_free_register()};
 
     this->_asm_builder.initialize_identifier_value_in_register(
         identifier::shared_ptr_cast(a), a_register);
@@ -135,8 +133,7 @@ void compiler::add(identifier::abstract_identifier* a, identifier::abstract_iden
 }
 
 void compiler::subtract(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
-    auto& b_register{this->_memory_manager.get_free_register()};
-    b_register.acquire();
+    auto& b_register{this->_memory_manager.acquire_free_register()};
 
     this->_asm_builder.initialize_identifier_value_in_register(
         identifier::shared_ptr_cast(b), b_register);
@@ -145,6 +142,25 @@ void compiler::subtract(identifier::abstract_identifier* a, identifier::abstract
 
     this->_asm_builder.add_instruction(assembly::instructions::sub(b_register));
     b_register.release();
+}
+
+void compiler::multiply(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    auto& a_register{this->_memory_manager.acquire_free_register()};
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+    auto& is_odd_register{this->_memory_manager.acquire_free_register()};
+    auto& result_register{this->_memory_manager.acquire_free_register()};
+
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(a), a_register);
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(b), b_register);
+
+    this->_asm_builder.multiply(a_register, b_register, is_odd_register, result_register);
+
+    a_register.release();
+    b_register.release();
+    is_odd_register.release();
+    result_register.release();
 }
 
 void compiler::assert_no_identifier_redeclaration(

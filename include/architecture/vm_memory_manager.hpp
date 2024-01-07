@@ -24,6 +24,7 @@ public:
     [[nodiscard]] vm_register& get_accumulator();
     [[nodiscard]] bool has_free_registers() const;
     [[nodiscard]] vm_register& get_free_register();
+    [[nodiscard]] vm_register& acquire_free_register();
     [[nodiscard]] memory_address_type allocate(const memory_size_type chunk_size);
 
 private:

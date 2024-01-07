@@ -23,7 +23,6 @@ public:
 
 private:
     struct jump_label {
-        // are the names correct
         std::size_t jump_to;
         std::vector<std::size_t> jump_from_list;
     };

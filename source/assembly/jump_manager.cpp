@@ -9,6 +9,7 @@ jump_manager::jump_manager(code_builder& asm_builder)
 : _asm_builder(asm_builder) {}
 
 std::string jump_manager::new_label(const std::string& name) {
+    // avoid label_name colisions using _label_no suffix
     return name + "_" + std::to_string(this->_label_no++);
 }
 
@@ -55,7 +56,7 @@ void jump_manager::fill_labels() {
     for (auto& label_it : this->_labels) {
         auto& label{label_it.second};
         for (const auto& jump_from : label.jump_from_list) {
-            this->_asm_builder._code.at(jump_from) += std::to_string(label.jump_to);
+            this->_asm_builder._code.at(jump_from - 1) += std::to_string(label.jump_to);
         }
         label.jump_from_list.clear();
     }

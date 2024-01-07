@@ -40,8 +40,14 @@ public:
     void store_value_from_register(
         architecture::vm_register& value_register, architecture::vm_register& address_register);
 
-    architecture::vm_register& _move_acc_content_to_tmp_register();
-    void _move_tmp_register_content_to_acc(architecture::vm_register& tmp_register);
+    architecture::vm_register& move_acc_content_to_tmp_register();
+    void move_tmp_register_content_to_acc(architecture::vm_register& tmp_register);
+
+    void multiply(
+        architecture::vm_register& a_register,
+        architecture::vm_register& b_register,
+        architecture::vm_register& is_odd_register,
+        architecture::vm_register& result_register);
 
     friend class assembly::jump_manager;
 

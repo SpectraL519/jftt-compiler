@@ -58,6 +58,7 @@ clean:
 vm:
 	@echo Building the virtual machine
 	@cd vm && make all CXX=$(CXX) && cd ..
+	@echo Build successful!
 
 
 cleanvm:

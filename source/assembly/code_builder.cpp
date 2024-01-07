@@ -20,8 +20,8 @@ void code_builder::add_instruction(const std::string& instruction) {
 }
 
 void code_builder::stop_building() {
-    this->add_instruction(instructions::halt());
     this->_jump_manager.fill_labels();
+    this->add_instruction(instructions::halt());
 }
 
 const std::vector<std::string>& code_builder::code() const {
@@ -39,11 +39,10 @@ void code_builder::read_lvalue(
     auto& accumulator{this->_memory_manager.get_accumulator()};
     architecture::vm_register* tmp_register{nullptr};
     if (!accumulator.is_free())
-        tmp_register = &this->_move_acc_content_to_tmp_register();
+        tmp_register = &this->move_acc_content_to_tmp_register();
 
     // initialize the address of the beggining of the array in a free register
-    auto& address_register{this->_memory_manager.get_free_register()};
-    address_register.acquire();
+    auto& address_register{this->_memory_manager.acquire_free_register()};
 
     // read the array element
     this->initialize_addres_in_register(lvalue, address_register);
@@ -52,7 +51,7 @@ void code_builder::read_lvalue(
     address_register.release();
 
     if (tmp_register != nullptr)
-        this->_move_tmp_register_content_to_acc(*tmp_register);
+        this->move_tmp_register_content_to_acc(*tmp_register);
 }
 
 void code_builder::write_identifier(
@@ -86,7 +85,7 @@ void code_builder::initialize_identifier_value_in_register(
         else {
             architecture::vm_register* tmp_register{nullptr};
             if (!this->_memory_manager.get_accumulator().is_free())
-                tmp_register = &this->_move_acc_content_to_tmp_register();
+                tmp_register = &this->move_acc_content_to_tmp_register();
 
             this->initialize_addres_in_register(
                 identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier), reg);
@@ -94,7 +93,7 @@ void code_builder::initialize_identifier_value_in_register(
             this->add_instruction(instructions::put(reg));
 
             if (tmp_register != nullptr)
-                this->_move_tmp_register_content_to_acc(*tmp_register);
+                this->move_tmp_register_content_to_acc(*tmp_register);
         }
     }
 }
@@ -132,8 +131,7 @@ void code_builder::initialize_addres_in_register(
 
     const auto vararray{
         identifier::shared_ptr_cast<identifier_discriminator::vararray>(lvalue)};
-    auto& address_register{this->_memory_manager.get_free_register()};
-    address_register.acquire();
+    auto& address_register{this->_memory_manager.acquire_free_register()};
     this->initialize_value_in_register(vararray->address(), address_register);
 
     // initialize the index value in the accumulator
@@ -162,18 +160,17 @@ void code_builder::initialize_addres_in_register(
 
 // TODO: pass value register
 void code_builder::load_value_from_address(architecture::vm_register& address_register) {
-    auto& value_register{this->_memory_manager.get_free_register()};
-    value_register.acquire();
+    auto& value_register{this->_memory_manager.acquire_free_register()};
 
     if (this->_memory_manager.get_accumulator().is_free()) {
         this->add_instruction(instructions::load(address_register));
         this->add_instruction(instructions::put(value_register));
     }
     else {
-        auto& tmp_register{this->_move_acc_content_to_tmp_register()};
+        auto& tmp_register{this->move_acc_content_to_tmp_register()};
         this->add_instruction(instructions::load(address_register));
         this->add_instruction(instructions::put(value_register));
-        this->_move_tmp_register_content_to_acc(tmp_register);
+        this->move_tmp_register_content_to_acc(tmp_register);
     }
 
     value_register.release();
@@ -192,11 +189,68 @@ void code_builder::store_value_from_register(
         this->add_instruction(instructions::store(address_register));
     }
     else {
-        auto& tmp_register{this->_move_acc_content_to_tmp_register()};
+        auto& tmp_register{this->move_acc_content_to_tmp_register()};
         this->add_instruction(instructions::get(value_register));
         this->add_instruction(instructions::store(address_register));
-        this->_move_tmp_register_content_to_acc(tmp_register);
+        this->move_tmp_register_content_to_acc(tmp_register);
     }
+}
+
+architecture::vm_register& code_builder::move_acc_content_to_tmp_register() {
+    auto& tmp_register{this->_memory_manager.acquire_free_register()};
+    this->add_instruction(instructions::put(tmp_register));
+    return tmp_register;
+}
+
+void code_builder::move_tmp_register_content_to_acc(architecture::vm_register& tmp_register) {
+    this->add_instruction(instructions::get(tmp_register));
+    tmp_register.release();
+}
+
+void code_builder::multiply(
+    architecture::vm_register& a_register,
+    architecture::vm_register& b_register,
+    architecture::vm_register& is_odd_register,
+    architecture::vm_register& result_register
+) {
+    const std::string end_label{this->_jump_manager.new_label("mul_end")};
+    const std::string loop_begin_label{this->_jump_manager.new_label("mul_loop")};
+    const std::string inside_loop_label{this->_jump_manager.new_label("mul_insied_loop")};
+    const std::string is_odd_label{this->_jump_manager.new_label("mul_is_odd")};
+
+    this->add_instruction(instructions::rst(result_register));
+
+    // check a == 0
+    this->add_instruction(instructions::get(a_register));
+    this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+
+    // begin multiplication loop
+    this->_jump_manager.insert_label(loop_begin_label);
+
+    // check b == 0 (initial and per iteration check)
+    this->add_instruction(instructions::get(b_register));
+    this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+
+    this->add_instruction(instructions::put(is_odd_register)); // x = b
+    this->add_instruction(instructions::shr(is_odd_register)); // x >> 1
+    this->add_instruction(instructions::shl(is_odd_register)); // x << 1 (get rid of last bit)
+    this->add_instruction(instructions::sub(is_odd_register)); // b = b - x
+    this->_jump_manager.jump_to_label(instructions::jpos_label, is_odd_label);
+    this->_jump_manager.insert_label(inside_loop_label);
+    this->add_instruction(instructions::shl(a_register)); // a = a * 2
+    this->add_instruction(instructions::shr(b_register)); // b = b / 2
+    this->_jump_manager.jump_to_label(instructions::jump_label, loop_begin_label);
+
+    this->_jump_manager.insert_label(is_odd_label);
+    this->add_instruction(instructions::get(result_register));
+    this->add_instruction(instructions::add(a_register));
+    this->add_instruction(instructions::put(result_register));
+    this->_jump_manager.jump_to_label(instructions::jump_label, inside_loop_label);
+
+    // end loop
+    this->_jump_manager.insert_label(end_label);
+    // return result (move to acc)
+    this->add_instruction(instructions::get(result_register));
 }
 
 void code_builder::_write_lvalue(
@@ -206,11 +260,10 @@ void code_builder::_write_lvalue(
     auto& accumulator{this->_memory_manager.get_accumulator()};
     architecture::vm_register* tmp_register{nullptr};
     if (!accumulator.is_free())
-        tmp_register = &this->_move_acc_content_to_tmp_register();
+        tmp_register = &this->move_acc_content_to_tmp_register();
 
     // initialize the address of the beggining of the array in a free register
-    auto& address_register{this->_memory_manager.get_free_register()};
-    address_register.acquire();
+    auto& address_register{this->_memory_manager.acquire_free_register()};
 
     // read the array element
     this->initialize_addres_in_register(lvalue, address_register);
@@ -219,7 +272,7 @@ void code_builder::_write_lvalue(
     address_register.release();
 
     if (tmp_register != nullptr)
-        this->_move_tmp_register_content_to_acc(*tmp_register);
+        this->move_tmp_register_content_to_acc(*tmp_register);
 }
 
 void code_builder::_write_rvalue(const architecture::value_type value) {
@@ -229,23 +282,11 @@ void code_builder::_write_rvalue(const architecture::value_type value) {
         this->add_instruction(instructions::write());
     }
     else {
-        auto& tmp_register{this->_move_acc_content_to_tmp_register()};
+        auto& tmp_register{this->move_acc_content_to_tmp_register()};
         this->initialize_value_in_register(value, accumulator);
         this->add_instruction(instructions::write());
-        this->_move_tmp_register_content_to_acc(tmp_register);
+        this->move_tmp_register_content_to_acc(tmp_register);
     }
-}
-
-architecture::vm_register& code_builder::_move_acc_content_to_tmp_register() {
-    auto& tmp_register{this->_memory_manager.get_free_register()};
-    tmp_register.acquire();
-    this->add_instruction(instructions::put(tmp_register));
-    return tmp_register;
-}
-
-void code_builder::_move_tmp_register_content_to_acc(architecture::vm_register& tmp_register) {
-    this->add_instruction(instructions::get(tmp_register));
-    tmp_register.release();
 }
 
 } // namespace jftt::assembly
