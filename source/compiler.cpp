@@ -1,9 +1,5 @@
 #include "compiler.hpp"
 
-#include "identifier_manager.hpp"
-#include "architecture/vm_memory_manager.hpp"
-#include "assembly/code_builder.hpp"
-
 #include <iostream>
 
 
