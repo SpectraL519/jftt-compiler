@@ -226,20 +226,20 @@ void compiler::multiply(identifier::abstract_identifier* a, identifier::abstract
     b_register.release();
 }
 
-// void compiler::divide(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
-//     auto& a_register{this->_memory_manager.acquire_free_register()};
-//     auto& b_register{this->_memory_manager.acquire_free_register()};
+void compiler::divide(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    auto& a_register{this->_memory_manager.acquire_free_register()};
+    auto& b_register{this->_memory_manager.acquire_free_register()};
 
-//     this->_asm_builder.initialize_identifier_value_in_register(
-//         identifier::shared_ptr_cast(a), a_register);
-//     this->_asm_builder.initialize_identifier_value_in_register(
-//         identifier::shared_ptr_cast(b), b_register);
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(a), a_register);
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(b), b_register);
 
-//     this->_asm_builder.divide(a_register, b_register);
+    this->_asm_builder.divide(a_register, b_register);
 
-//     a_register.release();
-//     b_register.release();
-// }
+    a_register.release();
+    b_register.release();
+}
 
 void compiler::assert_no_identifier_redeclaration(
     const std::string& identifier_name

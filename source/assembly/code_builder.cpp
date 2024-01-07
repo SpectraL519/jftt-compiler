@@ -366,14 +366,14 @@ void code_builder::multiply(
     this->add_instruction(instructions::get(b_register));
     this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
 
-    this->add_instruction(instructions::put(is_odd_register)); // odd = b
+    this->add_instruction(instructions::put(is_odd_register)); // odd := b
     this->add_instruction(instructions::shr(is_odd_register)); // odd >> 1
     this->add_instruction(instructions::shl(is_odd_register)); // odd << 1 (get rid of last bit)
-    this->add_instruction(instructions::sub(is_odd_register)); // b = b - odd
+    this->add_instruction(instructions::sub(is_odd_register)); // b := b - odd
     this->_jump_manager.jump_to_label(instructions::jpos_label, is_odd_label);
     this->_jump_manager.insert_label(inside_loop_label);
-    this->add_instruction(instructions::shl(a_register)); // a = a * 2
-    this->add_instruction(instructions::shr(b_register)); // b = b / 2
+    this->add_instruction(instructions::shl(a_register)); // a := a * 2
+    this->add_instruction(instructions::shr(b_register)); // b := b / 2
     this->_jump_manager.jump_to_label(instructions::jump_label, loop_begin_label);
 
     this->_jump_manager.insert_label(is_odd_label);
@@ -391,38 +391,43 @@ void code_builder::multiply(
     result_register.release();
 }
 
-// void code_builder::divide(
-//     architecture::vm_register& a_register, architecture::vm_register& b_register
-// ) {
-//     auto& result_register{this->_memory_manager.acquire_free_register()};
+void code_builder::divide(
+    architecture::vm_register& a_register, architecture::vm_register& b_register
+) {
+    auto& result_register{this->_memory_manager.acquire_free_register()};
+    this->add_instruction(instructions::rst(result_register)); // result := 0
 
-//     const std::string end_label{this->_jump_manager.new_label("div_end")};
-//     const std::string loop_begin_label{this->_jump_manager.new_label("div_loop")};
+    const std::string end_label{this->_jump_manager.new_label("div_end")};
+    const std::string loop_begin_label{this->_jump_manager.new_label("div_loop")};
 
-//     // set initial result to 0
-//     this->add_instruction(instructions::rst(result_register));
+    // check b == 0 -> if true: return 0
+    this->add_instruction(instructions::get(b_register));
+    this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
 
-//     // check b == 0 -> if true: return 0
-//     this->add_instruction(instructions::get(b_register));
-//     this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+    // begin division loop
+    this->_jump_manager.insert_label(loop_begin_label);
+    // auto& accumulator{this->_memory_manager.get_accumulator()};
 
-//     // begin division loop
-//     this->_jump_manager.insert_label(loop_begin_label);
-//     auto& accumulator{this->_memory_manager.get_accumulator()};
+    // check a < b
+    this->add_instruction(instructions::get(b_register));
+    this->add_instruction(instructions::sub(a_register));
+    // if true: end loop
+    this->_jump_manager.jump_to_label(instructions::jpos_label, end_label);
+    // if false: result++ and tmp -=b
+    // TODO: make this logarithmic
+    this->add_instruction(instructions::inc(result_register));
+    this->add_instruction(instructions::get(a_register));
+    this->add_instruction(instructions::sub(b_register));
+    this->add_instruction(instructions::put(a_register));
+    this->_jump_manager.jump_to_label(instructions::jump_label, loop_begin_label);
 
-//     // check a < b -> if true end loop
-//     this->add_instruction(instructions::get(a_register));
-//     this->add_instruction(instructions::inc(accumulator));
-//     this->add_instruction(instructions::sub(b_register));
-//     this->_jump_manager.jump_to_label(instructions::)
+    // end loop
+    this->_jump_manager.insert_label(end_label);
+    // return result (move to acc)
+    this->add_instruction(instructions::get(result_register));
 
-//     // end loop
-//     this->_jump_manager.insert_label(end_label);
-//     // return result (move to acc)
-//     this->add_instruction(instructions::get(result_register));
-
-//     result_register.release();
-// }
+    result_register.release();
+}
 
 void code_builder::_write_lvalue(
     const std::shared_ptr<identifier::abstract_lvalue_identifier>& lvalue

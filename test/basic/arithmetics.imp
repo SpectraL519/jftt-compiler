@@ -5,16 +5,16 @@ IN
     READ a;
     READ b;
 
-    # sum := a + b;
-    # WRITE sum;
+    sum := a + b;
+    WRITE sum;
 
-    # diff := a - b;
-    # WRITE diff;
-    # diff := b - a;
-    # WRITE diff;
+    diff := a - b;
+    WRITE diff;
+    diff := b - a;
+    WRITE diff;
 
-    # prod := a * b;
-    # WRITE prod;
+    prod := a * b;
+    WRITE prod;
 
     quot := a / b;
     WRITE quot;
