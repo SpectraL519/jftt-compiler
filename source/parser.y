@@ -121,12 +121,12 @@ command:
         compiler.release_accumulator();
     }
     |
-    T_IF condition T_THEN commands T_ELSE commands T_ENDIF {
-        // TODO
+    if_condition if_else if_end {
+
     }
     |
-    T_IF condition T_THEN commands T_ENDIF {
-        compiler.end_latest_condition_without_else();
+    if_condition if_end {
+
     }
     |
     T_WHILE condition T_DO commands T_ENDWHILE {
@@ -160,9 +160,21 @@ procedure_head:
     ;
 
 
-procedure_call:
-    identifier T_LPAREN procedure_args T_RPAREN {
-
+procedure_args_decl:
+    procedure_args_decl T_COMMA identifier {
+        // TODO
+    }
+    |
+    procedure_args_decl T_COMMA "T" identifier {
+        // TODO
+    }
+    |
+    identifier {
+        // TODO
+    }
+    |
+    "T" identifier {
+        // TODO
     }
     ;
 
@@ -190,21 +202,9 @@ declarations:
     ;
 
 
-procedure_args_decl:
-    procedure_args_decl T_COMMA identifier {
-        // TODO
-    }
-    |
-    procedure_args_decl T_COMMA "T" identifier {
-        // TODO
-    }
-    |
-    identifier {
-        // TODO
-    }
-    |
-    "T" identifier {
-        // TODO
+procedure_call:
+    identifier T_LPAREN procedure_args T_RPAREN {
+
     }
     ;
 
@@ -249,6 +249,23 @@ expression:
         // TODO
     }
     ;
+
+
+if_condition:
+    T_IF condition T_THEN {
+
+    }
+    ;
+
+if_else:
+    commands T_ELSE {
+        compiler.end_latest_condition_with_else();
+    }
+
+if_end:
+    commands T_ENDIF {
+        compiler.end_latest_condition_without_else();
+    }
 
 
 condition:

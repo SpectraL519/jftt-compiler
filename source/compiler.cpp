@@ -149,12 +149,20 @@ void compiler::add_condition(
 
 void compiler::end_latest_condition_without_else() {
     const auto latest_branch{this->_condition_manager.extract_branch()};
-    this->_asm_builder.end_condition(latest_branch, false);
+    this->_asm_builder.new_condition_branch_jump_point(latest_branch);
 }
 
 void compiler::end_latest_condition_with_else() {
-    const auto latest_branch{this->_condition_manager.extract_branch()};
-    this->_asm_builder.end_condition(latest_branch, true);
+    // add a jump point to the end of the if_else branch
+    const auto cond_end_branch{condition::branch{
+        this->_asm_builder.new_condition_jump_label("cond_end")}};
+    this->_asm_builder.set_condition_branch_jump_point(cond_end_branch);
+
+    // add a jump point skipping the else branch if condition is evaluated to true
+    this->_asm_builder.new_condition_branch_jump_point(this->_condition_manager.extract_branch());
+
+    // add the cond_end_branch to the stack
+    this->_condition_manager.add_branch(cond_end_branch);
 }
 
 void compiler::add(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {

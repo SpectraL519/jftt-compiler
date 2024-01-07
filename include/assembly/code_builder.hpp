@@ -44,20 +44,22 @@ public:
     architecture::vm_register& move_acc_content_to_tmp_register();
     void move_tmp_register_content_to_acc(architecture::vm_register& tmp_register);
 
-    condition::branch equal_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
-    condition::branch not_equal_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
-    condition::branch less_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
-    condition::branch less_equal_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
-    condition::branch greater_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
-    condition::branch greater_equal_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    [[nodiscard]] std::string new_condition_jump_label(const std::string& label_name);
+    void new_condition_branch_jump_point(const condition::branch& branch);
+    void set_condition_branch_jump_point(const condition::branch& branch);
 
-    void end_condition(const condition::branch& branch, const bool with_else);
+    [[nodiscard]] condition::branch equal_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    [[nodiscard]] condition::branch not_equal_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    [[nodiscard]] condition::branch less_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    [[nodiscard]] condition::branch less_equal_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    [[nodiscard]] condition::branch greater_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    [[nodiscard]] condition::branch greater_equal_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
 
     void multiply(
         architecture::vm_register& a_register, architecture::vm_register& b_register);

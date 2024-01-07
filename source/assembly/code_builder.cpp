@@ -207,6 +207,18 @@ void code_builder::move_tmp_register_content_to_acc(architecture::vm_register& t
     tmp_register.release();
 }
 
+std::string code_builder::new_condition_jump_label(const std::string& label_name) {
+    return this->_jump_manager.new_label(label_name);
+}
+
+void code_builder::new_condition_branch_jump_point(const condition::branch& branch) {
+    this->_jump_manager.insert_label(branch.false_eval_label);
+}
+
+void code_builder::set_condition_branch_jump_point(const condition::branch& branch) {
+    this->_jump_manager.jump_to_label(instructions::jump_label, branch.false_eval_label);
+}
+
 condition::branch code_builder::equal_condition(
     architecture::vm_register& a_register, architecture::vm_register& b_register
 ) {
@@ -215,8 +227,6 @@ condition::branch code_builder::equal_condition(
 
     // double check required: a - b == 0 and b - a == 0
     const std::string double_check_label{this->_jump_manager.new_label("eq_double_check")};
-
-    auto& accumulator{this->_memory_manager.get_accumulator()};
 
     // check a - b == 0
     this->add_instruction(instructions::get(a_register));
@@ -243,13 +253,6 @@ condition::branch code_builder::equal_condition(
 }
 
 // TODO: other conditions
-
-void code_builder::end_condition(const condition::branch& branch, const bool with_else) {
-    if (with_else)
-        this->_jump_manager.jump_to_label(instructions::jump_label, branch.false_eval_label);
-    else
-        this->_jump_manager.insert_label(branch.false_eval_label);
-}
 
 void code_builder::multiply(
     architecture::vm_register& a_register, architecture::vm_register& b_register
