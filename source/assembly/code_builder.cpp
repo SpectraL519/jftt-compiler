@@ -252,7 +252,95 @@ condition::branch code_builder::equal_condition(
     return condition::branch{false_label};
 }
 
-// TODO: other conditions
+condition::branch code_builder::not_equal_condition(
+    architecture::vm_register& a_register, architecture::vm_register& b_register
+) {
+    const std::string true_label{this->_jump_manager.new_label("neq_true")};
+    const std::string false_label{this->_jump_manager.new_label("neq_false")};
+
+    // double check required: a - b == 0 and b - a == 0
+    const std::string double_check_label{this->_jump_manager.new_label("neq_double_check")};
+
+    // check a - b == 0
+    this->add_instruction(instructions::get(a_register));
+    this->add_instruction(instructions::sub(b_register));
+    // if true: perform double check
+    this->_jump_manager.jump_to_label(instructions::jzero_label, double_check_label);
+    // if false: return true (a != b)
+    this->_jump_manager.jump_to_label(instructions::jump_label, true_label);
+
+    // check b - a == 0
+    this->_jump_manager.insert_label(double_check_label);
+    this->add_instruction(instructions::get(b_register));
+    this->add_instruction(instructions::sub(a_register));
+    // if true: return false (a == b)
+    this->_jump_manager.jump_to_label(instructions::jzero_label, false_label);
+    // if false: return false
+    this->_jump_manager.jump_to_label(instructions::jump_label, true_label);
+
+    // 'if true' code will be inserted just below the true_label
+    this->_jump_manager.insert_label(true_label);
+
+    // 'if false' code will be inserted just below the true_label
+    return condition::branch{false_label};
+}
+
+condition::branch code_builder::less_condition(
+    architecture::vm_register& a_register, architecture::vm_register& b_register
+) {
+    const std::string true_label{this->_jump_manager.new_label("le_true")};
+    const std::string false_label{this->_jump_manager.new_label("le_false")};
+
+    // check (a + 1) - b == 0 (a < b <==> (a + 1) <= b)
+    this->add_instruction(instructions::get(a_register));
+    this->add_instruction(instructions::inc(this->_memory_manager.get_accumulator()));
+    this->add_instruction(instructions::sub(b_register));
+    // if true: return true
+    this->_jump_manager.jump_to_label(instructions::jzero_label, true_label);
+    // if false: return false
+    this->_jump_manager.jump_to_label(instructions::jump_label, false_label);
+
+    // 'if true' code will be inserted just below the true_label
+    this->_jump_manager.insert_label(true_label);
+
+    // 'if false' code will be inserted just below the true_label
+    return condition::branch{false_label};
+}
+
+condition::branch code_builder::less_equal_condition(
+    architecture::vm_register& a_register, architecture::vm_register& b_register
+) {
+    const std::string true_label{this->_jump_manager.new_label("le_true")};
+    const std::string false_label{this->_jump_manager.new_label("le_false")};
+
+    // check a - b == 0
+    this->add_instruction(instructions::get(a_register));
+    this->add_instruction(instructions::sub(b_register));
+    // if true: return true
+    this->_jump_manager.jump_to_label(instructions::jzero_label, true_label);
+    // if false: return false
+    this->_jump_manager.jump_to_label(instructions::jump_label, false_label);
+
+    // 'if true' code will be inserted just below the true_label
+    this->_jump_manager.insert_label(true_label);
+
+    // 'if false' code will be inserted just below the true_label
+    return condition::branch{false_label};
+}
+
+condition::branch code_builder::greater_condition(
+    architecture::vm_register& a_register, architecture::vm_register& b_register
+) {
+    // a > b <==> b < a
+    return this->less_condition(b_register, a_register);
+}
+
+condition::branch code_builder::greater_equal_condition(
+    architecture::vm_register& a_register, architecture::vm_register& b_register
+) {
+    // a >= b <==> b <= a
+    return this->less_equal_condition(b_register, a_register);
+}
 
 void code_builder::multiply(
     architecture::vm_register& a_register, architecture::vm_register& b_register

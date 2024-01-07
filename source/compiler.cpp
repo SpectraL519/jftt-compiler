@@ -139,8 +139,30 @@ void compiler::add_condition(
             this->_asm_builder.equal_condition(a_register, b_register));
         break;
 
-    default:
-        break; // TODO
+    case condition_discriminator::neq:
+        this->_condition_manager.add_branch(
+            this->_asm_builder.not_equal_condition(a_register, b_register));
+        break;
+
+    case condition_discriminator::le:
+        this->_condition_manager.add_branch(
+            this->_asm_builder.less_condition(a_register, b_register));
+        break;
+
+    case condition_discriminator::leq:
+        this->_condition_manager.add_branch(
+            this->_asm_builder.less_equal_condition(a_register, b_register));
+        break;
+
+    case condition_discriminator::ge:
+        this->_condition_manager.add_branch(
+            this->_asm_builder.greater_condition(a_register, b_register));
+        break;
+
+    case condition_discriminator::geq:
+        this->_condition_manager.add_branch(
+            this->_asm_builder.greater_equal_condition(a_register, b_register));
+        break;
     }
 
     a_register.release();

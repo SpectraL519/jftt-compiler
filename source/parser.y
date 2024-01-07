@@ -121,13 +121,9 @@ command:
         compiler.release_accumulator();
     }
     |
-    if_condition if_else if_end {
-
-    }
+    if_condition if_else if_end {}
     |
-    if_condition if_end {
-
-    }
+    if_condition if_end {}
     |
     T_WHILE condition T_DO commands T_ENDWHILE {
         // TODO
@@ -204,7 +200,7 @@ declarations:
 
 procedure_call:
     identifier T_LPAREN procedure_args T_RPAREN {
-
+        // TODO
     }
     ;
 
@@ -252,9 +248,7 @@ expression:
 
 
 if_condition:
-    T_IF condition T_THEN {
-
-    }
+    T_IF condition T_THEN {}
     ;
 
 if_else:
@@ -274,23 +268,23 @@ condition:
     }
     |
     value T_NEQ value {
-        // TODO
+        compiler.add_condition(jftt::condition_discriminator::neq, $1, $3);
     }
     |
     value T_LE value {
-        // TODO
+        compiler.add_condition(jftt::condition_discriminator::le, $1, $3);
     }
     |
     value T_LEQ value {
-        // TODO
+        compiler.add_condition(jftt::condition_discriminator::leq, $1, $3);
     }
     |
     value T_GE value {
-        // TODO
+        compiler.add_condition(jftt::condition_discriminator::ge, $1, $3);
     }
     |
     value T_GEQ value {
-        // TODO
+        compiler.add_condition(jftt::condition_discriminator::geq, $1, $3);
     }
     ;
 

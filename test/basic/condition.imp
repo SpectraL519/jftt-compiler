@@ -8,4 +8,35 @@ IN
     IF a = b THEN
         WRITE 1;
     ENDIF
+
+    IF a < b THEN
+        WRITE 2;
+    ENDIF
+
+    IF a <= b THEN
+        WRITE 3;
+    ENDIF
+
+    IF a > b THEN
+        WRITE 4;
+    ENDIF
+
+    IF a >= b THEN
+        WRITE 5;
+    ENDIF
+
+    IF a != b THEN
+        WRITE 6;
+    ENDIF
+
+    # else + nested if statements
+    IF a = b THEN
+        WRITE 1;
+    ELSE
+        IF a < b THEN
+            WRITE 2;
+        ELSE
+            WRITE 4;
+        ENDIF
+    ENDIF
 END
