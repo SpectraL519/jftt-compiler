@@ -2,6 +2,7 @@
 
 #include "instructions.hpp"
 #include "jump_manager.hpp"
+#include "condition/branch.hpp"
 #include "../identifier.hpp"
 #include "../architecture/vm_memory_manager.hpp"
 
@@ -43,11 +44,25 @@ public:
     architecture::vm_register& move_acc_content_to_tmp_register();
     void move_tmp_register_content_to_acc(architecture::vm_register& tmp_register);
 
+    condition::branch equal_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    condition::branch not_equal_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    condition::branch less_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    condition::branch less_equal_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    condition::branch greater_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    condition::branch greater_equal_condition(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+
+    void end_condition(const condition::branch& branch, const bool with_else);
+
     void multiply(
-        architecture::vm_register& a_register,
-        architecture::vm_register& b_register,
-        architecture::vm_register& is_odd_register,
-        architecture::vm_register& result_register);
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
+    void divide(
+        architecture::vm_register& a_register, architecture::vm_register& b_register);
 
     friend class assembly::jump_manager;
 

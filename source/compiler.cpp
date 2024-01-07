@@ -120,6 +120,43 @@ void compiler::assign_value_to(identifier::abstract_identifier* identifier) {
     lvalue_address_register.release();
 }
 
+void compiler::add_condition(
+    condition_discriminator discriminator,
+    identifier::abstract_identifier* a,
+    identifier::abstract_identifier* b
+) {
+    auto& a_register{this->_memory_manager.acquire_free_register()};
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(a), a_register);
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(b), b_register);
+
+    switch (discriminator) {
+    case condition_discriminator::eq:
+        this->_condition_manager.add_branch(
+            this->_asm_builder.equal_condition(a_register, b_register));
+        break;
+
+    default:
+        break; // TODO
+    }
+
+    a_register.release();
+    b_register.release();
+}
+
+void compiler::end_latest_condition_without_else() {
+    const auto latest_branch{this->_condition_manager.extract_branch()};
+    this->_asm_builder.end_condition(latest_branch, false);
+}
+
+void compiler::end_latest_condition_with_else() {
+    const auto latest_branch{this->_condition_manager.extract_branch()};
+    this->_asm_builder.end_condition(latest_branch, true);
+}
+
 void compiler::add(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
     auto& a_register{this->_memory_manager.acquire_free_register()};
 
@@ -147,20 +184,31 @@ void compiler::subtract(identifier::abstract_identifier* a, identifier::abstract
 void compiler::multiply(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
     auto& a_register{this->_memory_manager.acquire_free_register()};
     auto& b_register{this->_memory_manager.acquire_free_register()};
-    auto& is_odd_register{this->_memory_manager.acquire_free_register()};
-    auto& result_register{this->_memory_manager.acquire_free_register()};
 
     this->_asm_builder.initialize_identifier_value_in_register(
         identifier::shared_ptr_cast(a), a_register);
     this->_asm_builder.initialize_identifier_value_in_register(
         identifier::shared_ptr_cast(b), b_register);
 
-    this->_asm_builder.multiply(a_register, b_register, is_odd_register, result_register);
+    this->_asm_builder.multiply(a_register, b_register);
 
     a_register.release();
     b_register.release();
-    is_odd_register.release();
-    result_register.release();
+}
+
+void compiler::divide(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    auto& a_register{this->_memory_manager.acquire_free_register()};
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(a), a_register);
+    this->_asm_builder.initialize_identifier_value_in_register(
+        identifier::shared_ptr_cast(b), b_register);
+
+    this->_asm_builder.divide(a_register, b_register);
+
+    a_register.release();
+    b_register.release();
 }
 
 void compiler::assert_no_identifier_redeclaration(

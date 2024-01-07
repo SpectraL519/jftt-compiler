@@ -207,12 +207,57 @@ void code_builder::move_tmp_register_content_to_acc(architecture::vm_register& t
     tmp_register.release();
 }
 
-void code_builder::multiply(
-    architecture::vm_register& a_register,
-    architecture::vm_register& b_register,
-    architecture::vm_register& is_odd_register,
-    architecture::vm_register& result_register
+condition::branch code_builder::equal_condition(
+    architecture::vm_register& a_register, architecture::vm_register& b_register
 ) {
+    const std::string true_label{this->_jump_manager.new_label("eq_true")};
+    const std::string false_label{this->_jump_manager.new_label("eq_false")};
+
+    // double check required: a - b == 0 and b - a == 0
+    const std::string double_check_label{this->_jump_manager.new_label("eq_double_check")};
+
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+
+    // check a - b == 0
+    this->add_instruction(instructions::get(a_register));
+    this->add_instruction(instructions::sub(b_register));
+    // if true: perform double check
+    this->_jump_manager.jump_to_label(instructions::jzero_label, double_check_label);
+    // if false: return false
+    this->_jump_manager.jump_to_label(instructions::jump_label, false_label);
+
+    // check b - a == 0
+    this->_jump_manager.insert_label(double_check_label);
+    this->add_instruction(instructions::get(b_register));
+    this->add_instruction(instructions::sub(a_register));
+    // if true: return true
+    this->_jump_manager.jump_to_label(instructions::jzero_label, true_label);
+    // if false: return false
+    this->_jump_manager.jump_to_label(instructions::jump_label, false_label);
+
+    // 'if true' code will be inserted just below the true_label
+    this->_jump_manager.insert_label(true_label);
+
+    // 'if false' code will be inserted just below the true_label
+    return condition::branch{false_label};
+}
+
+// TODO: other conditions
+
+void code_builder::end_condition(const condition::branch& branch, const bool with_else) {
+    if (with_else)
+        this->_jump_manager.jump_to_label(instructions::jump_label, branch.false_eval_label);
+    else
+        this->_jump_manager.insert_label(branch.false_eval_label);
+}
+
+void code_builder::multiply(
+    architecture::vm_register& a_register, architecture::vm_register& b_register
+) {
+    // TODO: use conditions and loops
+    auto& is_odd_register{this->_memory_manager.acquire_free_register()};
+    auto& result_register{this->_memory_manager.acquire_free_register()};
+
     const std::string end_label{this->_jump_manager.new_label("mul_end")};
     const std::string loop_begin_label{this->_jump_manager.new_label("mul_loop")};
     const std::string inside_loop_label{this->_jump_manager.new_label("mul_insied_loop")};
@@ -251,6 +296,15 @@ void code_builder::multiply(
     this->_jump_manager.insert_label(end_label);
     // return result (move to acc)
     this->add_instruction(instructions::get(result_register));
+
+    is_odd_register.release();
+    result_register.release();
+}
+
+void code_builder::divide(
+    architecture::vm_register& a_register, architecture::vm_register& b_register
+) {
+    // TODO
 }
 
 void code_builder::_write_lvalue(

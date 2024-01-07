@@ -2,6 +2,7 @@
 
 #include "architecture/vm_memory_manager.hpp"
 #include "assembly/code_builder.hpp"
+#include "condition/branch_manager.hpp"
 #include "identifier_manager.hpp"
 
 
@@ -38,6 +39,13 @@ public:
     void return_value(identifier::abstract_identifier* identifier);
     void assign_value_to(identifier::abstract_identifier* identifier);
 
+    void add_condition(
+        condition_discriminator discriminator,
+        identifier::abstract_identifier* a,
+        identifier::abstract_identifier* b);
+    void end_latest_condition_without_else();
+    void end_latest_condition_with_else();
+
     void add(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
     void subtract(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
     void multiply(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
@@ -54,6 +62,7 @@ public:
 private:
     std::size_t _line_no{1u};
     architecture::vm_memory_manager& _memory_manager{architecture::vm_memory_manager::instance()};
+    condition::branch_manager _condition_manager;
     identifier_manager _identifier_manager;
     assembly::code_builder _asm_builder;
 };

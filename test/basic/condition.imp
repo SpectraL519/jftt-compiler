@@ -1,0 +1,11 @@
+# Simple condition test
+PROGRAM IS
+    a, b
+IN
+    READ a;
+    READ b;
+
+    IF a = b THEN
+        WRITE 1;
+    ENDIF
+END

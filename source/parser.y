@@ -126,7 +126,7 @@ command:
     }
     |
     T_IF condition T_THEN commands T_ENDIF {
-        // TODO
+        compiler.end_latest_condition_without_else();
     }
     |
     T_WHILE condition T_DO commands T_ENDWHILE {
@@ -253,7 +253,7 @@ expression:
 
 condition:
     value T_EQ value {
-        // TODO
+        compiler.add_condition(jftt::condition_discriminator::eq, $1, $3);
     }
     |
     value T_NEQ value {
