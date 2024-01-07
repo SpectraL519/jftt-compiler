@@ -288,23 +288,8 @@ condition::branch code_builder::not_equal_condition(
 condition::branch code_builder::less_condition(
     architecture::vm_register& a_register, architecture::vm_register& b_register
 ) {
-    const std::string true_label{this->_jump_manager.new_label("le_true")};
-    const std::string false_label{this->_jump_manager.new_label("le_false")};
-
-    // check (a + 1) - b == 0 (a < b <==> (a + 1) <= b)
-    this->add_instruction(instructions::get(a_register));
-    this->add_instruction(instructions::inc(this->_memory_manager.get_accumulator()));
-    this->add_instruction(instructions::sub(b_register));
-    // if true: return true
-    this->_jump_manager.jump_to_label(instructions::jzero_label, true_label);
-    // if false: return false
-    this->_jump_manager.jump_to_label(instructions::jump_label, false_label);
-
-    // 'if true' code will be inserted just below the true_label
-    this->_jump_manager.insert_label(true_label);
-
-    // 'if false' code will be inserted just below the true_label
-    return condition::branch{false_label};
+    // a < b <==> b > a
+    return this->greater_condition(b_register, a_register);
 }
 
 condition::branch code_builder::less_equal_condition(
@@ -331,8 +316,22 @@ condition::branch code_builder::less_equal_condition(
 condition::branch code_builder::greater_condition(
     architecture::vm_register& a_register, architecture::vm_register& b_register
 ) {
-    // a > b <==> b < a
-    return this->less_condition(b_register, a_register);
+    const std::string true_label{this->_jump_manager.new_label("le_true")};
+    const std::string false_label{this->_jump_manager.new_label("le_false")};
+
+    // check a - b > 0
+    this->add_instruction(instructions::get(a_register));
+    this->add_instruction(instructions::sub(b_register));
+    // if true: return true
+    this->_jump_manager.jump_to_label(instructions::jpos_label, true_label);
+    // if false: return false
+    this->_jump_manager.jump_to_label(instructions::jump_label, false_label);
+
+    // 'if true' code will be inserted just below the true_label
+    this->_jump_manager.insert_label(true_label);
+
+    // 'if false' code will be inserted just below the true_label
+    return condition::branch{false_label};
 }
 
 condition::branch code_builder::greater_equal_condition(
@@ -345,18 +344,18 @@ condition::branch code_builder::greater_equal_condition(
 void code_builder::multiply(
     architecture::vm_register& a_register, architecture::vm_register& b_register
 ) {
-    // TODO: use conditions and loops
     auto& is_odd_register{this->_memory_manager.acquire_free_register()};
     auto& result_register{this->_memory_manager.acquire_free_register()};
 
     const std::string end_label{this->_jump_manager.new_label("mul_end")};
     const std::string loop_begin_label{this->_jump_manager.new_label("mul_loop")};
-    const std::string inside_loop_label{this->_jump_manager.new_label("mul_insied_loop")};
+    const std::string inside_loop_label{this->_jump_manager.new_label("mul_inside_loop")};
     const std::string is_odd_label{this->_jump_manager.new_label("mul_is_odd")};
 
+    // set initial result to 0
     this->add_instruction(instructions::rst(result_register));
 
-    // check a == 0
+    // check a == 0 -> if true: return 0
     this->add_instruction(instructions::get(a_register));
     this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
 
@@ -367,10 +366,10 @@ void code_builder::multiply(
     this->add_instruction(instructions::get(b_register));
     this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
 
-    this->add_instruction(instructions::put(is_odd_register)); // x = b
-    this->add_instruction(instructions::shr(is_odd_register)); // x >> 1
-    this->add_instruction(instructions::shl(is_odd_register)); // x << 1 (get rid of last bit)
-    this->add_instruction(instructions::sub(is_odd_register)); // b = b - x
+    this->add_instruction(instructions::put(is_odd_register)); // odd = b
+    this->add_instruction(instructions::shr(is_odd_register)); // odd >> 1
+    this->add_instruction(instructions::shl(is_odd_register)); // odd << 1 (get rid of last bit)
+    this->add_instruction(instructions::sub(is_odd_register)); // b = b - odd
     this->_jump_manager.jump_to_label(instructions::jpos_label, is_odd_label);
     this->_jump_manager.insert_label(inside_loop_label);
     this->add_instruction(instructions::shl(a_register)); // a = a * 2
@@ -392,11 +391,38 @@ void code_builder::multiply(
     result_register.release();
 }
 
-void code_builder::divide(
-    architecture::vm_register& a_register, architecture::vm_register& b_register
-) {
-    // TODO
-}
+// void code_builder::divide(
+//     architecture::vm_register& a_register, architecture::vm_register& b_register
+// ) {
+//     auto& result_register{this->_memory_manager.acquire_free_register()};
+
+//     const std::string end_label{this->_jump_manager.new_label("div_end")};
+//     const std::string loop_begin_label{this->_jump_manager.new_label("div_loop")};
+
+//     // set initial result to 0
+//     this->add_instruction(instructions::rst(result_register));
+
+//     // check b == 0 -> if true: return 0
+//     this->add_instruction(instructions::get(b_register));
+//     this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+
+//     // begin division loop
+//     this->_jump_manager.insert_label(loop_begin_label);
+//     auto& accumulator{this->_memory_manager.get_accumulator()};
+
+//     // check a < b -> if true end loop
+//     this->add_instruction(instructions::get(a_register));
+//     this->add_instruction(instructions::inc(accumulator));
+//     this->add_instruction(instructions::sub(b_register));
+//     this->_jump_manager.jump_to_label(instructions::)
+
+//     // end loop
+//     this->_jump_manager.insert_label(end_label);
+//     // return result (move to acc)
+//     this->add_instruction(instructions::get(result_register));
+
+//     result_register.release();
+// }
 
 void code_builder::_write_lvalue(
     const std::shared_ptr<identifier::abstract_lvalue_identifier>& lvalue

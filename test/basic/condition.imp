@@ -29,7 +29,7 @@ IN
         WRITE 6;
     ENDIF
 
-    # else + nested if statements
+    # else + nested conditions
     IF a = b THEN
         WRITE 1;
     ELSE

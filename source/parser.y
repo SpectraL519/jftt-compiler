@@ -238,7 +238,8 @@ expression:
     }
     |
     value T_DIV value {
-        // TODO
+        // compiler.acquire_accumulator();
+        // compiler.divide($1, $3);
     }
     |
     value T_MOD value {
