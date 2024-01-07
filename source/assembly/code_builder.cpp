@@ -341,9 +341,38 @@ condition::branch code_builder::greater_equal_condition(
     return this->less_equal_condition(b_register, a_register);
 }
 
-void code_builder::multiply(
-    architecture::vm_register& a_register, architecture::vm_register& b_register
+void code_builder::subtract(
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
 ) {
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+
+    const std::string end_label{this->_jump_manager.new_label("sub_end")};
+
+    // load a
+    this->initialize_identifier_value_in_register(a, accumulator);
+    // if a == 0: return 0; (omit loading b if possible)
+    this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+    // else: perform subtraction
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+    this->initialize_identifier_value_in_register(b, b_register);
+    this->add_instruction(instructions::sub(b_register));
+    this->_jump_manager.jump_to_label(instructions::jump_label, end_label);
+
+    // return
+    this->_jump_manager.insert_label(end_label);
+
+    b_register.release();
+}
+
+void code_builder::multiply(
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
+) {
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+    auto& a_register{this->_memory_manager.acquire_free_register()};
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+
     auto& is_odd_register{this->_memory_manager.acquire_free_register()};
     auto& result_register{this->_memory_manager.acquire_free_register()};
 
@@ -355,9 +384,15 @@ void code_builder::multiply(
     // set initial result to 0
     this->add_instruction(instructions::rst(result_register));
 
+    // load a to acc
+    this->initialize_identifier_value_in_register(a, accumulator);
     // check a == 0 -> if true: return 0
-    this->add_instruction(instructions::get(a_register));
     this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+    // if false: put a
+    this->add_instruction(instructions::put(a_register));
+
+    // load b to designated register
+    this->initialize_identifier_value_in_register(b, b_register);
 
     // begin multiplication loop
     this->_jump_manager.insert_label(loop_begin_label);
@@ -387,22 +422,39 @@ void code_builder::multiply(
     // return result (move to acc)
     this->add_instruction(instructions::get(result_register));
 
+    a_register.release();
+    b_register.release();
     is_odd_register.release();
     result_register.release();
 }
 
 void code_builder::divide(
-    architecture::vm_register& a_register, architecture::vm_register& b_register
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
 ) {
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+    auto& a_register{this->_memory_manager.acquire_free_register()};
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+
     auto& result_register{this->_memory_manager.acquire_free_register()};
     this->add_instruction(instructions::rst(result_register)); // result := 0
 
     const std::string end_label{this->_jump_manager.new_label("div_end")};
     const std::string loop_begin_label{this->_jump_manager.new_label("div_loop")};
 
-    // check b == 0 -> if true: return 0
-    this->add_instruction(instructions::get(b_register));
+    // load a to acc
+    this->initialize_identifier_value_in_register(a, accumulator);
+    // check a == 0 -> if true: return 0
     this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+    // if false: put a
+    this->add_instruction(instructions::put(a_register));
+
+    // load b to acc
+    this->initialize_identifier_value_in_register(b, accumulator);
+    // check b == 0 -> if true: return 0
+    this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+    // if false: put b
+    this->add_instruction(instructions::put(b_register));
 
     // begin division loop
     this->_jump_manager.insert_label(loop_begin_label);
@@ -413,7 +465,7 @@ void code_builder::divide(
     this->add_instruction(instructions::sub(a_register));
     // if true: end loop
     this->_jump_manager.jump_to_label(instructions::jpos_label, end_label);
-    // if false: result++ and tmp -=b
+    // if false: result++ and a -= b
     // TODO: make this logarithmic
     this->add_instruction(instructions::inc(result_register));
     this->add_instruction(instructions::get(a_register));
@@ -426,6 +478,63 @@ void code_builder::divide(
     // return result (move to acc)
     this->add_instruction(instructions::get(result_register));
 
+    a_register.release();
+    b_register.release();
+    result_register.release();
+}
+
+void code_builder::modulo(
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
+) {
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+    auto& a_register{this->_memory_manager.acquire_free_register()};
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+
+    auto& result_register{this->_memory_manager.acquire_free_register()};
+    this->add_instruction(instructions::rst(result_register)); // result := 0
+
+    const std::string end_label{this->_jump_manager.new_label("div_end")};
+    const std::string loop_begin_label{this->_jump_manager.new_label("div_loop")};
+
+    // load a to acc
+    this->initialize_identifier_value_in_register(a, accumulator);
+    // check a == 0 -> if true: return 0
+    this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+    // if false: put a
+    this->add_instruction(instructions::put(a_register));
+
+    // load b to acc
+    this->initialize_identifier_value_in_register(b, accumulator);
+    // check b == 0 -> if true: return 0
+    this->_jump_manager.jump_to_label(instructions::jzero_label, end_label);
+    // if false: put b
+    this->add_instruction(instructions::put(b_register));
+
+    // begin division loop
+    this->_jump_manager.insert_label(loop_begin_label);
+    // auto& accumulator{this->_memory_manager.get_accumulator()};
+
+    // check a < b
+    this->add_instruction(instructions::get(b_register));
+    this->add_instruction(instructions::sub(a_register));
+    // if true: end loop
+    this->_jump_manager.jump_to_label(instructions::jpos_label, end_label);
+    // if false: and a -= b
+    // TODO: make this logarithmic
+    this->add_instruction(instructions::get(a_register));
+    this->add_instruction(instructions::sub(b_register));
+    this->add_instruction(instructions::put(a_register));
+    this->add_instruction(instructions::put(result_register));
+    this->_jump_manager.jump_to_label(instructions::jump_label, loop_begin_label);
+
+    // end loop
+    this->_jump_manager.insert_label(end_label);
+    // return a (move to acc)
+    this->add_instruction(instructions::get(result_register));
+
+    a_register.release();
+    b_register.release();
     result_register.release();
 }
 

@@ -20,4 +20,9 @@ IN
     WRITE quot;
     quot := b / a;
     WRITE quot;
+
+    mod := a % b;
+    WRITE mod;
+    mod := b % a;
+    WRITE mod;
 END

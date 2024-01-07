@@ -61,10 +61,18 @@ public:
     [[nodiscard]] condition::branch greater_equal_condition(
         architecture::vm_register& a_register, architecture::vm_register& b_register);
 
+    void subtract(
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
     void multiply(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
     void divide(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
+    void modulo(
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
 
     friend class assembly::jump_manager;
 

@@ -243,7 +243,8 @@ expression:
     }
     |
     value T_MOD value {
-        // TODO
+        compiler.acquire_accumulator();
+        compiler.modulo($1, $3);
     }
     ;
 

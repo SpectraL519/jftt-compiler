@@ -187,6 +187,7 @@ void compiler::end_latest_condition_with_else() {
     this->_condition_manager.add_branch(cond_end_branch);
 }
 
+// TODO: arithmetic_operation(discriminator, a, b)
 void compiler::add(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
     auto& a_register{this->_memory_manager.acquire_free_register()};
 
@@ -199,46 +200,28 @@ void compiler::add(identifier::abstract_identifier* a, identifier::abstract_iden
     a_register.release();
 }
 
+// TODO: arithmetic_operation(discriminator, a, b)
 void compiler::subtract(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
-    auto& b_register{this->_memory_manager.acquire_free_register()};
-
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(b), b_register);
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(a), this->_memory_manager.get_accumulator());
-
-    this->_asm_builder.add_instruction(assembly::instructions::sub(b_register));
-    b_register.release();
+    this->_asm_builder.subtract(
+        identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
 
+// TODO: arithmetic_operation(discriminator, a, b)
 void compiler::multiply(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
-    auto& a_register{this->_memory_manager.acquire_free_register()};
-    auto& b_register{this->_memory_manager.acquire_free_register()};
-
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(a), a_register);
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(b), b_register);
-
-    this->_asm_builder.multiply(a_register, b_register);
-
-    a_register.release();
-    b_register.release();
+    this->_asm_builder.multiply(
+        identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
 
+// TODO: arithmetic_operation(discriminator, a, b)
 void compiler::divide(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
-    auto& a_register{this->_memory_manager.acquire_free_register()};
-    auto& b_register{this->_memory_manager.acquire_free_register()};
+    this->_asm_builder.divide(
+        identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
+}
 
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(a), a_register);
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(b), b_register);
-
-    this->_asm_builder.divide(a_register, b_register);
-
-    a_register.release();
-    b_register.release();
+// TODO: arithmetic_operation(discriminator, a, b)
+void compiler::modulo(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    this->_asm_builder.modulo(
+        identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
 
 void compiler::assert_no_identifier_redeclaration(
