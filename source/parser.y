@@ -140,8 +140,9 @@ command:
 
 
 procedure_head:
-    identifier T_LPAREN procedure_args_decl T_RPAREN {
-        // TODO
+    T_IDENTIFIER T_LPAREN procedure_args_decl T_RPAREN {
+        compiler.declare_procedure(*$1.str_ptr);
+        delete $1.str_ptr;
     }
     ;
 
@@ -169,21 +170,25 @@ declarations:
     declarations T_COMMA T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
         compiler.set_line_no($3.line_no);
         compiler.declare_vararray(*$3.str_ptr, $5.value);
+        delete $3.str_ptr;
     }
     |
     declarations T_COMMA T_IDENTIFIER {
         compiler.set_line_no($3.line_no);
         compiler.declare_variable(*$3.str_ptr);
+        delete $3.str_ptr;
     }
     |
     T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
         compiler.set_line_no($1.line_no);
         compiler.declare_vararray(*$3.str_ptr, $3.value);
+        delete $3.str_ptr;
     }
     |
     T_IDENTIFIER {
         compiler.set_line_no($1.line_no);
         compiler.declare_variable(*$1.str_ptr);
+        delete $1.str_ptr;
     }
     ;
 

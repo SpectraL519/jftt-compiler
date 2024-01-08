@@ -22,7 +22,7 @@ void compiler::declare_variable(const std::string& name) {
     static constexpr auto discriminator{identifier_discriminator::variable};
     this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
-        std::make_unique<identifier::type<discriminator>>(name));
+        std::make_shared<identifier::type<discriminator>>(name));
 
     const auto& identifier{this->_identifier_manager.get<discriminator>(name)};
     identifier->set_address(this->_memory_manager.allocate(identifier->size()));
@@ -35,18 +35,18 @@ void compiler::declare_vararray(
     static constexpr auto discriminator{identifier_discriminator::vararray};
     this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
-        std::make_unique<identifier::type<discriminator>>(name, size));
+        std::make_shared<identifier::type<discriminator>>(name, size));
 
     const auto& identifier{this->_identifier_manager.get<discriminator>(name)};
     identifier->set_address(this->_memory_manager.allocate(identifier->size()));
 }
 
-// void compiler::declare_procedure(const std::string& name) {
-//     static constexpr auto discriminator{identifier_discriminator::procedure};
-//     this->assert_no_identifier_redeclaration(name);
-//     this->_identifier_manager.add<discriminator>(
-//         std::make_unique<identifier::type<discriminator>>(name));
-// }
+void compiler::declare_procedure(const std::string& name) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    this->assert_no_identifier_redeclaration(name);
+    this->_identifier_manager.add<discriminator>(
+        std::make_shared<identifier::type<discriminator>>(name));
+}
 
 const std::shared_ptr<identifier::abstract_identifier>& compiler::get_identifier(
     const std::string& name
