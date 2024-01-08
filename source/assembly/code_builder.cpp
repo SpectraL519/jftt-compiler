@@ -243,16 +243,19 @@ void code_builder::end_repeat_until_loop(
 }
 
 condition::branch code_builder::equal_condition(
-    architecture::vm_register& a_register, architecture::vm_register& b_register
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
 ) {
-    // TODO: optimize
-    // * do not perform double check if one of the values is 0
-
     const std::string true_label{this->_jump_manager.new_label("eq_true")};
     const std::string false_label{this->_jump_manager.new_label("eq_false")};
-
     // double check required: a - b == 0 and b - a == 0
     const std::string double_check_label{this->_jump_manager.new_label("eq_double_check")};
+
+    auto& a_register{this->_memory_manager.acquire_free_register()};
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+
+    this->initialize_identifier_value_in_register(a, a_register);
+    this->initialize_identifier_value_in_register(b, b_register);
 
     // check a - b == 0
     this->add_instruction(instructions::get(a_register));
@@ -274,18 +277,27 @@ condition::branch code_builder::equal_condition(
     // 'if true' code will be inserted just below the true_label
     this->_jump_manager.insert_label(true_label);
 
+    a_register.release();
+    b_register.release();
+
     // 'if false' code will be inserted just below the true_label
     return condition::branch{false_label};
 }
 
 condition::branch code_builder::not_equal_condition(
-    architecture::vm_register& a_register, architecture::vm_register& b_register
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
 ) {
     const std::string true_label{this->_jump_manager.new_label("neq_true")};
     const std::string false_label{this->_jump_manager.new_label("neq_false")};
-
     // double check required: a - b == 0 and b - a == 0
     const std::string double_check_label{this->_jump_manager.new_label("neq_double_check")};
+
+    auto& a_register{this->_memory_manager.acquire_free_register()};
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+
+    this->initialize_identifier_value_in_register(a, a_register);
+    this->initialize_identifier_value_in_register(b, b_register);
 
     // check a - b == 0
     this->add_instruction(instructions::get(a_register));
@@ -307,25 +319,41 @@ condition::branch code_builder::not_equal_condition(
     // 'if true' code will be inserted just below the true_label
     this->_jump_manager.insert_label(true_label);
 
+    a_register.release();
+    b_register.release();
+
     // 'if false' code will be inserted just below the true_label
     return condition::branch{false_label};
 }
 
 condition::branch code_builder::less_condition(
-    architecture::vm_register& a_register, architecture::vm_register& b_register
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
 ) {
     // a < b <==> b > a
-    return this->greater_condition(b_register, a_register);
+    return this->greater_condition(b, a);
 }
 
 condition::branch code_builder::less_equal_condition(
-    architecture::vm_register& a_register, architecture::vm_register& b_register
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
 ) {
-    const std::string true_label{this->_jump_manager.new_label("le_true")};
-    const std::string false_label{this->_jump_manager.new_label("le_false")};
+    const std::string true_label{this->_jump_manager.new_label("leq_true")};
+    const std::string false_label{this->_jump_manager.new_label("leq_false")};
+
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+
+    // if a == 0: return true
+    this->initialize_identifier_value_in_register(a, accumulator);
+    this->_jump_manager.jump_to_label(instructions::jzero_label, true_label);
+
+    // if a > 0: check condition
+    accumulator.acquire();
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+    this->initialize_identifier_value_in_register(b, b_register);
+    accumulator.release();
 
     // check a - b == 0
-    this->add_instruction(instructions::get(a_register));
     this->add_instruction(instructions::sub(b_register));
     // if true: return true
     this->_jump_manager.jump_to_label(instructions::jzero_label, true_label);
@@ -335,18 +363,32 @@ condition::branch code_builder::less_equal_condition(
     // 'if true' code will be inserted just below the true_label
     this->_jump_manager.insert_label(true_label);
 
+    b_register.release();
+
     // 'if false' code will be inserted just below the true_label
     return condition::branch{false_label};
 }
 
 condition::branch code_builder::greater_condition(
-    architecture::vm_register& a_register, architecture::vm_register& b_register
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
 ) {
-    const std::string true_label{this->_jump_manager.new_label("le_true")};
-    const std::string false_label{this->_jump_manager.new_label("le_false")};
+    const std::string true_label{this->_jump_manager.new_label("ge_true")};
+    const std::string false_label{this->_jump_manager.new_label("ge_false")};
+
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+
+    // if a == 0: return false
+    this->initialize_identifier_value_in_register(a, accumulator);
+    this->_jump_manager.jump_to_label(instructions::jzero_label, false_label);
+
+    // if a > 0: check condition
+    accumulator.acquire();
+    auto& b_register{this->_memory_manager.acquire_free_register()};
+    this->initialize_identifier_value_in_register(b, b_register);
+    accumulator.release();
 
     // check a - b > 0
-    this->add_instruction(instructions::get(a_register));
     this->add_instruction(instructions::sub(b_register));
     // if true: return true
     this->_jump_manager.jump_to_label(instructions::jpos_label, true_label);
@@ -356,15 +398,18 @@ condition::branch code_builder::greater_condition(
     // 'if true' code will be inserted just below the true_label
     this->_jump_manager.insert_label(true_label);
 
+    b_register.release();
+
     // 'if false' code will be inserted just below the true_label
     return condition::branch{false_label};
 }
 
 condition::branch code_builder::greater_equal_condition(
-    architecture::vm_register& a_register, architecture::vm_register& b_register
+    const std::shared_ptr<identifier::abstract_identifier>& a,
+    const std::shared_ptr<identifier::abstract_identifier>& b
 ) {
     // a >= b <==> b <= a
-    return this->less_equal_condition(b_register, a_register);
+    return this->less_equal_condition(b, a);
 }
 
 void code_builder::subtract(

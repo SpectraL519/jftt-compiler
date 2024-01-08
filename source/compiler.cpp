@@ -181,50 +181,40 @@ void compiler::add_condition(
     identifier::abstract_identifier* a,
     identifier::abstract_identifier* b
 ) {
-    // TODO: load values in the asm_builder functions to avoid excessive loading
-
-    auto& a_register{this->_memory_manager.acquire_free_register()};
-    auto& b_register{this->_memory_manager.acquire_free_register()};
-
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(a), a_register);
-    this->_asm_builder.initialize_identifier_value_in_register(
-        identifier::shared_ptr_cast(b), b_register);
+    this->assert_lvalue_initialized(a->name(), a->discriminator());
+    this->assert_lvalue_initialized(b->name(), b->discriminator());
 
     switch (discriminator) {
     case condition_discriminator::eq:
-        this->_condition_manager.add_branch(
-            this->_asm_builder.equal_condition(a_register, b_register));
+        this->_condition_manager.add_branch(this->_asm_builder.equal_condition(
+            identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b)));
         break;
 
     case condition_discriminator::neq:
-        this->_condition_manager.add_branch(
-            this->_asm_builder.not_equal_condition(a_register, b_register));
+        this->_condition_manager.add_branch(this->_asm_builder.not_equal_condition(
+            identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b)));
         break;
 
     case condition_discriminator::le:
-        this->_condition_manager.add_branch(
-            this->_asm_builder.less_condition(a_register, b_register));
+        this->_condition_manager.add_branch(this->_asm_builder.less_condition(
+            identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b)));
         break;
 
     case condition_discriminator::leq:
-        this->_condition_manager.add_branch(
-            this->_asm_builder.less_equal_condition(a_register, b_register));
+        this->_condition_manager.add_branch(this->_asm_builder.less_equal_condition(
+            identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b)));
         break;
 
     case condition_discriminator::ge:
-        this->_condition_manager.add_branch(
-            this->_asm_builder.greater_condition(a_register, b_register));
+        this->_condition_manager.add_branch(this->_asm_builder.greater_condition(
+            identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b)));
         break;
 
     case condition_discriminator::geq:
-        this->_condition_manager.add_branch(
-            this->_asm_builder.greater_equal_condition(a_register, b_register));
+        this->_condition_manager.add_branch(this->_asm_builder.greater_equal_condition(
+            identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b)));
         break;
     }
-
-    a_register.release();
-    b_register.release();
 }
 
 void compiler::end_latest_condition_without_else() {

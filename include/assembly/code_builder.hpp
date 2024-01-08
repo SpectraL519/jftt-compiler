@@ -54,17 +54,23 @@ public:
     void end_repeat_until_loop(const std::shared_ptr<loop::abstract_loop>& loop);
 
     [[nodiscard]] condition::branch equal_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
     [[nodiscard]] condition::branch not_equal_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
     [[nodiscard]] condition::branch less_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
     [[nodiscard]] condition::branch less_equal_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
     [[nodiscard]] condition::branch greater_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
     [[nodiscard]] condition::branch greater_equal_condition(
-        architecture::vm_register& a_register, architecture::vm_register& b_register);
+        const std::shared_ptr<identifier::abstract_identifier>& a,
+        const std::shared_ptr<identifier::abstract_identifier>& b);
 
     void subtract(
         const std::shared_ptr<identifier::abstract_identifier>& a,
