@@ -47,7 +47,7 @@ int yyerror(const char* msg);
 
 
 /* terminal symbols - keywords */
-%token <token> T_PROGRAM T_PROCEDURE T_IS T_IN T_END
+%token <token> T_PROGRAM T_PROCEDURE T_IS T_IN T_END T_PROCEDURE_T
 %token <token> T_IF T_THEN T_ELSE T_ENDIF
 %token <token> T_WHILE T_DO T_ENDWHILE
 %token <token> T_REPEAT T_UNTIL
@@ -158,7 +158,7 @@ procedure_params_decl:
         delete $3.str_ptr;
     }
     |
-    procedure_params_decl T_COMMA "T" T_IDENTIFIER {
+    procedure_params_decl T_COMMA T_PROCEDURE_T T_IDENTIFIER {
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::vararray, *$4.str_ptr);
         delete $4.str_ptr;
@@ -170,7 +170,7 @@ procedure_params_decl:
         delete $1.str_ptr;
     }
     |
-    "T" T_IDENTIFIER {
+    T_PROCEDURE_T T_IDENTIFIER {
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::vararray, *$2.str_ptr);
         delete $2.str_ptr;
@@ -387,11 +387,22 @@ identifier:
     T_IDENTIFIER {
         compiler.set_line_no($1.line_no);
         assert_identifier_token($1.discriminator);
-        compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::variable);
 
-        $$ = new id::variable(
-            *id::shared_ptr_cast<id::type_discriminator::variable>(
-                compiler.get_identifier(*$1.str_ptr)));
+        if (current_procedure) {
+            // TODO: this does not work because the reference is not set yet
+            compiler.procedure_assert_identifier_defined(
+                current_procedure.value(), *$1.str_ptr, id::type_discriminator::variable);
+            $$ = new id::variable(
+                *id::shared_ptr_cast<id::type_discriminator::variable>(
+                    compiler.get_procedure_identifier(current_procedure.value(), *$1.str_ptr)));
+        }
+        else {
+            compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::variable);
+            $$ = new id::variable(
+                *id::shared_ptr_cast<id::type_discriminator::variable>(
+                    compiler.get_identifier(*$1.str_ptr)));
+        }
+
         delete $1.str_ptr;
     }
     |
@@ -399,13 +410,25 @@ identifier:
         compiler.set_line_no($1.line_no);
         assert_identifier_token($1.discriminator);
         assert_rvalue_token($3.discriminator);
-        compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::vararray);
 
-        auto vararray{new id::vararray(
-            *id::shared_ptr_cast<id::type_discriminator::vararray>(
-                compiler.get_identifier(*$1.str_ptr)))};
-        vararray->set_indexer(std::make_shared<id::rvalue>($3.value));
-        $$ = vararray;
+        if (current_procedure) {
+            // TODO: this does not work because the reference is not set yet
+            compiler.procedure_assert_identifier_defined(
+                current_procedure.value(), *$1.str_ptr, id::type_discriminator::vararray);
+            auto vararray{new id::vararray(
+                *id::shared_ptr_cast<id::type_discriminator::vararray>(
+                    compiler.get_procedure_identifier(current_procedure.value(), *$1.str_ptr)))};
+            vararray->set_indexer(std::make_shared<id::rvalue>($3.value));
+            $$ = vararray;
+        }
+        else {
+            compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::vararray);
+            auto vararray{new id::vararray(
+                *id::shared_ptr_cast<id::type_discriminator::vararray>(
+                    compiler.get_identifier(*$1.str_ptr)))};
+            vararray->set_indexer(std::make_shared<id::rvalue>($3.value));
+            $$ = vararray;
+        }
 
         delete $1.str_ptr;
     }
@@ -414,15 +437,35 @@ identifier:
         compiler.set_line_no($1.line_no);
         assert_identifier_token($1.discriminator);
         assert_identifier_token($3.discriminator);
-        compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::vararray);
-        compiler.assert_identifier_defined(*$3.str_ptr, id::type_discriminator::variable);
-        compiler.assert_lvalue_initialized(*$3.str_ptr, id::type_discriminator::variable);
 
-        auto vararray{new id::vararray(
-            *id::shared_ptr_cast<id::type_discriminator::vararray>(
-                compiler.get_identifier(*$1.str_ptr)))};
-        vararray->set_indexer(compiler.get_identifier(*$3.str_ptr));
-        $$ = vararray;
+        if (current_procedure) {
+            // TODO: this does not work because the reference is not set yet
+            compiler.procedure_assert_identifier_defined(
+                current_procedure.value(), *$1.str_ptr, id::type_discriminator::vararray);
+            compiler.procedure_assert_identifier_defined(
+                current_procedure.value(), *$3.str_ptr, id::type_discriminator::variable);
+            compiler.procedure_assert_lvalue_initialized(
+                current_procedure.value(), *$3.str_ptr, id::type_discriminator::variable);
+
+            auto vararray{new id::vararray(
+                *id::shared_ptr_cast<id::type_discriminator::vararray>(
+                    compiler.get_procedure_identifier(current_procedure.value(), *$1.str_ptr)))};
+            vararray->set_indexer(
+                id::shared_ptr_cast<id::type_discriminator::variable>(
+                    compiler.get_procedure_identifier(current_procedure.value(), *$3.str_ptr)));
+            $$ = vararray;
+        }
+        else {
+            compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::vararray);
+            compiler.assert_identifier_defined(*$3.str_ptr, id::type_discriminator::variable);
+            compiler.assert_lvalue_initialized(*$3.str_ptr, id::type_discriminator::variable);
+
+            auto vararray{new id::vararray(
+                *id::shared_ptr_cast<id::type_discriminator::vararray>(
+                    compiler.get_identifier(*$1.str_ptr)))};
+            vararray->set_indexer(compiler.get_identifier(*$3.str_ptr));
+            $$ = vararray;
+        }
 
         delete $1.str_ptr;
         delete $3.str_ptr;

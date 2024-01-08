@@ -63,6 +63,13 @@ PROCEDURE {
     return normal_token(T_PROCEDURE);
 }
 
+T {
+#ifdef DEBUG_LEXER
+    print_lexer_debug_info(program_line_no, "token = T_PROCEDURE_T", yytext);
+#endif
+    return normal_token(T_PROCEDURE_T);
+}
+
 IS {
 #ifdef DEBUG_LEXER
     print_lexer_debug_info(program_line_no, "token = T_IS", yytext);

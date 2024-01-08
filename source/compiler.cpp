@@ -134,18 +134,105 @@ void compiler::begin_procedure_implementation(const std::string& procedure_name)
     procedure->set_begin_label(this->_asm_builder.new_jump_label(procedure_name));
 }
 
-void compiler::end_procedure_declaration(const std::string& procedure_name) {
+void compiler::end_procedure_implementation(const std::string& procedure_name) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
     this->assert_identifier_defined(procedure_name, discriminator);
-
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+
     auto error_opt{procedure->finish_parameter_passing()};
     if (error_opt) {
         std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
                   << "\t" << error_opt.value() << std::endl;
         std::exit(1);
     }
+}
+
+const std::shared_ptr<identifier::abstract_lvalue_identifier>& compiler::get_procedure_identifier(
+    const std::string& procedure_name, const std::string& identifier_name
+) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    this->assert_identifier_defined(procedure_name, discriminator);
+    auto procedure{
+        identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+
+    return procedure->get_identifier(identifier_name);
+}
+
+void compiler::procedure_assert_no_identifier_redeclaration(
+    const std::string& procedure_name, const std::string& identifier_name
+) {
+    this->assert_identifier_defined(procedure_name, identifier_discriminator::procedure);
+    auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
+        this->get_identifier(procedure_name))};
+
+    if (!procedure->has_identifier(identifier_name))
+        return;
+
+    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+              << "\tIdentifier `" << identifier_name << "` already defined in procedure: "
+              << procedure_name << std::endl;
+    std::exit(1);
+}
+
+void compiler::procedure_assert_identifier_defined(
+    const std::string& procedure_name, const std::string& identifier_name
+) {
+    this->assert_identifier_defined(procedure_name, identifier_discriminator::procedure);
+    auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
+        this->get_identifier(procedure_name))};
+
+    if (procedure->has_identifier(identifier_name))
+        return;
+
+    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+              << "\tUndefined identifier `" << identifier_name << "` in procedure: "
+              << procedure_name << std::endl;
+    std::exit(1);
+}
+
+void compiler::procedure_assert_identifier_defined(
+    const std::string& procedure_name,
+    const std::string& identifier_name,
+    const identifier_discriminator discriminator
+) {
+    this->assert_identifier_defined(procedure_name, identifier_discriminator::procedure);
+    auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
+        this->get_identifier(procedure_name))};
+
+    if (procedure->has_identifier(identifier_name, discriminator))
+        return;
+
+    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+              << "\tUndefined " << identifier::as_string(discriminator) << identifier_name
+              << " identifier `" << identifier_name << "` in procedure: "
+              << procedure_name << std::endl;
+    std::exit(1);
+}
+
+void compiler::procedure_assert_lvalue_initialized(
+    const std::string& procedure_name,
+    const std::string& lvalue_name,
+    const identifier_discriminator discriminator
+) {
+    this->assert_identifier_defined(procedure_name, identifier_discriminator::procedure);
+    auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
+        this->get_identifier(procedure_name))};
+
+    if (discriminator == identifier_discriminator::rvalue)
+        return;
+
+    this->procedure_assert_identifier_defined(procedure_name, lvalue_name);
+    const auto lvalue{
+        procedure->get_identifier<identifier_discriminator::lvalue>(lvalue_name)};
+
+    if (lvalue->is_initialized())
+        return;
+
+    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+              << "\tUninitialized identifier `" << lvalue_name << "` in procedure: "
+              << procedure_name << std::endl;
+    std::exit(1);
 }
 
 const std::shared_ptr<identifier::abstract_identifier>& compiler::get_identifier(
@@ -418,9 +505,9 @@ void compiler::assert_lvalue_initialized(
         return;
 
     this->assert_identifier_defined(identifier_name);
-
     const auto lvalue{
         this->_identifier_manager.get<identifier_discriminator::lvalue>(identifier_name)};
+
     if (lvalue->is_initialized())
         return;
 

@@ -42,7 +42,24 @@ public:
         const std::string& vararray_name,
         const architecture::memory_size_type vararray_size);
     void begin_procedure_implementation(const std::string& procedure_name);
-    void end_procedure_declaration(const std::string& procedure_name);
+    void end_procedure_implementation(const std::string& procedure_name);
+
+    [[nodiscard]]
+    const std::shared_ptr<identifier::abstract_lvalue_identifier>& get_procedure_identifier(
+        const std::string& procedure_name, const std::string& identifier_name);
+
+    void procedure_assert_no_identifier_redeclaration(
+        const std::string& procedure_name, const std::string& identifier_name);
+    void procedure_assert_identifier_defined(
+        const std::string& procedure_name, const std::string& identifier_name);
+    void procedure_assert_identifier_defined(
+        const std::string& procedure_name,
+        const std::string& identifier_name,
+        const identifier_discriminator discriminator);
+    void procedure_assert_lvalue_initialized(
+        const std::string& procedure_name,
+        const std::string& lvalue_name,
+        const identifier_discriminator discriminator);
 
     [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get_identifier(
         const std::string& name);

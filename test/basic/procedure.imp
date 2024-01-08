@@ -1,0 +1,11 @@
+# Simple procedure test
+PROCEDURE test_procedure(a, T b) IS
+    x, t[10]
+IN
+    WRITE 1;
+END
+
+PROGRAM IS
+IN
+    WRITE 0;
+END
