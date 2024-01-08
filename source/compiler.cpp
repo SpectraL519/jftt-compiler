@@ -107,7 +107,7 @@ void compiler::declare_procedure_local_vararray(
     const architecture::memory_size_type vararray_size
 ) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
-    static constexpr auto local_discriminator{identifier_discriminator::variable};
+    static constexpr auto local_discriminator{identifier_discriminator::vararray};
 
     this->assert_identifier_defined(procedure_name, discriminator);
     auto procedure{

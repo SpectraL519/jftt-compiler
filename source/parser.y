@@ -146,6 +146,7 @@ procedure_decl:
     T_PROCEDURE T_IDENTIFIER {
         compiler.begin_procedure_declarations();
         compiler.declare_procedure(*$2.str_ptr);
+        current_procedure.emplace(*$2.str_ptr);
         delete $2.str_ptr;
     }
     ;
@@ -159,8 +160,8 @@ procedure_params_decl:
     |
     procedure_params_decl T_COMMA "T" T_IDENTIFIER {
         compiler.declare_procedure_parameter(
-            current_procedure.value(), id::type_discriminator::vararray, *$3.str_ptr);
-        delete $3.str_ptr;
+            current_procedure.value(), id::type_discriminator::vararray, *$4.str_ptr);
+        delete $4.str_ptr;
     }
     |
     T_IDENTIFIER {
@@ -174,6 +175,8 @@ procedure_params_decl:
             current_procedure.value(), id::type_discriminator::vararray, *$2.str_ptr);
         delete $2.str_ptr;
     }
+    |
+    /* emmpty production */
     ;
 
 procedure_begin:
@@ -184,7 +187,8 @@ procedure_begin:
 
 procedure_end:
     T_END {
-
+        // TODO: procedure retun code
+        current_procedure = std::nullopt;
     }
     ;
 
@@ -230,7 +234,7 @@ declarations:
     |
     T_IDENTIFIER {
         if (current_procedure) {
-            compiler.set_line_no($3.line_no);
+            compiler.set_line_no($1.line_no);
             compiler.declare_procedure_local_variable(current_procedure.value(), *$1.str_ptr);
         }
         else {
