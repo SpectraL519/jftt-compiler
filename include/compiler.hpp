@@ -5,6 +5,9 @@
 #include "condition/branch_manager.hpp"
 #include "identifier_manager.hpp"
 #include "loop_manager.hpp"
+#include "procedure_call_manager.hpp"
+
+#include <optional>
 
 
 
@@ -15,6 +18,8 @@ public:
     compiler() = default;
     ~compiler() = default;
 
+    void begin_procedure_declarations();
+    void begin_program();
     void finish_code_generating();
     const std::vector<std::string>& asm_code() const;
 
@@ -25,7 +30,16 @@ public:
         const std::string& vararray_name,
         const architecture::memory_size_type size
     );
+
     void declare_procedure(const std::string& procedure_name);
+    void declare_procedure_parameter(
+        const std::string& procedure_name,
+        const identifier_discriminator param_discriminator,
+        const std::string& local_name);
+    void declare_procedure_local_lvalue_identifier(
+        const std::string& procedure_name,
+        identifier::abstract_lvalue_identifier* identifier);
+    void end_procedure_declaration(const std::string& procedure_name);
 
     [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get_identifier(
         const std::string& name);
@@ -69,11 +83,15 @@ public:
 
 private:
     std::size_t _line_no{1u};
-    architecture::vm_memory_manager& _memory_manager{architecture::vm_memory_manager::instance()};
+    std::optional<std::string> _program_begin_label;
+
     assembly::code_builder _asm_builder;
+
+    architecture::vm_memory_manager& _memory_manager{architecture::vm_memory_manager::instance()};
     condition::branch_manager _condition_manager;
     identifier_manager _identifier_manager;
     loop_manager _loop_manager;
+    procedure_call_manager _procedure_manager;
 };
 
 } // namespace jftt

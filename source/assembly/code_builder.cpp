@@ -207,18 +207,18 @@ void code_builder::move_tmp_register_content_to_acc(architecture::vm_register& t
     tmp_register.release();
 }
 
-std::string code_builder::new_condition_jump_label(const std::string& label_name) {
+std::string code_builder::new_jump_label(const std::string& label_name) {
     return this->_jump_manager.new_label(label_name);
 }
 
 // TODO: come up with a better name
-void code_builder::new_condition_branch_jump_point(const condition::branch& branch) {
-    this->_jump_manager.insert_label(branch.false_eval_label);
+void code_builder::insert_jump_point_label(const std::string& label) {
+    this->_jump_manager.insert_label(label);
 }
 
 // TODO: come up with a better name
-void code_builder::set_condition_branch_jump_point(const condition::branch& branch) {
-    this->_jump_manager.jump_to_label(instructions::jump_label, branch.false_eval_label);
+void code_builder::set_jump_point(const std::string& label) {
+    this->_jump_manager.jump_to_label(instructions::jump_label, label);
 }
 
 void code_builder::start_loop(const std::shared_ptr<loop::abstract_loop>& loop) {

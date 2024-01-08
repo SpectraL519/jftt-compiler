@@ -3,16 +3,39 @@
 #include "abstract_identifier.hpp"
 #include "identifier_cast.hpp"
 
+#include <algorithm>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
+#include <vector>
 
 
 
 namespace jftt::identifier {
 
-struct procedure_param {
+struct procedure_paramter {
+    procedure_paramter() = delete;
+
+    procedure_paramter(
+        const type_discriminator declared_discriminator,
+        const std::string local_name,
+        const std::shared_ptr<abstract_lvalue_identifier>& reference
+    ) : declared_discriminator(declared_discriminator),
+        local_name(local_name),
+        reference(reference)
+    {}
+
+    procedure_paramter(const procedure_paramter&) = default;
+    procedure_paramter(procedure_paramter&&) = default;
+
+    procedure_paramter& operator=(const procedure_paramter&) = default;
+    procedure_paramter& operator=(procedure_paramter&&) = default;
+
+    ~procedure_paramter() = default;
+
     type_discriminator declared_discriminator;
+    std::string local_name;
     std::shared_ptr<abstract_lvalue_identifier> reference;
 };
 
@@ -20,6 +43,8 @@ struct procedure_param {
 //         |-> functions are lvalues
 class procedure : public abstract_identifier {
 public:
+    // TODO: add procedure begin label
+
     procedure(const std::string& name)
     : abstract_identifier(type_discriminator::procedure, name) {}
 
@@ -31,59 +56,76 @@ public:
 
     ~procedure() = default;
 
-    void add_param(const std::string& name, const type_discriminator discriminator) {
+    std::optional<std::string> declare_parameter(
+        const std::string& name, const type_discriminator discriminator
+    ) {
+        if (this->has_identifier(name))
+            return "Identifier `" + name + "` already defined in function `" + this->_name + "`";
+
         this->_assert_valid_param_discriminator(discriminator);
-        this->_params[name] = procedure_param{discriminator, nullptr};
+        this->_local_identifiers.emplace_back(discriminator, name, nullptr);
+        this->_param_no++;
+        return std::nullopt;
     }
 
-    void set_param_reference(
-        const std::string& name,
+    std::optional<std::string> set_parameter_reference(
         const std::shared_ptr<abstract_lvalue_identifier>& reference
     ) {
-        this->_params.at(name).reference = reference;
+        // returns optional error msg
+        this->_call_param_idx++;
+        if (this->_call_param_idx > this->_param_no)
+            return "To many function call parameters";
+
+        this->_local_identifiers.at(this->_call_param_idx - 1).reference = reference;
+        return std::nullopt;
     }
 
-    void set_begin_label(const std::string& begin_label) {
-        this->_begin_label = begin_label;
+    std::optional<std::string> finish_parameter_passing() {
+        // returns optional error msg
+        if (this->_call_param_idx < this->_param_no)
+            return "Not enough function call parameters";
+
+        this->_call_param_idx = 0u;
+        return std::nullopt;
     }
 
-    void set_end_label(const std::string& end_label) {
-        this->_end_label = end_label;
+    std::optional<std::string> declare_lvalue_identifier(
+        std::shared_ptr<identifier::abstract_lvalue_identifier> lvalue
+    ) {
+        if (this->has_identifier(lvalue->name()))
+            return "Identifier `" + lvalue->name() +
+                   "` already defined in function `" + this->_name + "`";
+
+        this->_local_identifiers.emplace_back(
+            lvalue->discriminator(), lvalue->name(), std::move(lvalue));
+        return std::nullopt;
     }
 
-    [[nodiscard]] bool has_param(const std::string& name) const {
-        return this->_params.find(name) != this->_params.end();
+    [[nodiscard]] bool has_identifier(const std::string& name) const {
+        return this->_cfind_param(name) != this->_local_identifiers.end();
     }
 
-    [[nodiscard]] bool has_param(
+    [[nodiscard]] bool has_identifier(
         const std::string& name, const type_discriminator discriminator
     ) const {
-        const auto& param = this->_params.find(name);
-        return param != this->_params.end() &&
-               param->second.declared_discriminator == discriminator;
+        auto param_it{this->_cfind_param(name)};
+        return param_it != this->_local_identifiers.end() &&
+               param_it->declared_discriminator == discriminator;
     }
 
-    [[nodiscard]] const std::shared_ptr<identifier::abstract_lvalue_identifier>& get_param_reference(
+    [[nodiscard]] const std::shared_ptr<identifier::abstract_lvalue_identifier>& get_identifier(
         const std::string& name
     ) {
-        return this->_params.at(name).reference;
+        return this->_find_param(name)->reference;
     }
 
     // ? not necessary
     template <type_discriminator IdentifierDiscriminator>
-    [[nodiscard]] std::shared_ptr<identifier::type<IdentifierDiscriminator>> get_param_reference(
+    [[nodiscard]] std::shared_ptr<identifier::type<IdentifierDiscriminator>> get_identifier(
         const std::string& name
-    ) const {
+    ) {
         return identifier::shared_ptr_cast<IdentifierDiscriminator>(
-            this->_params.at(name).reference);
-    }
-
-    [[nodiscard]] const std::string& begin_label() const {
-        return this->_begin_label;
-    }
-
-    [[nodiscard]] const std::string& end_label() const {
-        return this->_end_label;
+            this->_find_param(name)->reference);
     }
 
 private:
@@ -101,9 +143,26 @@ private:
         }
     }
 
-    std::map<std::string, procedure_param> _params;
-    std::string _begin_label;
-    std::string _end_label;
+    [[nodiscard]] std::vector<procedure_paramter>::iterator _find_param(const std::string& name) {
+        return std::find_if(
+            this->_local_identifiers.begin(), this->_local_identifiers.end(),
+            [&name] (const auto& param) { return param.local_name == name; }
+        );
+    }
+
+    [[nodiscard]] std::vector<procedure_paramter>::const_iterator _cfind_param(
+        const std::string& name
+    ) const {
+        return std::find_if(
+            this->_local_identifiers.cbegin(), this->_local_identifiers.cend(),
+            [&name] (const auto& param) { return param.local_name == name; }
+        );
+    }
+
+    std::vector<procedure_paramter> _local_identifiers;
+    // std::map<std::string, procedure_paramter> _local_identifiers;
+    std::size_t _param_no{0u};
+    std::size_t _call_param_idx{0u};
 };
 
 } // namespace jftt::identifier

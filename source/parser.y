@@ -4,9 +4,11 @@
 #include "compiler.hpp"
 
 #include <iostream>
+#include <optional>
 
 // utility
 jftt::compiler compiler;
+std::optional<std::string> current_procedure;
 
 // Flex & Bison utility
 int yylex();
@@ -148,19 +150,19 @@ procedure_head:
 
 
 procedure_args_decl:
-    procedure_args_decl T_COMMA identifier {
+    procedure_args_decl T_COMMA T_IDENTIFIER {
         // TODO
     }
     |
-    procedure_args_decl T_COMMA "T" identifier {
+    procedure_args_decl T_COMMA "T" T_IDENTIFIER {
         // TODO
     }
     |
-    identifier {
+    T_IDENTIFIER {
         // TODO
     }
     |
-    "T" identifier {
+    "T" T_IDENTIFIER {
         // TODO
     }
     ;

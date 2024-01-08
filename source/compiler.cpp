@@ -6,6 +6,15 @@
 
 namespace jftt {
 
+void compiler::begin_procedure_declarations() {
+    this->_program_begin_label.emplace(this->_asm_builder.new_jump_label("program_begin"));
+    this->_asm_builder.set_jump_point(this->_program_begin_label.value());
+}
+
+void compiler::begin_program() {
+    this->_asm_builder.insert_jump_point_label(this->_program_begin_label.value());
+}
+
 void compiler::finish_code_generating() {
     this->_asm_builder.stop_building();
 }
@@ -46,6 +55,56 @@ void compiler::declare_procedure(const std::string& name) {
     this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
         std::make_shared<identifier::type<discriminator>>(name));
+}
+
+void compiler::declare_procedure_parameter(
+    const std::string& procedure_name,
+    const identifier_discriminator param_discriminator,
+    const std::string& local_name
+) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    this->assert_identifier_defined(procedure_name, discriminator);
+
+    auto procedure{
+        identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+    auto error_opt{procedure->declare_parameter(local_name, param_discriminator)};
+    if (error_opt) {
+        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+                  << "\t" << error_opt.value() << std::endl;
+        std::exit(1);
+    }
+}
+
+void compiler::declare_procedure_local_lvalue_identifier(
+    const std::string& procedure_name,
+    identifier::abstract_lvalue_identifier* identifier
+) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    this->assert_identifier_defined(procedure_name, discriminator);
+
+    auto procedure{
+        identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+    auto error_opt{procedure->declare_lvalue_identifier(
+        identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier))};
+    if (error_opt) {
+        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+                  << "\t" << error_opt.value() << std::endl;
+        std::exit(1);
+    }
+}
+
+void compiler::end_procedure_declaration(const std::string& procedure_name) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    this->assert_identifier_defined(procedure_name, discriminator);
+
+    auto procedure{
+        identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+    auto error_opt{procedure->finish_parameter_passing()};
+    if (error_opt) {
+        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+                  << "\t" << error_opt.value() << std::endl;
+        std::exit(1);
+    }
 }
 
 const std::shared_ptr<identifier::abstract_identifier>& compiler::get_identifier(
@@ -170,17 +229,18 @@ void compiler::add_condition(
 
 void compiler::end_latest_condition_without_else() {
     const auto latest_branch{this->_condition_manager.extract_branch()};
-    this->_asm_builder.new_condition_branch_jump_point(latest_branch);
+    this->_asm_builder.insert_jump_point_label(latest_branch.false_eval_label);
 }
 
 void compiler::end_latest_condition_with_else() {
     // add a jump point to the end of the if_else branch
     const auto cond_end_branch{condition::branch{
-        this->_asm_builder.new_condition_jump_label("cond_end")}};
-    this->_asm_builder.set_condition_branch_jump_point(cond_end_branch);
+        this->_asm_builder.new_jump_label("cond_end")}};
+    this->_asm_builder.set_jump_point(cond_end_branch.false_eval_label);
 
     // add a jump point skipping the else branch if condition is evaluated to true
-    this->_asm_builder.new_condition_branch_jump_point(this->_condition_manager.extract_branch());
+    this->_asm_builder.insert_jump_point_label(
+        this->_condition_manager.extract_branch().false_eval_label);
 
     // add the cond_end_branch to the stack
     this->_condition_manager.add_branch(cond_end_branch);
@@ -190,7 +250,7 @@ void compiler::end_latest_condition_with_else() {
 void compiler::add_loop(const loop_discriminator discriminator) {
     switch (discriminator) {
     case loop_discriminator::while_do: {
-        const std::string begin_label{this->_asm_builder.new_condition_jump_label("while_loop_begin")};
+        const std::string begin_label{this->_asm_builder.new_jump_label("while_loop_begin")};
         // end label will be defined as the condition end label
         std::shared_ptr<loop::abstract_loop> loop{
             std::make_shared<loop::while_loop>(begin_label, std::string{})};
@@ -201,7 +261,7 @@ void compiler::add_loop(const loop_discriminator discriminator) {
 
     case loop_discriminator::repeat_until: {
         const std::string begin_label{
-            this->_asm_builder.new_condition_jump_label("repeat_until_loop_begin")};
+            this->_asm_builder.new_jump_label("repeat_until_loop_begin")};
         // end label will be defined as the condition end label
         std::shared_ptr<loop::abstract_loop> loop{
             std::make_shared<loop::repeat_until_loop>(begin_label, std::string{})};

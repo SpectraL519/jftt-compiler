@@ -45,9 +45,10 @@ public:
     architecture::vm_register& move_acc_content_to_tmp_register();
     void move_tmp_register_content_to_acc(architecture::vm_register& tmp_register);
 
-    [[nodiscard]] std::string new_condition_jump_label(const std::string& label_name);
-    void new_condition_branch_jump_point(const condition::branch& branch);
-    void set_condition_branch_jump_point(const condition::branch& branch);
+    [[nodiscard]] std::string new_jump_label(const std::string& label_name);
+    void insert_jump_point_label(const std::string& label);
+    void set_jump_point(const std::string& label);
+
     void start_loop(const std::shared_ptr<loop::abstract_loop>& loop);
     void end_while_loop(const std::shared_ptr<loop::abstract_loop>& loop);
     void end_repeat_until_loop(const std::shared_ptr<loop::abstract_loop>& loop);
