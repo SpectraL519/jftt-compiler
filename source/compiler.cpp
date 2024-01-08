@@ -59,7 +59,6 @@ void compiler::declare_procedure(const std::string& name) {
     this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
         std::make_shared<identifier::type<discriminator>>(name));
-    // TODO: set begin label
 }
 
 void compiler::declare_procedure_parameter(
@@ -128,10 +127,13 @@ void compiler::declare_procedure_local_vararray(
 void compiler::begin_procedure_implementation(const std::string& procedure_name) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
     this->assert_identifier_defined(procedure_name, discriminator);
-
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
-    procedure->set_begin_label(this->_asm_builder.new_jump_label(procedure_name));
+
+    const std::string procedure_begin_label{
+        this->_asm_builder.new_jump_label(procedure_name + "_begin")};
+    procedure->set_begin_label(procedure_begin_label);
+    this->_asm_builder.insert_jump_point_label(procedure_begin_label);
 }
 
 void compiler::end_procedure_implementation(const std::string& procedure_name) {
@@ -157,6 +159,15 @@ const std::shared_ptr<identifier::abstract_lvalue_identifier>& compiler::get_pro
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
 
     return procedure->get_identifier(identifier_name);
+}
+
+void compiler::call_procedure(const std::string& procedure_name) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    this->assert_identifier_defined(procedure_name, discriminator);
+    auto procedure{
+        identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+
+    this->_asm_builder.set_jump_point(procedure->begin_label());
 }
 
 void compiler::procedure_assert_no_identifier_redeclaration(

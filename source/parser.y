@@ -247,20 +247,23 @@ declarations:
 
 
 procedure_call:
-    identifier T_LPAREN procedure_args T_RPAREN {
-        // TODO
+    T_IDENTIFIER T_LPAREN procedure_args T_RPAREN {
+        compiler.call_procedure(*$1.str_ptr);
+        delete $1.str_ptr;
     }
     ;
 
 
 procedure_args:
-    procedure_args T_COMMA value {
+    procedure_args T_COMMA T_IDENTIFIER {
         // TODO
     }
     |
-    value {
+    T_IDENTIFIER {
         // TODO
     }
+    |
+    /* empty production */
     ;
 
 

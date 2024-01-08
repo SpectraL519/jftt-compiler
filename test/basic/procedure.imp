@@ -1,6 +1,11 @@
 # Simple procedure test
-PROCEDURE test_procedure(a, T b) IS
-    x, t[10]
+# PROCEDURE test_procedure(a, T b) IS
+#     x, t[10]
+# IN
+#     WRITE a;
+# END
+
+PROCEDURE print_one() IS
 IN
     WRITE 1;
 END
@@ -8,4 +13,5 @@ END
 PROGRAM IS
 IN
     WRITE 0;
+    print_one();
 END

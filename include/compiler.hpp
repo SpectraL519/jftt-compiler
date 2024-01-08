@@ -48,6 +48,8 @@ public:
     const std::shared_ptr<identifier::abstract_lvalue_identifier>& get_procedure_identifier(
         const std::string& procedure_name, const std::string& identifier_name);
 
+    void call_procedure(const std::string& procedure_name);
+
     void procedure_assert_no_identifier_redeclaration(
         const std::string& procedure_name, const std::string& identifier_name);
     void procedure_assert_identifier_defined(
