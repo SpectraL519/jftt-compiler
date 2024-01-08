@@ -7,12 +7,16 @@
 namespace jftt {
 
 void compiler::begin_procedure_declarations() {
+    if (this->_program_begin_label)
+        return;
+
     this->_program_begin_label.emplace(this->_asm_builder.new_jump_label("program_begin"));
     this->_asm_builder.set_jump_point(this->_program_begin_label.value());
 }
 
 void compiler::begin_program() {
-    this->_asm_builder.insert_jump_point_label(this->_program_begin_label.value());
+    if (this->_program_begin_label)
+        this->_asm_builder.insert_jump_point_label(this->_program_begin_label.value());
 }
 
 void compiler::finish_code_generating() {
@@ -55,6 +59,7 @@ void compiler::declare_procedure(const std::string& name) {
     this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
         std::make_shared<identifier::type<discriminator>>(name));
+    // TODO: set begin label
 }
 
 void compiler::declare_procedure_parameter(
@@ -75,22 +80,58 @@ void compiler::declare_procedure_parameter(
     }
 }
 
-void compiler::declare_procedure_local_lvalue_identifier(
-    const std::string& procedure_name,
-    identifier::abstract_lvalue_identifier* identifier
+void compiler::declare_procedure_local_variable(
+    const std::string& procedure_name, const std::string& variable_name
 ) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
-    this->assert_identifier_defined(procedure_name, discriminator);
+    static constexpr auto local_discriminator{identifier_discriminator::variable};
 
+    this->assert_identifier_defined(procedure_name, discriminator);
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
-    auto error_opt{procedure->declare_lvalue_identifier(
-        identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier))};
+
+    auto local_variable{std::make_shared<identifier::type<local_discriminator>>(variable_name)};
+    local_variable->set_address(this->_memory_manager.allocate(local_variable->size()));
+
+    auto error_opt{procedure->declare_lvalue_identifier(std::move(local_variable))};
     if (error_opt) {
         std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
                   << "\t" << error_opt.value() << std::endl;
         std::exit(1);
     }
+}
+
+void compiler::declare_procedure_local_vararray(
+    const std::string& procedure_name,
+    const std::string& vararray_name,
+    const architecture::memory_size_type vararray_size
+) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    static constexpr auto local_discriminator{identifier_discriminator::variable};
+
+    this->assert_identifier_defined(procedure_name, discriminator);
+    auto procedure{
+        identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+
+    auto local_vararray{
+        std::make_shared<identifier::type<local_discriminator>>(vararray_name, vararray_size)};
+    local_vararray->set_address(this->_memory_manager.allocate(local_vararray->size()));
+
+    auto error_opt{procedure->declare_lvalue_identifier(std::move(local_vararray))};
+    if (error_opt) {
+        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+                  << "\t" << error_opt.value() << std::endl;
+        std::exit(1);
+    }
+}
+
+void compiler::begin_procedure_implementation(const std::string& procedure_name) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    this->assert_identifier_defined(procedure_name, discriminator);
+
+    auto procedure{
+        identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+    procedure->set_begin_label(this->_asm_builder.new_jump_label(procedure_name));
 }
 
 void compiler::end_procedure_declaration(const std::string& procedure_name) {

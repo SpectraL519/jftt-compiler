@@ -28,17 +28,20 @@ public:
     void declare_variable(const std::string& variable_name);
     void declare_vararray(
         const std::string& vararray_name,
-        const architecture::memory_size_type size
-    );
+        const architecture::memory_size_type size);
 
     void declare_procedure(const std::string& procedure_name);
     void declare_procedure_parameter(
         const std::string& procedure_name,
         const identifier_discriminator param_discriminator,
         const std::string& local_name);
-    void declare_procedure_local_lvalue_identifier(
+    void declare_procedure_local_variable(
+        const std::string& procedure_name, const std::string& variable_name);
+    void declare_procedure_local_vararray(
         const std::string& procedure_name,
-        identifier::abstract_lvalue_identifier* identifier);
+        const std::string& vararray_name,
+        const architecture::memory_size_type vararray_size);
+    void begin_procedure_implementation(const std::string& procedure_name);
     void end_procedure_declaration(const std::string& procedure_name);
 
     [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get_identifier(

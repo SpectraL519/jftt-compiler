@@ -43,8 +43,6 @@ struct procedure_paramter {
 //         |-> functions are lvalues
 class procedure : public abstract_identifier {
 public:
-    // TODO: add procedure begin label
-
     procedure(const std::string& name)
     : abstract_identifier(type_discriminator::procedure, name) {}
 
@@ -55,6 +53,8 @@ public:
     procedure& operator=(procedure&&) = default;
 
     ~procedure() = default;
+
+    // TODO: get/set_return_address
 
     std::optional<std::string> declare_parameter(
         const std::string& name, const type_discriminator discriminator
@@ -76,6 +76,7 @@ public:
         if (this->_call_param_idx > this->_param_no)
             return "To many function call parameters";
 
+        // TODO: check discriminator
         this->_local_identifiers.at(this->_call_param_idx - 1).reference = reference;
         return std::nullopt;
     }
@@ -128,6 +129,14 @@ public:
             this->_find_param(name)->reference);
     }
 
+    void set_begin_label(const std::string& begin_label) {
+        this->_begin_label = begin_label;
+    }
+
+    [[nodiscard]] const std::string& begin_label() const {
+        return this->_begin_label;
+    }
+
 private:
     void _assert_valid_param_discriminator(const type_discriminator discriminator) const {
         switch (discriminator) {
@@ -159,8 +168,8 @@ private:
         );
     }
 
+    std::string _begin_label;
     std::vector<procedure_paramter> _local_identifiers;
-    // std::map<std::string, procedure_paramter> _local_identifiers;
     std::size_t _param_no{0u};
     std::size_t _call_param_idx{0u};
 };

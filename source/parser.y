@@ -83,26 +83,27 @@ program_all:
 
 
 procedures:
-    procedures T_PROCEDURE procedure_head T_IS declarations T_IN commands T_END {
-        // TODO
-    }
+    procedures procedure_decl T_LPAREN procedure_params_decl T_RPAREN T_IS declarations procedure_begin commands procedure_end {}
     |
-    procedures T_PROCEDURE procedure_head T_IS T_IN commands T_END {
-        // TODO
-    }
+    procedures procedure_decl T_LPAREN procedure_params_decl T_RPAREN T_IS procedure_begin commands procedure_end {}
     |
     /* empty production */
     ;
 
 
 main:
-    T_PROGRAM T_IS declarations T_IN commands T_END {
-        // TODO
-    }
+    program_begin declarations program_content {}
     |
-    T_PROGRAM T_IS T_IN commands T_END {
-        // TODO
+    program_begin program_content {}
+    ;
+
+program_begin:
+    T_PROGRAM T_IS {
+        compiler.begin_program();
     }
+
+program_content:
+    T_IN commands T_END {}
     ;
 
 
@@ -141,55 +142,101 @@ command:
     ;
 
 
-procedure_head:
-    T_IDENTIFIER T_LPAREN procedure_args_decl T_RPAREN {
-        compiler.declare_procedure(*$1.str_ptr);
-        delete $1.str_ptr;
+procedure_decl:
+    T_PROCEDURE T_IDENTIFIER {
+        compiler.begin_procedure_declarations();
+        compiler.declare_procedure(*$2.str_ptr);
+        delete $2.str_ptr;
     }
     ;
 
-
-procedure_args_decl:
-    procedure_args_decl T_COMMA T_IDENTIFIER {
-        // TODO
+procedure_params_decl:
+    procedure_params_decl T_COMMA T_IDENTIFIER {
+        compiler.declare_procedure_parameter(
+            current_procedure.value(), id::type_discriminator::variable, *$3.str_ptr);
+        delete $3.str_ptr;
     }
     |
-    procedure_args_decl T_COMMA "T" T_IDENTIFIER {
-        // TODO
+    procedure_params_decl T_COMMA "T" T_IDENTIFIER {
+        compiler.declare_procedure_parameter(
+            current_procedure.value(), id::type_discriminator::vararray, *$3.str_ptr);
+        delete $3.str_ptr;
     }
     |
     T_IDENTIFIER {
-        // TODO
+        compiler.declare_procedure_parameter(
+            current_procedure.value(), id::type_discriminator::variable, *$1.str_ptr);
+        delete $1.str_ptr;
     }
     |
     "T" T_IDENTIFIER {
-        // TODO
+        compiler.declare_procedure_parameter(
+            current_procedure.value(), id::type_discriminator::vararray, *$2.str_ptr);
+        delete $2.str_ptr;
+    }
+    ;
+
+procedure_begin:
+    T_IN {
+        compiler.begin_procedure_implementation(current_procedure.value());
+    }
+    ;
+
+procedure_end:
+    T_END {
+
     }
     ;
 
 
 declarations:
     declarations T_COMMA T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
-        compiler.set_line_no($3.line_no);
-        compiler.declare_vararray(*$3.str_ptr, $5.value);
+        if (current_procedure) {
+            compiler.set_line_no($3.line_no);
+            compiler.declare_procedure_local_vararray(
+                current_procedure.value(), *$3.str_ptr, $5.value);
+        }
+        else {
+            compiler.set_line_no($3.line_no);
+            compiler.declare_vararray(*$3.str_ptr, $5.value);
+        }
         delete $3.str_ptr;
     }
     |
     declarations T_COMMA T_IDENTIFIER {
-        compiler.set_line_no($3.line_no);
-        compiler.declare_variable(*$3.str_ptr);
+        if (current_procedure) {
+            compiler.set_line_no($3.line_no);
+            compiler.declare_procedure_local_variable(current_procedure.value(), *$3.str_ptr);
+        }
+        else {
+            compiler.set_line_no($3.line_no);
+            compiler.declare_variable(*$3.str_ptr);
+        }
         delete $3.str_ptr;
     }
     |
     T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
-        compiler.set_line_no($1.line_no);
-        compiler.declare_vararray(*$3.str_ptr, $3.value);
+        if (current_procedure) {
+            compiler.set_line_no($1.line_no);
+            compiler.declare_procedure_local_vararray(
+                current_procedure.value(), *$1.str_ptr, $3.value);
+        }
+        else {
+            compiler.set_line_no($1.line_no);
+            compiler.declare_vararray(*$1.str_ptr, $3.value);
+        }
         delete $3.str_ptr;
     }
     |
     T_IDENTIFIER {
-        compiler.set_line_no($1.line_no);
-        compiler.declare_variable(*$1.str_ptr);
+        if (current_procedure) {
+            compiler.set_line_no($3.line_no);
+            compiler.declare_procedure_local_variable(current_procedure.value(), *$1.str_ptr);
+        }
+        else {
+            compiler.set_line_no($1.line_no);
+            compiler.declare_variable(*$1.str_ptr);
+        }
         delete $1.str_ptr;
     }
     ;
