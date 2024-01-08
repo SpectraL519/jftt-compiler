@@ -1,0 +1,8 @@
+# Simple uninitialized variable error test
+PROGRAM IS
+    a, b, sum
+IN
+    READ a;
+    sum := a + b;
+    WRITE sum;
+END

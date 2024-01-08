@@ -63,7 +63,9 @@ public:
     void assert_identifier_defined(
         const std::string& identifier_name,
         const identifier_discriminator discriminator) const;
-    void assert_lvalue_initialized(const std::string& lvalue_name) const;
+    void assert_lvalue_initialized(
+        const std::string& lvalue_name,
+        const identifier_discriminator discriminator) const;
 
 private:
     std::size_t _line_no{1u};

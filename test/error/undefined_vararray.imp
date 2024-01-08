@@ -1,0 +1,9 @@
+# Simple undefined vararray error test
+PROGRAM IS
+    a, b
+IN
+    READ a;
+    READ b;
+    t[0] := a + b;
+    WRITE t[0];
+END

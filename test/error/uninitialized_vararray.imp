@@ -1,0 +1,10 @@
+# Simple uninitialized vararray error test
+# vararray initialization should be checked per index
+PROGRAM IS
+    a, b[5], sum
+IN
+    READ a;
+    # READ b[0];
+    sum := a + b[2];
+    WRITE sum;
+END

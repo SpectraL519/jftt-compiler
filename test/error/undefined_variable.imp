@@ -1,0 +1,9 @@
+# Simple undefined variable error test
+PROGRAM IS
+    a, b
+IN
+    READ a;
+    READ b;
+    sum := a + b;
+    WRITE sum;
+END

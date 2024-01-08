@@ -245,6 +245,9 @@ void code_builder::end_repeat_until_loop(
 condition::branch code_builder::equal_condition(
     architecture::vm_register& a_register, architecture::vm_register& b_register
 ) {
+    // TODO: optimize
+    // * do not perform double check if one of the values is 0
+
     const std::string true_label{this->_jump_manager.new_label("eq_true")};
     const std::string false_label{this->_jump_manager.new_label("eq_false")};
 

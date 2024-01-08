@@ -105,13 +105,9 @@ main:
 
 
 commands:
-    commands command {
-        // TODO
-    }
+    commands command {}
     |
-    command {
-        // TODO
-    }
+    command {}
     ;
 
 
@@ -135,12 +131,10 @@ command:
     |
     T_READ identifier T_SEMICOLON {
         compiler.scan($2);
-        // ? why not ? delete $2;
     }
     |
     T_WRITE value T_SEMICOLON {
         compiler.print($2);
-        // ? why not ? delete $2;
     }
     ;
 
@@ -335,6 +329,7 @@ identifier:
     T_IDENTIFIER {
         compiler.set_line_no($1.line_no);
         assert_identifier_token($1.discriminator);
+        compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::variable);
 
         $$ = new id::variable(
             *id::shared_ptr_cast<id::type_discriminator::variable>(
@@ -363,7 +358,7 @@ identifier:
         assert_identifier_token($3.discriminator);
         compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::vararray);
         compiler.assert_identifier_defined(*$3.str_ptr, id::type_discriminator::variable);
-        compiler.assert_lvalue_initialized(*$3.str_ptr);
+        compiler.assert_lvalue_initialized(*$3.str_ptr, id::type_discriminator::variable);
 
         auto vararray{new id::vararray(
             *id::shared_ptr_cast<id::type_discriminator::vararray>(

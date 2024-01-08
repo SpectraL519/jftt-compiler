@@ -96,6 +96,7 @@ void compiler::release_accumulator() {
 
 void compiler::return_value(identifier::abstract_identifier* identifier) {
     // stores identifier's value in acc
+    this->assert_lvalue_initialized(identifier->name(), identifier->discriminator());
     this->_asm_builder.initialize_identifier_value_in_register(
         identifier::shared_ptr_cast(identifier), this->_memory_manager.get_accumulator());
 }
@@ -121,6 +122,8 @@ void compiler::add_condition(
     identifier::abstract_identifier* a,
     identifier::abstract_identifier* b
 ) {
+    // TODO: load values in the asm_builder functions to avoid excessive loading
+
     auto& a_register{this->_memory_manager.acquire_free_register()};
     auto& b_register{this->_memory_manager.acquire_free_register()};
 
@@ -232,6 +235,9 @@ void compiler::end_loop(const loop_discriminator discriminator) {
 
 // TODO: arithmetic_operation(discriminator, a, b)
 void compiler::add(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    this->assert_lvalue_initialized(a->name(), a->discriminator());
+    this->assert_lvalue_initialized(b->name(), b->discriminator());
+
     auto& a_register{this->_memory_manager.acquire_free_register()};
 
     this->_asm_builder.initialize_identifier_value_in_register(
@@ -245,24 +251,36 @@ void compiler::add(identifier::abstract_identifier* a, identifier::abstract_iden
 
 // TODO: arithmetic_operation(discriminator, a, b)
 void compiler::subtract(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    this->assert_lvalue_initialized(a->name(), a->discriminator());
+    this->assert_lvalue_initialized(b->name(), b->discriminator());
+
     this->_asm_builder.subtract(
         identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
 
 // TODO: arithmetic_operation(discriminator, a, b)
 void compiler::multiply(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    this->assert_lvalue_initialized(a->name(), a->discriminator());
+    this->assert_lvalue_initialized(b->name(), b->discriminator());
+
     this->_asm_builder.multiply(
         identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
 
 // TODO: arithmetic_operation(discriminator, a, b)
 void compiler::divide(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    this->assert_lvalue_initialized(a->name(), a->discriminator());
+    this->assert_lvalue_initialized(b->name(), b->discriminator());
+
     this->_asm_builder.divide(
         identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
 
 // TODO: arithmetic_operation(discriminator, a, b)
 void compiler::modulo(identifier::abstract_identifier* a, identifier::abstract_identifier* b) {
+    this->assert_lvalue_initialized(a->name(), a->discriminator());
+    this->assert_lvalue_initialized(b->name(), b->discriminator());
+
     this->_asm_builder.modulo(
         identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
@@ -294,20 +312,29 @@ void compiler::assert_identifier_defined(
         return;
 
     std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-              << "\tUndefined identifier `" << identifier_name << '`' << std::endl;
+              << "\tUndefined " << identifier::as_string(discriminator)
+              << " identifier `" << identifier_name << '`' << std::endl;
     std::exit(1);
 }
 
-void compiler::assert_lvalue_initialized(const std::string& lvalue_name) const {
-    this->assert_identifier_defined(lvalue_name);
+void compiler::assert_lvalue_initialized(
+    const std::string& identifier_name,
+    const identifier_discriminator discriminator
+) const {
+    // TODO: vararray initialization should be checked per index
+
+    if (discriminator == identifier_discriminator::rvalue)
+        return;
+
+    this->assert_identifier_defined(identifier_name);
 
     const auto lvalue{
-        this->_identifier_manager.get<identifier_discriminator::lvalue>(lvalue_name)};
+        this->_identifier_manager.get<identifier_discriminator::lvalue>(identifier_name)};
     if (lvalue->is_initialized())
         return;
 
     std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-              << "\tUninitialized identifier `" << lvalue_name << '`' << std::endl;
+              << "\tUninitialized identifier `" << identifier_name << '`' << std::endl;
     std::exit(1);
 }
 

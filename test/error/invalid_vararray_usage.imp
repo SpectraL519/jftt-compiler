@@ -1,0 +1,9 @@
+# Simple invalid vararray usage error test
+PROGRAM IS
+    a, b[5], sum
+IN
+    READ a;
+    READ b[0];
+    sum := a + b;
+    WRITE sum;
+END
