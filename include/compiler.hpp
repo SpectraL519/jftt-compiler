@@ -49,7 +49,7 @@ public:
     void end_latest_condition_with_else();
 
     void add_loop(const loop_discriminator discriminator);
-    void set_latest_while_loop_end_label();
+    void set_latest_loop_end_label();
     void end_loop(const loop_discriminator discriminator);
 
     void add(identifier::abstract_identifier* a, identifier::abstract_identifier* b);

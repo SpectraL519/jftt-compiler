@@ -187,36 +187,45 @@ void compiler::end_latest_condition_with_else() {
 void compiler::add_loop(const loop_discriminator discriminator) {
     switch (discriminator) {
     case loop_discriminator::while_do: {
-        const std::string begin_label{this->_asm_builder.new_condition_jump_label("while_begin")};
+        const std::string begin_label{this->_asm_builder.new_condition_jump_label("while_loop_begin")};
         // end label will be defined as the condition end label
         std::shared_ptr<loop::abstract_loop> loop{
             std::make_shared<loop::while_loop>(begin_label, std::string{})};
         this->_loop_manager.add_loop(loop);
-        this->_asm_builder.set_while_loop_begin_label(*loop);
+        this->_asm_builder.start_loop(loop);
         break;
     }
 
     case loop_discriminator::repeat_until: {
-        break; // TODO
+        const std::string begin_label{
+            this->_asm_builder.new_condition_jump_label("repeat_until_loop_begin")};
+        // end label will be defined as the condition end label
+        std::shared_ptr<loop::abstract_loop> loop{
+            std::make_shared<loop::repeat_until_loop>(begin_label, std::string{})};
+        this->_loop_manager.add_loop(loop);
+        this->_asm_builder.start_loop(loop);
+        break;
     }
     }
 }
 
-void compiler::set_latest_while_loop_end_label() {
-    const auto while_branch{this->_condition_manager.extract_branch()};
-    this->_loop_manager.get_loop()->set_end_label(while_branch.false_eval_label);
+void compiler::set_latest_loop_end_label() {
+    const auto loop_branch{this->_condition_manager.extract_branch()};
+    this->_loop_manager.get_loop()->set_end_label(loop_branch.false_eval_label);
 }
 
 void compiler::end_loop(const loop_discriminator discriminator) {
     switch (discriminator) {
     case loop_discriminator::while_do: {
         const auto loop{this->_loop_manager.extract_loop()};
-        this->_asm_builder.set_while_loop_end_label(*loop);
+        this->_asm_builder.end_while_loop(loop);
         break;
     }
 
     case loop_discriminator::repeat_until: {
-        break; // TODO
+        const auto loop{this->_loop_manager.extract_loop()};
+        this->_asm_builder.end_repeat_until_loop(loop);
+        break;
     }
     }
 }

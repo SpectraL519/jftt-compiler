@@ -221,13 +221,25 @@ void code_builder::set_condition_branch_jump_point(const condition::branch& bran
     this->_jump_manager.jump_to_label(instructions::jump_label, branch.false_eval_label);
 }
 
-void code_builder::set_while_loop_begin_label(const loop::abstract_loop& loop) {
-    this->_jump_manager.insert_label(loop.begin_label());
+void code_builder::start_loop(const std::shared_ptr<loop::abstract_loop>& loop) {
+    this->_jump_manager.insert_label(loop->begin_label());
 }
 
-void code_builder::set_while_loop_end_label(const loop::abstract_loop& loop) {
-    this->_jump_manager.jump_to_label(instructions::jump_label, loop.begin_label());
-    this->_jump_manager.insert_label(loop.end_label());
+void code_builder::end_while_loop(const std::shared_ptr<loop::abstract_loop>& loop) {
+    this->_jump_manager.jump_to_label(instructions::jump_label, loop->begin_label());
+    this->_jump_manager.insert_label(loop->end_label());
+}
+
+void code_builder::end_repeat_until_loop(
+    const std::shared_ptr<loop::abstract_loop>& loop
+) {
+    const std::string end_label{this->_jump_manager.new_label("repeat_until_loop_end")};
+    this->_jump_manager.jump_to_label(instructions::jump_label, end_label);
+
+    this->_jump_manager.insert_label(loop->end_label());
+    this->_jump_manager.jump_to_label(instructions::jump_label, loop->begin_label());
+
+    this->_jump_manager.insert_label(end_label);
 }
 
 condition::branch code_builder::equal_condition(

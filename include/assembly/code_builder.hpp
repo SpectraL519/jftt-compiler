@@ -48,8 +48,9 @@ public:
     [[nodiscard]] std::string new_condition_jump_label(const std::string& label_name);
     void new_condition_branch_jump_point(const condition::branch& branch);
     void set_condition_branch_jump_point(const condition::branch& branch);
-    void set_while_loop_begin_label(const loop::abstract_loop& loop);
-    void set_while_loop_end_label(const loop::abstract_loop& loop);
+    void start_loop(const std::shared_ptr<loop::abstract_loop>& loop);
+    void end_while_loop(const std::shared_ptr<loop::abstract_loop>& loop);
+    void end_repeat_until_loop(const std::shared_ptr<loop::abstract_loop>& loop);
 
     [[nodiscard]] condition::branch equal_condition(
         architecture::vm_register& a_register, architecture::vm_register& b_register);

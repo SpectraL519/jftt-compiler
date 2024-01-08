@@ -7,12 +7,25 @@ IN
 
     WHILE b > 0 DO
         c := 0;
+        REPEAT
+           WRITE c;
+           c := c + 1;
+        UNTIL c = b;
+        WRITE b;
+        b := b - 1;
+    ENDWHILE
+
+    WRITE 101;
+
+    # should print c sequence only once as b = 0 at the beginning of the loop (o + 1) > 1
+    # expected out: 0 0 1
+    REPEAT
+        WRITE b;
+        b := b + 1;
+        c := 0;
         WHILE c <= b DO
             WRITE c;
             c := c + 1;
         ENDWHILE
-
-        WRITE b;
-        b := b - 1;
-    ENDWHILE
+    UNTIL b > 0;
 END

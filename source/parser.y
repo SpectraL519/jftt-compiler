@@ -127,9 +127,7 @@ command:
     |
     while_loop while_loop_end {}
     |
-    T_REPEAT commands T_UNTIL condition T_SEMICOLON {
-        // TODO
-    }
+    repeat_loop repeat_loop_end {}
     |
     procedure_call T_SEMICOLON {
         // TODO
@@ -264,7 +262,7 @@ if_end:
 
 while_loop:
     while_loop_begin condition T_DO {
-        compiler.set_latest_while_loop_end_label();
+        compiler.set_latest_loop_end_label();
     }
 
 while_loop_begin:
@@ -276,6 +274,20 @@ while_loop_begin:
 while_loop_end:
     commands T_ENDWHILE {
         compiler.end_loop(jftt::loop_discriminator::while_do);
+    }
+    ;
+
+
+repeat_loop:
+    T_REPEAT {
+        compiler.add_loop(jftt::loop_discriminator::repeat_until);
+    }
+    ;
+
+repeat_loop_end:
+    commands T_UNTIL condition T_SEMICOLON {
+        compiler.set_latest_loop_end_label();
+        compiler.end_loop(jftt::loop_discriminator::repeat_until);
     }
     ;
 
