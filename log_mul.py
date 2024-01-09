@@ -1,21 +1,21 @@
 def logarithmic_multiply(a, b):
-    result = 0
+    product = 0
     if a == 0:
-        return result
+        return product
     if b == 0:
-        return result
+        return product
 
     while True:
         if b == 0:
             break
 
         if (b - (b >> 1 << 1)) > 0:
-            result += a
+            product += a
 
         a <<= 1
         b >>= 1
 
-    return result
+    return product
 
 
 

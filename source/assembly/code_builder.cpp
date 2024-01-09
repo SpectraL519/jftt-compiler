@@ -412,8 +412,7 @@ void code_builder::multiply(
 
     const std::string end_label{this->_jump_manager.new_label("mul_end")};
     const std::string loop_begin_label{this->_jump_manager.new_label("mul_loop")};
-    const std::string inside_loop_label{this->_jump_manager.new_label("mul_inside_loop")};
-    const std::string is_odd_label{this->_jump_manager.new_label("mul_is_odd")};
+    const std::string odd_cond_end_label{this->_jump_manager.new_label("mul_odd_cond_end")};
 
     // set initial result to 0
     this->add_instruction(instructions::rst(product_register));
@@ -440,17 +439,19 @@ void code_builder::multiply(
     this->add_instruction(instructions::shr(is_odd_register)); // odd >> 1
     this->add_instruction(instructions::shl(is_odd_register)); // odd << 1 (get rid of last bit)
     this->add_instruction(instructions::sub(is_odd_register)); // b := b - odd
-    this->_jump_manager.jump_to_label(instructions::jpos_label, is_odd_label);
-    this->_jump_manager.insert_label(inside_loop_label);
-    this->add_instruction(instructions::shl(a_register)); // a := a * 2
-    this->add_instruction(instructions::shr(b_register)); // b := b / 2
-    this->_jump_manager.jump_to_label(instructions::jump_label, loop_begin_label);
-
-    this->_jump_manager.insert_label(is_odd_label);
+    // if false: skip
+    this->_jump_manager.jump_to_label(instructions::jzero_label, odd_cond_end_label);
+    // if true: product += a
     this->add_instruction(instructions::get(product_register));
     this->add_instruction(instructions::add(a_register));
     this->add_instruction(instructions::put(product_register));
-    this->_jump_manager.jump_to_label(instructions::jump_label, inside_loop_label);
+
+    // rest of the loop
+    this->_jump_manager.insert_label(odd_cond_end_label);
+    this->add_instruction(instructions::shl(a_register)); // a := a * 2
+    this->add_instruction(instructions::shr(b_register)); // b := b / 2
+    // jump to the beginning of the loop
+    this->_jump_manager.jump_to_label(instructions::jump_label, loop_begin_label);
 
     // end loop
     this->_jump_manager.insert_label(end_label);
