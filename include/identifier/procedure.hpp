@@ -78,6 +78,7 @@ public:
         ! Passing reference should be done via storing the address of a variable/array
         ! in an address in memory allocated specificaly for this procedure parameter
         ! procedure_paramter::reference -> procedure_paramter::reference_address
+        ? in compiler::get_identifier return shared_ptr<rvalue>(reference_address)
         */
 
         // returns optional error msg

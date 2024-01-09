@@ -408,7 +408,7 @@ void code_builder::multiply(
     auto& b_register{this->_memory_manager.acquire_free_register()};
 
     auto& is_odd_register{this->_memory_manager.acquire_free_register()};
-    auto& result_register{this->_memory_manager.acquire_free_register()};
+    auto& product_register{this->_memory_manager.acquire_free_register()};
 
     const std::string end_label{this->_jump_manager.new_label("mul_end")};
     const std::string loop_begin_label{this->_jump_manager.new_label("mul_loop")};
@@ -416,7 +416,7 @@ void code_builder::multiply(
     const std::string is_odd_label{this->_jump_manager.new_label("mul_is_odd")};
 
     // set initial result to 0
-    this->add_instruction(instructions::rst(result_register));
+    this->add_instruction(instructions::rst(product_register));
 
     // load a to acc
     this->initialize_identifier_value_in_register(a, accumulator);
@@ -446,20 +446,20 @@ void code_builder::multiply(
     this->_jump_manager.jump_to_label(instructions::jump_label, loop_begin_label);
 
     this->_jump_manager.insert_label(is_odd_label);
-    this->add_instruction(instructions::get(result_register));
+    this->add_instruction(instructions::get(product_register));
     this->add_instruction(instructions::add(a_register));
-    this->add_instruction(instructions::put(result_register));
+    this->add_instruction(instructions::put(product_register));
     this->_jump_manager.jump_to_label(instructions::jump_label, inside_loop_label);
 
     // end loop
     this->_jump_manager.insert_label(end_label);
     // return result (move to acc)
-    this->add_instruction(instructions::get(result_register));
+    this->add_instruction(instructions::get(product_register));
 
     a_register.release();
     b_register.release();
     is_odd_register.release();
-    result_register.release();
+    product_register.release();
 }
 
 void code_builder::divide(
@@ -470,11 +470,16 @@ void code_builder::divide(
     auto& a_register{this->_memory_manager.acquire_free_register()};
     auto& b_register{this->_memory_manager.acquire_free_register()};
 
-    auto& result_register{this->_memory_manager.acquire_free_register()};
-    this->add_instruction(instructions::rst(result_register)); // result := 0
+    auto& multiple_register{this->_memory_manager.acquire_free_register()};
+    auto& tmp_b_register{this->_memory_manager.acquire_free_register()};
+
+    auto& quotient_register{this->_memory_manager.acquire_free_register()};
+    this->add_instruction(instructions::rst(quotient_register)); // quotient := 0
 
     const std::string end_label{this->_jump_manager.new_label("div_end")};
     const std::string loop_begin_label{this->_jump_manager.new_label("div_loop")};
+    const std::string inside_loop_begin_label{this->_jump_manager.new_label("div_inside_loop")};
+    const std::string inside_loop_end_label{this->_jump_manager.new_label("div_inside_loop_end")};
 
     // load a to acc
     this->initialize_identifier_value_in_register(a, accumulator);
@@ -499,22 +504,46 @@ void code_builder::divide(
     this->add_instruction(instructions::sub(a_register));
     // if true: end loop
     this->_jump_manager.jump_to_label(instructions::jpos_label, end_label);
-    // if false: result++ and a -= b
-    // TODO: make this logarithmic
-    this->add_instruction(instructions::inc(result_register));
-    this->add_instruction(instructions::get(a_register));
-    this->add_instruction(instructions::sub(b_register));
+    // if false: ...
+    this->add_instruction(instructions::get(b_register)); // tmp_b := b
+    this->add_instruction(instructions::put(tmp_b_register));
+    this->add_instruction(instructions::rst(multiple_register)); // multiple := 1
+    this->add_instruction(instructions::inc(multiple_register));
+
+    // begin inside loop
+    this->_jump_manager.insert_label(inside_loop_begin_label);
+    // check a < (tmp_b << 1)
+    this->add_instruction(instructions::get(tmp_b_register));
+    this->add_instruction(instructions::shl(accumulator));
+    this->add_instruction(instructions::sub(a_register));
+    // if true: break from inside loop
+    this->_jump_manager.jump_to_label(instructions::jpos_label, inside_loop_end_label);
+    // if false: tmp := tmp << 1, multiple := multiple << 1
+    this->add_instruction(instructions::shl(tmp_b_register));
+    this->add_instruction(instructions::shl(multiple_register));
+    // go to the beginning of the inner loop
+    this->_jump_manager.jump_to_label(instructions::jump_label, inside_loop_begin_label);
+
+    // rest of the outside loop
+    this->_jump_manager.insert_label(inside_loop_end_label);
+    this->add_instruction(instructions::get(a_register)); // a -= tmp_b
+    this->add_instruction(instructions::sub(tmp_b_register));
     this->add_instruction(instructions::put(a_register));
+    this->add_instruction(instructions::get(quotient_register)); // quotient += multiple
+    this->add_instruction(instructions::add(multiple_register));
+    this->add_instruction(instructions::put(quotient_register));
     this->_jump_manager.jump_to_label(instructions::jump_label, loop_begin_label);
 
     // end loop
     this->_jump_manager.insert_label(end_label);
     // return result (move to acc)
-    this->add_instruction(instructions::get(result_register));
+    this->add_instruction(instructions::get(quotient_register));
 
     a_register.release();
     b_register.release();
-    result_register.release();
+    quotient_register.release();
+    multiple_register.release();
+    tmp_b_register.release();
 }
 
 void code_builder::modulo(
