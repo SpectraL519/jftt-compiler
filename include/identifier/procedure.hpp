@@ -74,6 +74,12 @@ public:
     std::optional<std::string> set_parameter_reference(
         std::shared_ptr<abstract_lvalue_identifier> reference
     ) {
+        /*
+        ! Passing reference should be done via storing the address of a variable/array
+        ! in an address in memory allocated specificaly for this procedure parameter
+        ! procedure_paramter::reference -> procedure_paramter::reference_address
+        */
+
         // returns optional error msg
         this->_call_param_idx++;
         if (this->_call_param_idx > this->_param_no)

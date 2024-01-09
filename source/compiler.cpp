@@ -115,13 +115,9 @@ void compiler::declare_procedure_parameter(
 
 void compiler::begin_procedure_implementation(const std::string& procedure_name) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
-    std::cout << "assert procedure defined\n";
     this->assert_identifier_defined(procedure_name, discriminator);
-    std::cout << "ok\n";
-    std::cout << "get procedure identifier\n";
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
-    std::cout << "ok\n";
 
     const std::string procedure_begin_label{
         this->_asm_builder.new_jump_label(procedure_name + "_begin")};
@@ -213,19 +209,14 @@ std::shared_ptr<identifier::abstract_identifier> compiler::get_identifier(
     const std::string& name, const std::optional<std::string>& procedure_name
 ) {
     if (procedure_name) {
-        std::cout << "assert procedure defined: " << procedure_name.value() << std::endl;
         this->assert_identifier_defined(
             procedure_name.value(), identifier_discriminator::procedure);
-        std::cout << "ok\n";
-        std::cout << "get procedure identifier\n";
         auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
             this->get_identifier(procedure_name.value()))};
-        std::cout << "ok\n";
-        std::cout << "returning identifier: " << name << std::endl;
+
         return procedure->get_identifier(name);
     }
 
-    std::cout << "returning global identifier: " << name << std::endl;
     return this->_identifier_manager.get(name);
 }
 

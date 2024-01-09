@@ -119,9 +119,7 @@ commands:
 
 command:
     identifier T_ASSIGN expression T_SEMICOLON {
-        std::cout << "assigning to: " << $1->name() << std::endl;
         compiler.assign_value_to($1, current_procedure);
-        std::cout << "ok\n";
         compiler.release_accumulator();
     }
     |
@@ -148,9 +146,7 @@ command:
 procedure_decl:
     T_PROCEDURE T_IDENTIFIER {
         compiler.with_procedurers();
-        std::cout << "declaring procedure: " << *$2.str_ptr << std::endl;
         compiler.declare_procedure(*$2.str_ptr);
-        std::cout << "ok\n";
         current_procedure.emplace(*$2.str_ptr);
         delete $2.str_ptr;
     }
@@ -158,34 +154,26 @@ procedure_decl:
 
 procedure_params_decl:
     procedure_params_decl T_COMMA T_IDENTIFIER {
-        std::cout << "declaring procedure parameter (variable): " << *$3.str_ptr << std::endl;
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::variable, *$3.str_ptr);
-        std::cout << "ok\n";
         delete $3.str_ptr;
     }
     |
     procedure_params_decl T_COMMA T_PROCEDURE_T T_IDENTIFIER {
-        std::cout << "declaring procedure parameter (vararray): " << *$4.str_ptr << std::endl;
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::vararray, *$4.str_ptr);
-        std::cout << "ok\n";
         delete $4.str_ptr;
     }
     |
     T_IDENTIFIER {
-        std::cout << "declaring procedure parameter (variable): " << *$1.str_ptr << std::endl;
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::variable, *$1.str_ptr);
-        std::cout << "ok\n";
         delete $1.str_ptr;
     }
     |
     T_PROCEDURE_T T_IDENTIFIER {
-        std::cout << "declaring procedure parameter (vararray): " << *$2.str_ptr << std::endl;
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::vararray, *$2.str_ptr);
-        std::cout << "ok\n";
         delete $2.str_ptr;
     }
     |
@@ -194,18 +182,14 @@ procedure_params_decl:
 
 procedure_begin:
     T_IN {
-        std::cout << "procedure begin\n";
         compiler.begin_procedure_implementation(current_procedure.value());
-        std::cout << "ok\n";
     }
     ;
 
 procedure_end:
     T_END {
-        std::cout << "procedure end\n";
         compiler.return_from_procedure(current_procedure.value());
         current_procedure = std::nullopt;
-        std::cout << "ok\n";
     }
     ;
 
@@ -249,10 +233,8 @@ procedure_call:
 procedure_call_begin:
     T_IDENTIFIER {
         compiler.set_line_no($1.line_no);
-        std::cout << "detected procedure call: " << *$1.str_ptr << std::endl;
         compiler.assert_identifier_defined(
             *$1.str_ptr, id::type_discriminator::procedure, current_procedure);
-        std::cout << "ok\n";
         current_procedure_call.emplace(*$1.str_ptr);
         delete $1.str_ptr;
     }
@@ -278,9 +260,7 @@ procedure_args:
 expression:
     value {
         compiler.acquire_accumulator();
-        std::cout << "returing: " << $1->name() << std::endl;
         compiler.return_value($1, current_procedure);
-        std::cout << "ok\n";
     }
     |
     value T_ADD value {
@@ -402,20 +382,11 @@ identifier:
         assert_identifier_token($1.discriminator);
 
         // TODO: this does not work because the reference is not set yet
-        std::cout << "assert identifier defined: " << *$1.str_ptr << std::endl;
         compiler.assert_identifier_defined(
             *$1.str_ptr, id::type_discriminator::variable, current_procedure);
-        std::cout << "ok\n";
-        std::cout << "get identifier\n";
-        auto identifier{compiler.get_identifier(*$1.str_ptr, current_procedure)};
-        std::cout << "ok\n";
-        std::cout << "received identifier is null: " << (identifier == nullptr) << std::endl;
-        std::cout << "cast identifier\n";
-        auto cast_identifier{id::shared_ptr_cast<id::type_discriminator::variable>(identifier)};
-        std::cout << "ok\n";
-        std::cout << "initializing variable copy\n";
-        $$ = new id::variable(*cast_identifier);
-        std::cout << "ok\n";
+        $$ = new id::variable(
+            *id::shared_ptr_cast<id::type_discriminator::variable>(
+                compiler.get_identifier(*$1.str_ptr, current_procedure)));
 
         delete $1.str_ptr;
     }
