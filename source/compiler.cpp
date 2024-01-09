@@ -101,7 +101,7 @@ void compiler::declare_procedure_parameter(
     const std::string& local_name
 ) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
-    this->assert_identifier_defined(procedure_name, discriminator, procedure_name);
+    this->assert_identifier_defined(procedure_name, discriminator);
 
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
@@ -115,14 +115,38 @@ void compiler::declare_procedure_parameter(
 
 void compiler::begin_procedure_implementation(const std::string& procedure_name) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
+    std::cout << "assert procedure defined\n";
     this->assert_identifier_defined(procedure_name, discriminator);
+    std::cout << "ok\n";
+    std::cout << "get procedure identifier\n";
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+    std::cout << "ok\n";
 
     const std::string procedure_begin_label{
         this->_asm_builder.new_jump_label(procedure_name + "_begin")};
     procedure->set_begin_label(procedure_begin_label);
     this->_asm_builder.insert_jump_point_label(procedure_begin_label);
+}
+
+void compiler::pass_procedure_parameter(
+    const std::string& procedure_name, const std::string& parameter_name
+) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    static constexpr auto parameter_discriminator{identifier_discriminator::lvalue};
+
+    this->assert_identifier_defined(procedure_name, discriminator);
+    auto procedure{
+        identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+
+    auto error_opt{procedure->set_parameter_reference(
+        identifier::shared_ptr_cast<parameter_discriminator>(
+            this->get_identifier(parameter_name)))};
+    if (error_opt) {
+        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+                  << "\t" << error_opt.value() << std::endl;
+        std::exit(1);
+    }
 }
 
 void compiler::end_procedure_call_args_declaration(const std::string& procedure_name) {
@@ -189,13 +213,19 @@ std::shared_ptr<identifier::abstract_identifier> compiler::get_identifier(
     const std::string& name, const std::optional<std::string>& procedure_name
 ) {
     if (procedure_name) {
+        std::cout << "assert procedure defined: " << procedure_name.value() << std::endl;
         this->assert_identifier_defined(
             procedure_name.value(), identifier_discriminator::procedure);
+        std::cout << "ok\n";
+        std::cout << "get procedure identifier\n";
         auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
             this->get_identifier(procedure_name.value()))};
+        std::cout << "ok\n";
+        std::cout << "returning identifier: " << name << std::endl;
         return procedure->get_identifier(name);
     }
 
+    std::cout << "returning global identifier: " << name << std::endl;
     return this->_identifier_manager.get(name);
 }
 
@@ -537,7 +567,7 @@ void compiler::assert_identifier_defined(
             return;
 
         std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                << "\tUndefined " << identifier::as_string(discriminator) << identifier_name
+                << "\tUndefined " << identifier::as_string(discriminator)
                 << " identifier `" << identifier_name << "` in procedure: "
                 << procedure_name.value() << std::endl;
         std::exit(1);

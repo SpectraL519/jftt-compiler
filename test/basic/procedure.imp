@@ -1,8 +1,7 @@
 # Simple procedure test
-PROCEDURE binary_notation() IS
-    n, p
+PROCEDURE binary_notation(n) IS
+    p
 IN
-    READ n;
     REPEAT
 		p:=n/2;
 		p:=2*p;
@@ -16,6 +15,8 @@ IN
 END
 
 PROGRAM IS
+    n
 IN
-    binary_notation();
+    READ n;
+    binary_notation(n);
 END

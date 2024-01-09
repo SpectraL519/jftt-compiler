@@ -72,15 +72,20 @@ public:
     }
 
     std::optional<std::string> set_parameter_reference(
-        const std::shared_ptr<abstract_lvalue_identifier>& reference
+        std::shared_ptr<abstract_lvalue_identifier> reference
     ) {
         // returns optional error msg
         this->_call_param_idx++;
         if (this->_call_param_idx > this->_param_no)
             return "To many function call parameters";
 
-        // TODO: check discriminator
-        this->_local_identifiers.at(this->_call_param_idx - 1).reference = reference;
+        auto& call_param{this->_local_identifiers.at(this->_call_param_idx - 1)};
+        if (reference->discriminator() != call_param.declared_discriminator)
+            return "Invalid parameter type. Expected: " +
+                   as_string(call_param.declared_discriminator) +
+                   ". Got: " + as_string(reference->discriminator());
+
+        call_param.reference = reference;
         return std::nullopt;
     }
 
