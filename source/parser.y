@@ -1,3 +1,5 @@
+// TODO: add compiler.set_line_no to every place possible
+
 %code {
 
 #include "io.hpp"
@@ -116,7 +118,7 @@ commands:
 
 command:
     identifier T_ASSIGN expression T_SEMICOLON {
-        compiler.assign_value_to($1);
+        compiler.assign_value_to($1, current_procedure);
         compiler.release_accumulator();
     }
     |
@@ -131,18 +133,18 @@ command:
     procedure_call T_SEMICOLON {}
     |
     T_READ identifier T_SEMICOLON {
-        compiler.scan($2);
+        compiler.scan($2, current_procedure);
     }
     |
     T_WRITE value T_SEMICOLON {
-        compiler.print($2);
+        compiler.print($2, current_procedure);
     }
     ;
 
 
 procedure_decl:
     T_PROCEDURE T_IDENTIFIER {
-        compiler.begin_procedure_declarations();
+        compiler.with_procedurers();
         compiler.declare_procedure(*$2.str_ptr);
         current_procedure.emplace(*$2.str_ptr);
         delete $2.str_ptr;
@@ -193,52 +195,26 @@ procedure_end:
 
 declarations:
     declarations T_COMMA T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
-        if (current_procedure) {
-            compiler.set_line_no($3.line_no);
-            compiler.declare_procedure_local_vararray(
-                current_procedure.value(), *$3.str_ptr, $5.value);
-        }
-        else {
-            compiler.set_line_no($3.line_no);
-            compiler.declare_vararray(*$3.str_ptr, $5.value);
-        }
+        compiler.set_line_no($3.line_no);
+        compiler.declare_vararray(*$3.str_ptr, $5.value, current_procedure);
         delete $3.str_ptr;
     }
     |
     declarations T_COMMA T_IDENTIFIER {
-        if (current_procedure) {
-            compiler.set_line_no($3.line_no);
-            compiler.declare_procedure_local_variable(current_procedure.value(), *$3.str_ptr);
-        }
-        else {
-            compiler.set_line_no($3.line_no);
-            compiler.declare_variable(*$3.str_ptr);
-        }
+        compiler.set_line_no($3.line_no);
+        compiler.declare_variable(*$3.str_ptr, current_procedure);
         delete $3.str_ptr;
     }
     |
     T_IDENTIFIER T_LBRACKET T_NUMBER T_RBRACKET {
-        if (current_procedure) {
-            compiler.set_line_no($1.line_no);
-            compiler.declare_procedure_local_vararray(
-                current_procedure.value(), *$1.str_ptr, $3.value);
-        }
-        else {
-            compiler.set_line_no($1.line_no);
-            compiler.declare_vararray(*$1.str_ptr, $3.value);
-        }
+        compiler.set_line_no($1.line_no);
+        compiler.declare_vararray(*$1.str_ptr, $3.value, current_procedure);
         delete $3.str_ptr;
     }
     |
     T_IDENTIFIER {
-        if (current_procedure) {
-            compiler.set_line_no($1.line_no);
-            compiler.declare_procedure_local_variable(current_procedure.value(), *$1.str_ptr);
-        }
-        else {
-            compiler.set_line_no($1.line_no);
-            compiler.declare_variable(*$1.str_ptr);
-        }
+        compiler.set_line_no($1.line_no);
+        compiler.declare_variable(*$1.str_ptr, current_procedure);
         delete $1.str_ptr;
     }
     ;
@@ -246,6 +222,7 @@ declarations:
 
 procedure_call:
     T_IDENTIFIER T_LPAREN procedure_args T_RPAREN {
+        // TODO: end_procedure_call_args_declaration
         compiler.call_procedure(*$1.str_ptr);
         delete $1.str_ptr;
     }
@@ -254,11 +231,11 @@ procedure_call:
 
 procedure_args:
     procedure_args T_COMMA T_IDENTIFIER {
-        // TODO
+        // TODO: pass arg
     }
     |
     T_IDENTIFIER {
-        // TODO
+        // TODO: pass arg
     }
     |
     /* empty production */
@@ -268,32 +245,32 @@ procedure_args:
 expression:
     value {
         compiler.acquire_accumulator();
-        compiler.return_value($1);
+        compiler.return_value($1, current_procedure);
     }
     |
     value T_ADD value {
         compiler.acquire_accumulator();
-        compiler.add($1, $3);
+        compiler.add($1, $3, current_procedure);
     }
     |
     value T_SUB value {
         compiler.acquire_accumulator();
-        compiler.subtract($1, $3);
+        compiler.subtract($1, $3, current_procedure);
     }
     |
     value T_MUL value {
         compiler.acquire_accumulator();
-        compiler.multiply($1, $3);
+        compiler.multiply($1, $3, current_procedure);
     }
     |
     value T_DIV value {
         compiler.acquire_accumulator();
-        compiler.divide($1, $3);
+        compiler.divide($1, $3, current_procedure);
     }
     |
     value T_MOD value {
         compiler.acquire_accumulator();
-        compiler.modulo($1, $3);
+        compiler.modulo($1, $3, current_procedure);
     }
     ;
 
@@ -347,27 +324,27 @@ repeat_loop_end:
 
 condition:
     value T_EQ value {
-        compiler.add_condition(jftt::condition_discriminator::eq, $1, $3);
+        compiler.add_condition(jftt::condition_discriminator::eq, $1, $3, current_procedure);
     }
     |
     value T_NEQ value {
-        compiler.add_condition(jftt::condition_discriminator::neq, $1, $3);
+        compiler.add_condition(jftt::condition_discriminator::neq, $1, $3, current_procedure);
     }
     |
     value T_LE value {
-        compiler.add_condition(jftt::condition_discriminator::le, $1, $3);
+        compiler.add_condition(jftt::condition_discriminator::le, $1, $3, current_procedure);
     }
     |
     value T_LEQ value {
-        compiler.add_condition(jftt::condition_discriminator::leq, $1, $3);
+        compiler.add_condition(jftt::condition_discriminator::leq, $1, $3, current_procedure);
     }
     |
     value T_GE value {
-        compiler.add_condition(jftt::condition_discriminator::ge, $1, $3);
+        compiler.add_condition(jftt::condition_discriminator::ge, $1, $3, current_procedure);
     }
     |
     value T_GEQ value {
-        compiler.add_condition(jftt::condition_discriminator::geq, $1, $3);
+        compiler.add_condition(jftt::condition_discriminator::geq, $1, $3, current_procedure);
     }
     ;
 
@@ -389,20 +366,12 @@ identifier:
         compiler.set_line_no($1.line_no);
         assert_identifier_token($1.discriminator);
 
-        if (current_procedure) {
-            // TODO: this does not work because the reference is not set yet
-            compiler.procedure_assert_identifier_defined(
-                current_procedure.value(), *$1.str_ptr, id::type_discriminator::variable);
-            $$ = new id::variable(
-                *id::shared_ptr_cast<id::type_discriminator::variable>(
-                    compiler.get_procedure_identifier(current_procedure.value(), *$1.str_ptr)));
-        }
-        else {
-            compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::variable);
-            $$ = new id::variable(
-                *id::shared_ptr_cast<id::type_discriminator::variable>(
-                    compiler.get_identifier(*$1.str_ptr)));
-        }
+        // TODO: this does not work because the reference is not set yet
+        compiler.assert_identifier_defined(
+            *$1.str_ptr, id::type_discriminator::variable, current_procedure);
+        $$ = new id::variable(
+            *id::shared_ptr_cast<id::type_discriminator::variable>(
+                compiler.get_identifier(*$1.str_ptr, current_procedure)));
 
         delete $1.str_ptr;
     }
@@ -412,24 +381,14 @@ identifier:
         assert_identifier_token($1.discriminator);
         assert_rvalue_token($3.discriminator);
 
-        if (current_procedure) {
-            // TODO: this does not work because the reference is not set yet
-            compiler.procedure_assert_identifier_defined(
-                current_procedure.value(), *$1.str_ptr, id::type_discriminator::vararray);
-            auto vararray{new id::vararray(
-                *id::shared_ptr_cast<id::type_discriminator::vararray>(
-                    compiler.get_procedure_identifier(current_procedure.value(), *$1.str_ptr)))};
-            vararray->set_indexer(std::make_shared<id::rvalue>($3.value));
-            $$ = vararray;
-        }
-        else {
-            compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::vararray);
-            auto vararray{new id::vararray(
-                *id::shared_ptr_cast<id::type_discriminator::vararray>(
-                    compiler.get_identifier(*$1.str_ptr)))};
-            vararray->set_indexer(std::make_shared<id::rvalue>($3.value));
-            $$ = vararray;
-        }
+        // TODO: this does not work for prrocedures because the reference is not set yet
+        compiler.assert_identifier_defined(
+            *$1.str_ptr, id::type_discriminator::vararray, current_procedure);
+        auto vararray{new id::vararray(
+            *id::shared_ptr_cast<id::type_discriminator::vararray>(
+                compiler.get_identifier(*$1.str_ptr, current_procedure)))};
+        vararray->set_indexer(std::make_shared<id::rvalue>($3.value));
+        $$ = vararray;
 
         delete $1.str_ptr;
     }
@@ -439,34 +398,21 @@ identifier:
         assert_identifier_token($1.discriminator);
         assert_identifier_token($3.discriminator);
 
-        if (current_procedure) {
-            // TODO: this does not work because the reference is not set yet
-            compiler.procedure_assert_identifier_defined(
-                current_procedure.value(), *$1.str_ptr, id::type_discriminator::vararray);
-            compiler.procedure_assert_identifier_defined(
-                current_procedure.value(), *$3.str_ptr, id::type_discriminator::variable);
-            compiler.procedure_assert_lvalue_initialized(
-                current_procedure.value(), *$3.str_ptr, id::type_discriminator::variable);
+        // TODO: this does not work for procedures because the reference is not set yet
+        compiler.assert_identifier_defined(
+            *$1.str_ptr, id::type_discriminator::vararray, current_procedure);
+        compiler.assert_identifier_defined(
+            *$3.str_ptr, id::type_discriminator::variable, current_procedure);
+        compiler.assert_lvalue_initialized(
+            *$3.str_ptr, id::type_discriminator::variable, current_procedure);
 
-            auto vararray{new id::vararray(
-                *id::shared_ptr_cast<id::type_discriminator::vararray>(
-                    compiler.get_procedure_identifier(current_procedure.value(), *$1.str_ptr)))};
-            vararray->set_indexer(
-                id::shared_ptr_cast<id::type_discriminator::variable>(
-                    compiler.get_procedure_identifier(current_procedure.value(), *$3.str_ptr)));
-            $$ = vararray;
-        }
-        else {
-            compiler.assert_identifier_defined(*$1.str_ptr, id::type_discriminator::vararray);
-            compiler.assert_identifier_defined(*$3.str_ptr, id::type_discriminator::variable);
-            compiler.assert_lvalue_initialized(*$3.str_ptr, id::type_discriminator::variable);
-
-            auto vararray{new id::vararray(
-                *id::shared_ptr_cast<id::type_discriminator::vararray>(
-                    compiler.get_identifier(*$1.str_ptr)))};
-            vararray->set_indexer(compiler.get_identifier(*$3.str_ptr));
-            $$ = vararray;
-        }
+        auto vararray{new id::vararray(
+            *id::shared_ptr_cast<id::type_discriminator::vararray>(
+                compiler.get_identifier(*$1.str_ptr, current_procedure)))};
+        vararray->set_indexer(
+            id::shared_ptr_cast<id::type_discriminator::variable>(
+                compiler.get_identifier(*$3.str_ptr, current_procedure)));
+        $$ = vararray;
 
         delete $1.str_ptr;
         delete $3.str_ptr;

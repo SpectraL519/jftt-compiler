@@ -4,12 +4,12 @@ IN
   x:=a;
   y:=b;
   WHILE y>0 DO
-    IF x>=y THEN 
+    IF x>=y THEN
       x:=x-y;
-    ELSE 
+    ELSE
       x:=x+y;
       y:=x-y;
-      x:=x-y;    
+      x:=x-y;
     ENDIF
   ENDWHILE
   c:=x;

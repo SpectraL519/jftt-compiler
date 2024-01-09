@@ -1,28 +1,21 @@
 # Simple procedure test
-# PROCEDURE test_procedure(a, T b) IS
-#     x, t[10]
-# IN
-#     WRITE a;
-# END
-
-PROCEDURE print_one() IS
+PROCEDURE binary_notation() IS
+    n, p
 IN
-    WRITE 1;
-END
-
-PROCEDURE print_two() IS
-IN
-    WRITE 2;
-END
-
-PROCEDURE print_one_and_two() IS
-IN
-    print_one();
-    print_two();
+    READ n;
+    REPEAT
+		p:=n/2;
+		p:=2*p;
+		IF n>p THEN
+			WRITE 1;
+		ELSE
+			WRITE 0;
+		ENDIF
+		n:=n/2;
+    UNTIL n=0;
 END
 
 PROGRAM IS
 IN
-    WRITE 0;
-    print_one_and_two();
+    binary_notation();
 END

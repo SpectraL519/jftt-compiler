@@ -18,71 +18,62 @@ public:
     compiler() = default;
     ~compiler() = default;
 
-    void begin_procedure_declarations();
+    void with_procedurers();
     void begin_program();
     void finish_code_generating();
     const std::vector<std::string>& asm_code() const;
 
     void set_line_no(const std::size_t line_no);
 
-    void declare_variable(const std::string& variable_name);
+    void declare_variable(
+        const std::string& variable_name,
+        const std::optional<std::string>& procedure_name = std::nullopt);
     void declare_vararray(
         const std::string& vararray_name,
-        const architecture::memory_size_type size);
+        const architecture::memory_size_type size,
+        const std::optional<std::string>& procedure_name = std::nullopt);
 
     void declare_procedure(const std::string& procedure_name);
     void declare_procedure_parameter(
         const std::string& procedure_name,
         const identifier_discriminator param_discriminator,
         const std::string& local_name);
-    void declare_procedure_local_variable(
-        const std::string& procedure_name, const std::string& variable_name);
-    void declare_procedure_local_vararray(
-        const std::string& procedure_name,
-        const std::string& vararray_name,
-        const architecture::memory_size_type vararray_size);
-    // TODO: better names
     void begin_procedure_implementation(const std::string& procedure_name);
-    void end_procedure_implementation(const std::string& procedure_name);
-
-    [[nodiscard]]
-    const std::shared_ptr<identifier::abstract_lvalue_identifier>& get_procedure_identifier(
-        const std::string& procedure_name, const std::string& identifier_name);
+    void end_procedure_call_args_declaration(const std::string& procedure_name);
 
     void return_from_procedure(const std::string& procedure_name);
     void call_procedure(const std::string& procedure_name);
 
-    void procedure_assert_no_identifier_redeclaration(
-        const std::string& procedure_name, const std::string& identifier_name);
-    void procedure_assert_identifier_defined(
-        const std::string& procedure_name, const std::string& identifier_name);
-    void procedure_assert_identifier_defined(
-        const std::string& procedure_name,
-        const std::string& identifier_name,
-        const identifier_discriminator discriminator);
-    void procedure_assert_lvalue_initialized(
-        const std::string& procedure_name,
-        const std::string& lvalue_name,
-        const identifier_discriminator discriminator);
+    [[nodiscard]] std::shared_ptr<identifier::abstract_identifier> get_identifier(
+        const std::string& name,
+        const std::optional<std::string>& procedure_name = std::nullopt);
 
-    [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get_identifier(
-        const std::string& name);
+    void initialize_lvalue_identifier(
+        const std::string& name,
+        const std::optional<std::string>& procedure_name = std::nullopt);
 
-    void initialize_lvalue_identifier(const std::string& name);
-
-    void scan(identifier::abstract_identifier* identifier);
-    void print(identifier::abstract_identifier* identifier);
+    void scan(
+        identifier::abstract_identifier* identifier,
+        const std::optional<std::string>& procedure_name = std::nullopt);
+    void print(
+        identifier::abstract_identifier* identifier,
+        const std::optional<std::string>& procedure_name = std::nullopt);
 
     void acquire_accumulator();
     void release_accumulator();
 
-    void return_value(identifier::abstract_identifier* identifier);
-    void assign_value_to(identifier::abstract_identifier* identifier);
+    void return_value(
+        identifier::abstract_identifier* identifier,
+        const std::optional<std::string>& procedure_name = std::nullopt);
+    void assign_value_to(
+        identifier::abstract_identifier* identifier,
+        const std::optional<std::string>& procedure_name = std::nullopt);
 
     void add_condition(
         const condition_discriminator discriminator,
         identifier::abstract_identifier* a,
-        identifier::abstract_identifier* b);
+        identifier::abstract_identifier* b,
+        const std::optional<std::string>& procedure_name = std::nullopt);
     void end_latest_condition_without_else();
     void end_latest_condition_with_else();
 
@@ -90,20 +81,41 @@ public:
     void set_latest_loop_end_label();
     void end_loop(const loop_discriminator discriminator);
 
-    void add(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
-    void subtract(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
-    void multiply(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
-    void divide(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
-    void modulo(identifier::abstract_identifier* a, identifier::abstract_identifier* b);
+    void add(
+        identifier::abstract_identifier* a,
+        identifier::abstract_identifier* b,
+        const std::optional<std::string>& procedure_name = std::nullopt);
+    void subtract(
+        identifier::abstract_identifier* a,
+        identifier::abstract_identifier* b,
+        const std::optional<std::string>& procedure_name = std::nullopt);
+    void multiply(
+        identifier::abstract_identifier* a,
+        identifier::abstract_identifier* b,
+        const std::optional<std::string>& procedure_name = std::nullopt);
+    void divide(
+        identifier::abstract_identifier* a,
+        identifier::abstract_identifier* b,
+        const std::optional<std::string>& procedure_name = std::nullopt);
+    void modulo(
+        identifier::abstract_identifier* a,
+        identifier::abstract_identifier* b,
+        const std::optional<std::string>& procedure_name = std::nullopt);
 
-    void assert_no_identifier_redeclaration(const std::string& identifier_name) const;
-    void assert_identifier_defined(const std::string& identifier_name) const;
+    void assert_no_identifier_redeclaration(
+        const std::string& identifier_name,
+        const std::optional<std::string>& procedure_name = std::nullopt);
     void assert_identifier_defined(
         const std::string& identifier_name,
-        const identifier_discriminator discriminator) const;
+        const std::optional<std::string>& procedure_name = std::nullopt);
+    void assert_identifier_defined(
+        const std::string& identifier_name,
+        const identifier_discriminator discriminator,
+        const std::optional<std::string>& procedure_name = std::nullopt);
     void assert_lvalue_initialized(
         const std::string& lvalue_name,
-        const identifier_discriminator discriminator) const;
+        const identifier_discriminator discriminator,
+        const std::optional<std::string>& procedure_name = std::nullopt);
 
 private:
     std::size_t _line_no{1u};
