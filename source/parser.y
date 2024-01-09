@@ -128,9 +128,7 @@ command:
     |
     repeat_loop repeat_loop_end {}
     |
-    procedure_call T_SEMICOLON {
-        // TODO
-    }
+    procedure_call T_SEMICOLON {}
     |
     T_READ identifier T_SEMICOLON {
         compiler.scan($2);
@@ -187,7 +185,7 @@ procedure_begin:
 
 procedure_end:
     T_END {
-        // TODO: procedure retun code
+        compiler.return_from_procedure(current_procedure.value());
         current_procedure = std::nullopt;
     }
     ;

@@ -20,11 +20,11 @@ public:
         return !this->_procedure_call_stack.empty();
     }
 
-    [[nodiscard]] const std::string& get_procedure() const {
+    [[nodiscard]] const std::string& get_procedure_call() const {
         return this->_procedure_call_stack.top();
     }
 
-    [[nodiscard]] std::string extract_procedure() {
+    [[nodiscard]] std::string extract_procedure_call() {
         auto top_procedure_call{this->_procedure_call_stack.top()};
         this->_procedure_call_stack.pop();
         return top_procedure_call;

@@ -158,43 +158,6 @@ void code_builder::initialize_addres_in_register(
         this->add_instruction(instructions::put(reg));
 }
 
-// TODO: pass value register
-void code_builder::load_value_from_address(architecture::vm_register& address_register) {
-    auto& value_register{this->_memory_manager.acquire_free_register()};
-
-    if (this->_memory_manager.get_accumulator().is_free()) {
-        this->add_instruction(instructions::load(address_register));
-        this->add_instruction(instructions::put(value_register));
-    }
-    else {
-        auto& tmp_register{this->move_acc_content_to_tmp_register()};
-        this->add_instruction(instructions::load(address_register));
-        this->add_instruction(instructions::put(value_register));
-        this->move_tmp_register_content_to_acc(tmp_register);
-    }
-
-    value_register.release();
-}
-
-void code_builder::store_value_from_register(
-    architecture::vm_register& value_register, architecture::vm_register& address_register
-) {
-    if (architecture::is_accumulator(value_register)) {
-        this->add_instruction(instructions::store(address_register));
-        return;
-    }
-
-    if (this->_memory_manager.get_accumulator().is_free()) {
-        this->add_instruction(instructions::get(value_register));
-        this->add_instruction(instructions::store(address_register));
-    }
-    else {
-        auto& tmp_register{this->move_acc_content_to_tmp_register()};
-        this->add_instruction(instructions::get(value_register));
-        this->add_instruction(instructions::store(address_register));
-        this->move_tmp_register_content_to_acc(tmp_register);
-    }
-}
 
 architecture::vm_register& code_builder::move_acc_content_to_tmp_register() {
     auto& tmp_register{this->_memory_manager.acquire_free_register()};

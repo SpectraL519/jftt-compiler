@@ -2,6 +2,7 @@
 
 #include "abstract_identifier.hpp"
 #include "identifier_cast.hpp"
+#include "../architecture/vm_params.hpp"
 
 #include <algorithm>
 #include <map>
@@ -39,12 +40,16 @@ struct procedure_paramter {
     std::shared_ptr<abstract_lvalue_identifier> reference;
 };
 
-// ? TODO: should derive from abstract_lvalue_identifier
-//         |-> functions are lvalues
+
+
 class procedure : public abstract_identifier {
 public:
-    procedure(const std::string& name)
-    : abstract_identifier(type_discriminator::procedure, name) {}
+    procedure(
+        const std::string& name,
+        const jftt::architecture::memory_address_type return_point_address
+    ) : abstract_identifier(type_discriminator::procedure, name),
+        _return_point_address(return_point_address)
+    {}
 
     procedure(const procedure&) = default;
     procedure(procedure&&) = default;
@@ -53,8 +58,6 @@ public:
     procedure& operator=(procedure&&) = default;
 
     ~procedure() = default;
-
-    // TODO: get/set_return_address
 
     std::optional<std::string> declare_parameter(
         const std::string& name, const type_discriminator discriminator
@@ -137,6 +140,10 @@ public:
         return this->_begin_label;
     }
 
+    [[nodiscard]] const jftt::architecture::memory_address_type return_point_address() const {
+        return this->_return_point_address;
+    }
+
 private:
     void _assert_valid_param_discriminator(const type_discriminator discriminator) const {
         switch (discriminator) {
@@ -168,10 +175,12 @@ private:
         );
     }
 
-    std::string _begin_label;
     std::vector<procedure_paramter> _local_identifiers;
     std::size_t _param_no{0u};
     std::size_t _call_param_idx{0u};
+
+    std::string _begin_label;
+    const jftt::architecture::memory_address_type _return_point_address;
 };
 
 } // namespace jftt::identifier

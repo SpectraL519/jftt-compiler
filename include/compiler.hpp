@@ -41,6 +41,7 @@ public:
         const std::string& procedure_name,
         const std::string& vararray_name,
         const architecture::memory_size_type vararray_size);
+    // TODO: better names
     void begin_procedure_implementation(const std::string& procedure_name);
     void end_procedure_implementation(const std::string& procedure_name);
 
@@ -48,6 +49,7 @@ public:
     const std::shared_ptr<identifier::abstract_lvalue_identifier>& get_procedure_identifier(
         const std::string& procedure_name, const std::string& identifier_name);
 
+    void return_from_procedure(const std::string& procedure_name);
     void call_procedure(const std::string& procedure_name);
 
     void procedure_assert_no_identifier_redeclaration(
@@ -106,6 +108,13 @@ public:
 private:
     std::size_t _line_no{1u};
     std::optional<std::string> _program_begin_label;
+
+    // k:     strk a
+    // k + 1: add offset_register
+    // k + 2: store return_point_address_register
+    // k + 3: jump procedure_begin_label
+    // k + 4: retun point
+    architecture::value_type _prrocedure_return_point_offset{4u};
 
     assembly::code_builder _asm_builder;
 

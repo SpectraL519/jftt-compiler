@@ -10,8 +10,19 @@ IN
     WRITE 1;
 END
 
+PROCEDURE print_two() IS
+IN
+    WRITE 2;
+END
+
+PROCEDURE print_one_and_two() IS
+IN
+    print_one();
+    print_two();
+END
+
 PROGRAM IS
 IN
     WRITE 0;
-    print_one();
+    print_one_and_two();
 END

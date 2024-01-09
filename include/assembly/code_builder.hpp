@@ -38,10 +38,6 @@ public:
         const std::shared_ptr<identifier::abstract_lvalue_identifier>& lvalue,
         architecture::vm_register& reg);
 
-    void load_value_from_address(architecture::vm_register& value_register);
-    void store_value_from_register(
-        architecture::vm_register& value_register, architecture::vm_register& address_register);
-
     architecture::vm_register& move_acc_content_to_tmp_register();
     void move_tmp_register_content_to_acc(architecture::vm_register& tmp_register);
 

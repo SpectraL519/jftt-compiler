@@ -58,7 +58,8 @@ void compiler::declare_procedure(const std::string& name) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
     this->assert_no_identifier_redeclaration(name);
     this->_identifier_manager.add<discriminator>(
-        std::make_shared<identifier::type<discriminator>>(name));
+        std::make_shared<identifier::type<discriminator>>(
+            name, this->_memory_manager.allocate(1u)));
 }
 
 void compiler::declare_procedure_parameter(
@@ -161,13 +162,50 @@ const std::shared_ptr<identifier::abstract_lvalue_identifier>& compiler::get_pro
     return procedure->get_identifier(identifier_name);
 }
 
+void compiler::return_from_procedure(const std::string& procedure_name) {
+    static constexpr auto discriminator{identifier_discriminator::procedure};
+    this->assert_identifier_defined(procedure_name, discriminator);
+    // auto procedure_name{this->_procedure_manager.extract_procedure_call()};
+    auto procedure{
+        identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
+
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+
+    // initialize the return point value in accumulator
+    this->_asm_builder.initialize_value_in_register(
+        procedure->return_point_address(), accumulator);
+    this->_asm_builder.add_instruction(assembly::instructions::load(accumulator));
+
+    // jump to the return point currently stored in the accumulator
+    this->_asm_builder.add_instruction(assembly::instructions::jumpr(accumulator));
+}
+
 void compiler::call_procedure(const std::string& procedure_name) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
     this->assert_identifier_defined(procedure_name, discriminator);
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
 
+    // initialize the return point in procedure's return point address
+    auto& offset_register{this->_memory_manager.acquire_free_register()};
+    auto& return_point_address_register{this->_memory_manager.acquire_free_register()};
+
+    this->_asm_builder.initialize_value_in_register(
+        this->_prrocedure_return_point_offset, offset_register);
+    this->_asm_builder.initialize_value_in_register(
+        procedure->return_point_address(), return_point_address_register);
+
+    this->_asm_builder.add_instruction(
+        assembly::instructions::strk(this->_memory_manager.get_accumulator()));
+    this->_asm_builder.add_instruction(assembly::instructions::add(offset_register));
+    this->_asm_builder.add_instruction(
+        assembly::instructions::store(return_point_address_register));
+
+    // jump to the begin of the procedure
     this->_asm_builder.set_jump_point(procedure->begin_label());
+
+    offset_register.release();
+    return_point_address_register.release();
 }
 
 void compiler::procedure_assert_no_identifier_redeclaration(
