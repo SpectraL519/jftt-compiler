@@ -2,6 +2,7 @@
 
 #include "abstract_identifier.hpp"
 #include "identifier_cast.hpp"
+#include "reference.hpp"
 #include "../architecture/vm_params.hpp"
 
 #include <algorithm>
@@ -14,33 +15,6 @@
 
 
 namespace jftt::identifier {
-
-struct procedure_paramter {
-    procedure_paramter() = delete;
-
-    procedure_paramter(
-        const type_discriminator declared_discriminator,
-        const std::string local_name,
-        const std::shared_ptr<abstract_lvalue_identifier>& reference
-    ) : declared_discriminator(declared_discriminator),
-        local_name(local_name),
-        reference(reference)
-    {}
-
-    procedure_paramter(const procedure_paramter&) = default;
-    procedure_paramter(procedure_paramter&&) = default;
-
-    procedure_paramter& operator=(const procedure_paramter&) = default;
-    procedure_paramter& operator=(procedure_paramter&&) = default;
-
-    ~procedure_paramter() = default;
-
-    type_discriminator declared_discriminator;
-    std::string local_name;
-    std::shared_ptr<abstract_lvalue_identifier> reference;
-};
-
-
 
 class procedure : public abstract_identifier {
 public:
@@ -71,9 +45,8 @@ public:
         return std::nullopt;
     }
 
-    std::optional<std::string> set_parameter_reference(
-        std::shared_ptr<abstract_lvalue_identifier> reference
-    ) {
+    std::shared_ptr<reference> get_next_parameter() {
+        // returns either reference identifier ptr or a nullptr if all parameters have been set
         /*
         ! Passing reference should be done via storing the address of a variable/array
         ! in an address in memory allocated specificaly for this procedure parameter
@@ -81,19 +54,12 @@ public:
         ? in compiler::get_identifier return shared_ptr<rvalue>(reference_address)
         */
 
-        // returns optional error msg
         this->_call_param_idx++;
         if (this->_call_param_idx > this->_param_no)
-            return "To many function call parameters";
+            return nullptr;
 
-        auto& call_param{this->_local_identifiers.at(this->_call_param_idx - 1)};
-        if (reference->discriminator() != call_param.declared_discriminator)
-            return "Invalid parameter type. Expected: " +
-                   as_string(call_param.declared_discriminator) +
-                   ". Got: " + as_string(reference->discriminator());
-
-        call_param.reference = reference;
-        return std::nullopt;
+        return shared_ptr_cast<type_discriminator::reference>(
+            this->_local_identifiers.at(this->_call_param_idx - 1));
     }
 
     std::optional<std::string> finish_parameter_passing() {
@@ -105,7 +71,8 @@ public:
         return std::nullopt;
     }
 
-    std::optional<std::string> declare_lvalue_identifier(
+    // TODO: declare local identifier
+    std::optional<std::string> declare_local_identifier(
         std::shared_ptr<identifier::abstract_lvalue_identifier> lvalue
     ) {
         if (this->has_identifier(lvalue->name()))
@@ -124,24 +91,30 @@ public:
     [[nodiscard]] bool has_identifier(
         const std::string& name, const type_discriminator discriminator
     ) const {
-        auto param_it{this->_cfind_param(name)};
-        return param_it != this->_local_identifiers.end() &&
-               param_it->declared_discriminator == discriminator;
+        auto identifier_it{this->_cfind_param(name)};
+        if (identifier_it == this->_local_identifiers.end())
+            return false;
+
+        const auto& identifier{*identifier_it};
+        if (identifier->discriminator() == type_discriminator::reference) {
+            const auto reference{shared_ptr_cast<type_discriminator::reference>(identifier)};
+            return discriminator == reference->reference_discriminator();
+        }
+
+        return discriminator == identifier->discriminator();
     }
 
     [[nodiscard]] const std::shared_ptr<identifier::abstract_lvalue_identifier>& get_identifier(
         const std::string& name
     ) {
-        return this->_find_param(name)->reference;
-    }
+        auto identifier_it{this->_cfind_param(name)};
+        if (identifier_it == this->_local_identifiers.end()) {
+            std::cerr << "[ERROR] : Procedure `" << this->_name << "` has no identifier `"
+                      << name << "`" << std::endl;
+            std::exit(1);
+        }
 
-    // ? not necessary
-    template <type_discriminator IdentifierDiscriminator>
-    [[nodiscard]] std::shared_ptr<identifier::type<IdentifierDiscriminator>> get_identifier(
-        const std::string& name
-    ) {
-        return identifier::shared_ptr_cast<IdentifierDiscriminator>(
-            this->_find_param(name)->reference);
+        return *identifier_it;
     }
 
     void set_begin_label(const std::string& begin_label) {
@@ -171,14 +144,17 @@ private:
         }
     }
 
-    [[nodiscard]] std::vector<procedure_paramter>::iterator _find_param(const std::string& name) {
+    [[nodiscard]] std::vector<std::shared_ptr<abstract_lvalue_identifier>>::iterator _find_param(
+        const std::string& name
+    ) {
         return std::find_if(
             this->_local_identifiers.begin(), this->_local_identifiers.end(),
             [&name] (const auto& param) { return param.local_name == name; }
         );
     }
 
-    [[nodiscard]] std::vector<procedure_paramter>::const_iterator _cfind_param(
+    [[nodiscard]]
+    std::vector<std::shared_ptr<abstract_lvalue_identifier>>::const_iterator _cfind_param(
         const std::string& name
     ) const {
         return std::find_if(
@@ -187,7 +163,7 @@ private:
         );
     }
 
-    std::vector<procedure_paramter> _local_identifiers;
+    std::vector<std::shared_ptr<abstract_lvalue_identifier>> _local_identifiers;
     std::size_t _param_no{0u};
     std::size_t _call_param_idx{0u};
 

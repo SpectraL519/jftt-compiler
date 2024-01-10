@@ -9,7 +9,7 @@
 namespace jftt::identifier {
 
 enum class type_discriminator : uint8_t {
-    base, rvalue, lvalue, variable, vararray, procedure
+    base, rvalue, lvalue, variable, vararray, reference, procedure
 };
 
 
@@ -18,6 +18,7 @@ class abstract_identifier;
 class abstract_lvalue_identifier;
 class variable;
 class vararray;
+class rererence;
 class rvalue;
 class procedure;
 
@@ -45,6 +46,12 @@ template <>
 struct type_traits<type_discriminator::vararray> {
     using type = vararray;
     inline static const std::string str{"vararray"};
+};
+
+template <>
+struct type_traits<type_discriminator::reference> {
+    using type = reference;
+    inline static const std::string str{"reference"};
 };
 
 template <>

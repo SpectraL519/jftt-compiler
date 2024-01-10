@@ -8,6 +8,7 @@
 #include "identifier/rvalue.hpp"
 #include "identifier/vararray.hpp"
 #include "identifier/variable.hpp"
+#include "identifier/reference.hpp"
 
 namespace jftt {
 using identifier_discriminator = identifier::type_discriminator;

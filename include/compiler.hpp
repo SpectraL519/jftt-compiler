@@ -32,15 +32,15 @@ public:
         const std::string& vararray_name,
         const architecture::memory_size_type size,
         const std::optional<std::string>& procedure_name = std::nullopt);
-
     void declare_procedure(const std::string& procedure_name);
+
     void declare_procedure_parameter(
         const std::string& procedure_name,
         const identifier_discriminator param_discriminator,
         const std::string& local_name);
     void begin_procedure_implementation(const std::string& procedure_name);
     void pass_procedure_parameter( // TODO: add current procedure
-        const std::string& procedure_name, const std::string& parameter_name);
+        const std::string& procedure_name, identifier::abstract_lvalue_identifier* lvalue);
     void end_procedure_call_args_declaration(const std::string& procedure_name);
 
     void return_from_procedure(const std::string& procedure_name);

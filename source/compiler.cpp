@@ -43,10 +43,10 @@ void compiler::declare_variable(
         auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
             this->get_identifier(procedure_name.value()))};
 
-        procedure->declare_lvalue_identifier(
+        procedure->declare_local_identifier(
             std::make_shared<identifier::type<discriminator>>(name));
 
-        const auto identifier{procedure->get_identifier<discriminator>(name)};
+        const auto identifier{procedure->get_identifier(name)};
         identifier->set_address(this->_memory_manager.allocate(identifier->size()));
         return;
     }
@@ -72,10 +72,10 @@ void compiler::declare_vararray(
         auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
             this->get_identifier(procedure_name.value()))};
 
-        procedure->declare_lvalue_identifier(
+        procedure->declare_local_identifier(
             std::make_shared<identifier::type<discriminator>>(name, size));
 
-        const auto identifier{procedure->get_identifier<discriminator>(name)};
+        const auto identifier{procedure->get_identifier(name)};
         identifier->set_address(this->_memory_manager.allocate(identifier->size()));
         return;
     }
@@ -126,7 +126,7 @@ void compiler::begin_procedure_implementation(const std::string& procedure_name)
 }
 
 void compiler::pass_procedure_parameter(
-    const std::string& procedure_name, const std::string& parameter_name
+    const std::string& procedure_name, identifier::abstract_lvalue_identifier* lvalue
 ) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
     static constexpr auto parameter_discriminator{identifier_discriminator::lvalue};
@@ -135,14 +135,24 @@ void compiler::pass_procedure_parameter(
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
 
-    auto error_opt{procedure->set_parameter_reference(
-        identifier::shared_ptr_cast<parameter_discriminator>(
-            this->get_identifier(parameter_name)))};
-    if (error_opt) {
+    std::shared_ptr<identifier::reference> parameter{procedure->get_next_parameter()};
+    if (!parameter) {
         std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\t" << error_opt.value() << std::endl;
+                  << "\tToo many parameters passed for procedure: "
+                  << procedure->name() << std::endl;
         std::exit(1);
     }
+
+    if (lvalue->discriminator() != parameter->reference_discriminator()) {
+        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+                  << "\tInvalid parameter passed for procedure: " << procedure->name() << std::endl
+                  << "Expected: " + identifier::as_string(parameter->reference_discriminator())
+                  << ". Got: " + identifier::as_string(lvalue->discriminator());
+        std::exit(1);
+    }
+
+    // TODO: initialize the lvalue address in the parameter's address
+    // + parameter->initialize()
 }
 
 void compiler::end_procedure_call_args_declaration(const std::string& procedure_name) {
@@ -590,10 +600,8 @@ void compiler::assert_lvalue_initialized(
             this->get_identifier(procedure_name.value()))};
 
         this->assert_identifier_defined(identifier_name, procedure_name);
-        const auto lvalue{
-            procedure->get_identifier<identifier_discriminator::lvalue>(identifier_name)};
-
-        if (lvalue->is_initialized())
+        const auto local_identifier{procedure->get_identifier(identifier_name)};
+        if (local_identifier->is_initialized())
             return;
 
         std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
