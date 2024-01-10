@@ -243,11 +243,11 @@ procedure_call_begin:
 procedure_args:
     procedure_args T_COMMA identifier {
         compiler.set_line_no($2.line_no);
-        compiler.pass_procedure_parameter(current_procedure_call.value(), $3);
+        compiler.pass_procedure_parameter(current_procedure_call.value(), $3, current_procedure);
     }
     |
     identifier {
-        compiler.pass_procedure_parameter(current_procedure_call.value(), $1);
+        compiler.pass_procedure_parameter(current_procedure_call.value(), $1, current_procedure);
     }
     |
     /* empty production */
@@ -383,7 +383,6 @@ identifier:
             *$1.str_ptr, id::type_discriminator::variable, current_procedure);
 
         auto identifier{compiler.get_identifier(*$1.str_ptr, current_procedure)};
-
         if (identifier->discriminator() == id::type_discriminator::reference)
             $$ = new id::reference(
                 *id::shared_ptr_cast<id::type_discriminator::reference>(identifier));

@@ -132,9 +132,13 @@ void compiler::begin_procedure_implementation(const std::string& procedure_name)
 }
 
 void compiler::pass_procedure_parameter(
-    const std::string& procedure_name, identifier::abstract_identifier* lvalue
+    const std::string& procedure_name,
+    identifier::abstract_identifier* identifier,
+    const std::optional<std::string>& current_procedure
 ) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
+    auto lvalue{identifier::shared_ptr_cast<identifier_discriminator::lvalue>(
+        this->get_identifier(identifier->name(), current_procedure))};
 
     this->assert_identifier_defined(procedure_name, discriminator);
     auto procedure{
@@ -148,11 +152,25 @@ void compiler::pass_procedure_parameter(
         std::exit(1);
     }
 
-    if (lvalue->discriminator() != parameter->reference_discriminator()) {
+    bool valid_lvalue_discriminator{true};
+    if (lvalue->discriminator() == identifier_discriminator::reference) {
+        auto reference{identifier::shared_ptr_cast<identifier_discriminator::reference>(lvalue)};
+        if (reference->reference_discriminator() != parameter->reference_discriminator())
+            valid_lvalue_discriminator = false;
+    }
+    else {
+        if (parameter->initializes_underlying_resource())
+            lvalue->initialize();
+
+        if (lvalue->discriminator() != parameter->reference_discriminator())
+            valid_lvalue_discriminator = false;
+    }
+
+    if (!valid_lvalue_discriminator) {
         std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\tInvalid parameter passed for procedure: " << procedure->name() << std::endl
-                  << "Expected: " + identifier::as_string(parameter->reference_discriminator())
-                  << ". Got: " + identifier::as_string(lvalue->discriminator());
+                    << "\tInvalid parameter passed for procedure: " << procedure->name() << std::endl
+                    << "\texpected - " + identifier::as_string(parameter->reference_discriminator())
+                    << "; got - " + identifier::as_string(lvalue->discriminator()) << std::endl;
         std::exit(1);
     }
 
@@ -163,8 +181,7 @@ void compiler::pass_procedure_parameter(
 
     auto& reference_address_register{this->_memory_manager.acquire_free_register()};
     this->_asm_builder.initialize_value_in_register(parameter->address(), reference_address_register);
-    this->_asm_builder.initialize_value_in_register(
-        identifier::shared_ptr_cast<identifier_discriminator::lvalue>(lvalue)->address(), accumulator);
+    this->_asm_builder.initialize_addres_in_register(lvalue, accumulator);
     this->_asm_builder.add_instruction(assembly::instructions::store(reference_address_register));
 
     if (tmp_register)
@@ -241,7 +258,8 @@ std::shared_ptr<identifier::abstract_identifier> compiler::get_identifier(
         auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
             this->get_identifier(procedure_name.value()))};
 
-        return procedure->get_identifier(name);
+        auto identifier{procedure->get_identifier(name)};
+        return identifier;
     }
 
     return this->_identifier_manager.get(name);
@@ -255,7 +273,16 @@ void compiler::initialize_lvalue_identifier(
             procedure_name.value(), identifier_discriminator::procedure);
         auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
             this->get_identifier(procedure_name.value()))};
-        procedure->get_identifier(name)->initialize();
+
+        auto lvalue{procedure->get_identifier(name)};
+        if (lvalue->discriminator() == identifier_discriminator::reference) {
+            auto reference{identifier::shared_ptr_cast<identifier_discriminator::reference>(lvalue)};
+            reference->initialize_resource();
+        }
+        else {
+            lvalue->initialize();
+        }
+
         return;
     }
 

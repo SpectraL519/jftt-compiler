@@ -12,6 +12,8 @@ const std::string& as_string(const type_discriminator discriminator) {
         return type_traits<type_discriminator::variable>::str;
     case type_discriminator::vararray:
         return type_traits<type_discriminator::vararray>::str;
+    case type_discriminator::reference:
+        return type_traits<type_discriminator::reference>::str;
     case type_discriminator::procedure:
         return type_traits<type_discriminator::procedure>::str;
     case type_discriminator::rvalue:

@@ -34,6 +34,10 @@ public:
         return this->_indexer_identifier;
     }
 
+    [[nodiscard]] const bool initializes_underlying_resource() const {
+        return this->_resouce_initialized;
+    }
+
     void set_indexer(const std::shared_ptr<identifier::abstract_identifier>& indexer) {
         if (this->_reference_discriminator != type_discriminator::vararray) {
             std::cerr << "[ERROR] : Cannot set an indexer for a non-vararray reference" << std::endl;
@@ -53,10 +57,15 @@ public:
         this->_indexer_identifier = indexer;
     }
 
+    void initialize_resource() {
+        this->_resouce_initialized = true;
+    }
+
 private:
     static constexpr architecture::memory_size_type _size{1u};
     type_discriminator _reference_discriminator;
     std::shared_ptr<identifier::abstract_identifier> _indexer_identifier;
+    bool _resouce_initialized{false};
 };
 
 } // namespace jftt::identifier

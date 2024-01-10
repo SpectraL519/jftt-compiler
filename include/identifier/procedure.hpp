@@ -101,10 +101,10 @@ public:
         return discriminator == identifier->discriminator();
     }
 
-    [[nodiscard]] const std::shared_ptr<identifier::abstract_lvalue_identifier>& get_identifier(
+    [[nodiscard]] std::shared_ptr<identifier::abstract_lvalue_identifier> get_identifier(
         const std::string& name
     ) {
-        auto identifier_it{this->_cfind_param(name)};
+        auto identifier_it{this->_find_param(name)};
         if (identifier_it == this->_local_identifiers.end()) {
             std::cerr << "[ERROR] : Procedure `" << this->_name << "` has no identifier `"
                       << name << "`" << std::endl;
