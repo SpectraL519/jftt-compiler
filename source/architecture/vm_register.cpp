@@ -9,6 +9,10 @@ namespace jftt::architecture {
 vm_register::vm_register(vm_register_discriminator discriminator)
 : _discriminator(discriminator) {}
 
+bool vm_register::operator==(const vm_register& other) const {
+    return this->_discriminator == other._discriminator;
+}
+
 vm_register_discriminator vm_register::discriminator() const {
     return this->_discriminator;
 }

@@ -10,6 +10,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 
@@ -33,27 +34,24 @@ public:
 
     ~procedure() = default;
 
-    std::optional<std::string> declare_parameter(
+    std::variant<std::string, std::shared_ptr<reference>> declare_parameter(
         const std::string& name, const type_discriminator discriminator
     ) {
+        // returns either reference identifier ptr or a string containing an error msg
         if (this->has_identifier(name))
-            return "Identifier `" + name + "` already defined in function `" + this->_name + "`";
+            return "Identifier `" + name + "` already defined in procedure `" + this->_name + "`";
 
         this->_assert_valid_param_discriminator(discriminator);
-        this->_local_identifiers.emplace_back(discriminator, name, nullptr);
+
+        auto ref{std::make_shared<reference>(name, discriminator)};
+        this->_local_identifiers.push_back(ref);
         this->_param_no++;
-        return std::nullopt;
+
+        return ref;
     }
 
     std::shared_ptr<reference> get_next_parameter() {
         // returns either reference identifier ptr or a nullptr if all parameters have been set
-        /*
-        ! Passing reference should be done via storing the address of a variable/array
-        ! in an address in memory allocated specificaly for this procedure parameter
-        ! procedure_paramter::reference -> procedure_paramter::reference_address
-        ? in compiler::get_identifier return shared_ptr<rvalue>(reference_address)
-        */
-
         this->_call_param_idx++;
         if (this->_call_param_idx > this->_param_no)
             return nullptr;
@@ -79,8 +77,7 @@ public:
             return "Identifier `" + lvalue->name() +
                    "` already defined in function `" + this->_name + "`";
 
-        this->_local_identifiers.emplace_back(
-            lvalue->discriminator(), lvalue->name(), std::move(lvalue));
+        this->_local_identifiers.push_back(std::move(lvalue));
         return std::nullopt;
     }
 
@@ -149,7 +146,7 @@ private:
     ) {
         return std::find_if(
             this->_local_identifiers.begin(), this->_local_identifiers.end(),
-            [&name] (const auto& param) { return param.local_name == name; }
+            [&name] (const auto& identifier) { return identifier->name() == name; }
         );
     }
 
@@ -159,7 +156,7 @@ private:
     ) const {
         return std::find_if(
             this->_local_identifiers.cbegin(), this->_local_identifiers.cend(),
-            [&name] (const auto& param) { return param.local_name == name; }
+            [&name] (const auto& identifier) { return identifier->name() == name; }
         );
     }
 

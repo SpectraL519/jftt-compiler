@@ -16,4 +16,7 @@ IN
 
     t[b] := 5;
     WRITE t[b]; # 5
+
+    a := t[b];
+    WRITE a; # 5
 END

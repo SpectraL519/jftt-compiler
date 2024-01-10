@@ -241,16 +241,13 @@ procedure_call_begin:
     ;
 
 procedure_args:
-    procedure_args T_COMMA T_IDENTIFIER {
-        compiler.set_line_no($3.line_no);
-        compiler.pass_procedure_parameter(current_procedure_call.value(), *$3.str_ptr);
-        delete $3.str_ptr;
+    procedure_args T_COMMA identifier {
+        compiler.set_line_no($2.line_no);
+        compiler.pass_procedure_parameter(current_procedure_call.value(), $3);
     }
     |
-    T_IDENTIFIER {
-        compiler.set_line_no($1.line_no);
-        compiler.pass_procedure_parameter(current_procedure_call.value(), *$1.str_ptr);
-        delete $1.str_ptr;
+    identifier {
+        compiler.pass_procedure_parameter(current_procedure_call.value(), $1);
     }
     |
     /* empty production */
@@ -384,9 +381,15 @@ identifier:
         // TODO: this does not work because the reference is not set yet
         compiler.assert_identifier_defined(
             *$1.str_ptr, id::type_discriminator::variable, current_procedure);
-        $$ = new id::variable(
-            *id::shared_ptr_cast<id::type_discriminator::variable>(
-                compiler.get_identifier(*$1.str_ptr, current_procedure)));
+
+        auto identifier{compiler.get_identifier(*$1.str_ptr, current_procedure)};
+
+        if (identifier->discriminator() == id::type_discriminator::reference)
+            $$ = new id::reference(
+                *id::shared_ptr_cast<id::type_discriminator::reference>(identifier));
+        else
+            $$ = new id::variable(
+                *id::shared_ptr_cast<id::type_discriminator::variable>(identifier));
 
         delete $1.str_ptr;
     }

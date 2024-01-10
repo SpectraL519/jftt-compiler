@@ -129,31 +129,51 @@ void code_builder::initialize_addres_in_register(
         return;
     }
 
-    const auto vararray{
-        identifier::shared_ptr_cast<identifier_discriminator::vararray>(lvalue)};
-    auto& address_register{this->_memory_manager.acquire_free_register()};
-    this->initialize_value_in_register(vararray->address(), address_register);
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+
+
+    std::shared_ptr<identifier::abstract_identifier> indexer;
+
+    if (lvalue->discriminator() == identifier_discriminator::reference) {
+        const auto reference{
+            identifier::shared_ptr_cast<identifier_discriminator::reference>(lvalue)};
+        this->initialize_value_in_register(reference->address(), accumulator);
+        this->add_instruction(instructions::load(accumulator));
+
+        indexer = reference->indexer();
+    }
+    else { // vararray
+        const auto vararray{
+            identifier::shared_ptr_cast<identifier_discriminator::vararray>(lvalue)};
+        this->initialize_value_in_register(vararray->address(), accumulator);
+
+        indexer = vararray->indexer();
+    }
 
     // initialize the index value in the accumulator
-    auto& accumulator{this->_memory_manager.get_accumulator()};
-    const auto& indexer{vararray->indexer()};
-    if (indexer->discriminator() == identifier_discriminator::rvalue) {
-        // acc = index_value
-        this->initialize_value_in_register(
-            identifier::shared_ptr_cast<identifier_discriminator::rvalue>(indexer)->value(),
-            accumulator);
-    }
-    else {
-        // acc = *index_variable
-        this->initialize_value_in_register(
-            identifier::shared_ptr_cast<identifier_discriminator::variable>(indexer)->address(),
-            accumulator);
-        this->add_instruction(instructions::load(accumulator));
+    if (indexer) {
+        auto& address_register{this->_memory_manager.acquire_free_register()};
+        this->add_instruction(instructions::put(address_register));
+
+        if (indexer->discriminator() == identifier_discriminator::rvalue) {
+            // acc = index_value
+            this->initialize_value_in_register(
+                identifier::shared_ptr_cast<identifier_discriminator::rvalue>(indexer)->value(),
+                accumulator);
+        }
+        else {
+            // acc = *index_variable
+            this->initialize_value_in_register(
+                identifier::shared_ptr_cast<identifier_discriminator::variable>(indexer)->address(),
+                accumulator);
+            this->add_instruction(instructions::load(accumulator));
+        }
+
+        // add the array[0] address to the index to get array[index] address
+        this->add_instruction(instructions::add(address_register));
+        address_register.release();
     }
 
-    // add the array[0] address to the index to get array[index] address
-    this->add_instruction(instructions::add(address_register));
-    address_register.release();
     if (!architecture::is_accumulator(reg))
         this->add_instruction(instructions::put(reg));
 }
@@ -631,14 +651,10 @@ void code_builder::_write_lvalue(
     if (!accumulator.is_free())
         tmp_register = &this->move_acc_content_to_tmp_register();
 
-    // initialize the address of the beggining of the array in a free register
-    auto& address_register{this->_memory_manager.acquire_free_register()};
-
     // read the array element
-    this->initialize_addres_in_register(lvalue, address_register);
-    this->add_instruction(instructions::load(address_register));
+    this->initialize_addres_in_register(lvalue, accumulator);
+    this->add_instruction(instructions::load(accumulator));
     this->add_instruction(instructions::write());
-    address_register.release();
 
     if (tmp_register != nullptr)
         this->move_tmp_register_content_to_acc(*tmp_register);

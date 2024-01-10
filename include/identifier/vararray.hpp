@@ -10,8 +10,13 @@ namespace jftt::identifier {
 
 class vararray : public abstract_lvalue_identifier {
 public:
+    // static size declaration
     vararray(const std::string& name, const architecture::memory_size_type size)
     : abstract_lvalue_identifier(type_discriminator::vararray, name), _size(size) {}
+
+    // dynamic size declaration - for procedures
+    vararray(const std::string& name)
+    : abstract_lvalue_identifier(type_discriminator::vararray, name) {}
 
     vararray(const vararray&) = default;
     vararray(vararray&&) = default;
@@ -25,7 +30,7 @@ public:
         return this->_size;
     }
 
-    [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& indexer() const {
+    [[nodiscard]] std::shared_ptr<identifier::abstract_identifier> indexer() const {
         return this->_indexer_identifier;
     }
 

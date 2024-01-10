@@ -30,33 +30,33 @@ public:
         return this->_reference_discriminator;
     }
 
-    // [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& indexer() const {
-    //     return this->_indexer_identifier;
-    // }
+    [[nodiscard]] std::shared_ptr<identifier::abstract_identifier> indexer() const {
+        return this->_indexer_identifier;
+    }
 
-    // void set_indexer(const std::shared_ptr<identifier::abstract_identifier>& indexer) {
-    //     if (this->_reference_discriminator != type_discriminator::vararray) {
-    //         std::cerr << "[ERROR] : Cannot set an indexer for a non-vararray reference" << std::endl;
-    //         std::exit(1);
-    //     }
+    void set_indexer(const std::shared_ptr<identifier::abstract_identifier>& indexer) {
+        if (this->_reference_discriminator != type_discriminator::vararray) {
+            std::cerr << "[ERROR] : Cannot set an indexer for a non-vararray reference" << std::endl;
+            std::exit(1);
+        }
 
-    //     switch (indexer->discriminator()) {
-    //     case type_discriminator::rvalue:
-    //         break; // valid indexer
-    //     case type_discriminator::variable:
-    //         break; // valid indexer
-    //     default:
-    //         std::cerr << "[ERROR] : Invalid array indexer type" << std::endl;
-    //         std::exit(1);
-    //     }
+        switch (indexer->discriminator()) {
+        case type_discriminator::rvalue:
+            break; // valid indexer
+        case type_discriminator::variable:
+            break; // valid indexer
+        default:
+            std::cerr << "[ERROR] : Invalid array indexer type" << std::endl;
+            std::exit(1);
+        }
 
-    //     this->_indexer_identifier = indexer;
-    // }
+        this->_indexer_identifier = indexer;
+    }
 
 private:
     static constexpr architecture::memory_size_type _size{1u};
-    const type_discriminator _reference_discriminator;
-    // std::shared_ptr<identifier::abstract_identifier> _indexer_identifier;
+    type_discriminator _reference_discriminator;
+    std::shared_ptr<identifier::abstract_identifier> _indexer_identifier;
 };
 
 } // namespace jftt::identifier

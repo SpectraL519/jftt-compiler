@@ -18,6 +18,8 @@ public:
 
     vm_register(vm_register_discriminator);
 
+    [[nodiscard]] bool operator==(const vm_register&) const;
+
     [[nodiscard]] vm_register_discriminator discriminator() const;
     [[nodiscard]] bool is_free() const;
     void acquire();

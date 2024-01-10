@@ -43,11 +43,10 @@ void compiler::declare_variable(
         auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
             this->get_identifier(procedure_name.value()))};
 
-        procedure->declare_local_identifier(
-            std::make_shared<identifier::type<discriminator>>(name));
-
-        const auto identifier{procedure->get_identifier(name)};
+        auto identifier{std::make_shared<identifier::type<discriminator>>(name)};
         identifier->set_address(this->_memory_manager.allocate(identifier->size()));
+        procedure->declare_local_identifier(std::move(identifier));
+
         return;
     }
 
@@ -72,11 +71,10 @@ void compiler::declare_vararray(
         auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
             this->get_identifier(procedure_name.value()))};
 
-        procedure->declare_local_identifier(
-            std::make_shared<identifier::type<discriminator>>(name, size));
-
-        const auto identifier{procedure->get_identifier(name)};
+        auto identifier{std::make_shared<identifier::type<discriminator>>(name)};
         identifier->set_address(this->_memory_manager.allocate(identifier->size()));
+        procedure->declare_local_identifier(std::move(identifier));
+
         return;
     }
 
@@ -90,6 +88,7 @@ void compiler::declare_vararray(
 void compiler::declare_procedure(const std::string& name) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
     this->assert_no_identifier_redeclaration(name);
+
     this->_identifier_manager.add<discriminator>(
         std::make_shared<identifier::type<discriminator>>(
             name, this->_memory_manager.allocate(1u)));
@@ -105,12 +104,19 @@ void compiler::declare_procedure_parameter(
 
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
-    auto error_opt{procedure->declare_parameter(local_name, param_discriminator)};
-    if (error_opt) {
+
+    auto reference_variant{procedure->declare_parameter(local_name, param_discriminator)};
+    if (std::holds_alternative<std::string>(reference_variant)) {
+        // error
         std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\t" << error_opt.value() << std::endl;
+                  << "\t" << std::get<std::string>(reference_variant) << std::endl;
         std::exit(1);
     }
+
+    // allocate memory for parameter reference addres
+    auto reference{std::get<std::shared_ptr<identifier::reference>>(reference_variant)};
+    reference->set_address(this->_memory_manager.allocate(reference->size()));
+    reference->initialize();
 }
 
 void compiler::begin_procedure_implementation(const std::string& procedure_name) {
@@ -126,10 +132,9 @@ void compiler::begin_procedure_implementation(const std::string& procedure_name)
 }
 
 void compiler::pass_procedure_parameter(
-    const std::string& procedure_name, identifier::abstract_lvalue_identifier* lvalue
+    const std::string& procedure_name, identifier::abstract_identifier* lvalue
 ) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
-    static constexpr auto parameter_discriminator{identifier_discriminator::lvalue};
 
     this->assert_identifier_defined(procedure_name, discriminator);
     auto procedure{
@@ -151,8 +156,20 @@ void compiler::pass_procedure_parameter(
         std::exit(1);
     }
 
-    // TODO: initialize the lvalue address in the parameter's address
-    // + parameter->initialize()
+    architecture::vm_register* tmp_register{nullptr};
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+    if (!accumulator.is_free())
+        tmp_register = &this->_asm_builder.move_acc_content_to_tmp_register();
+
+    auto& reference_address_register{this->_memory_manager.acquire_free_register()};
+    this->_asm_builder.initialize_value_in_register(parameter->address(), reference_address_register);
+    this->_asm_builder.initialize_value_in_register(
+        identifier::shared_ptr_cast<identifier_discriminator::lvalue>(lvalue)->address(), accumulator);
+    this->_asm_builder.add_instruction(assembly::instructions::store(reference_address_register));
+
+    if (tmp_register)
+        this->_asm_builder.move_tmp_register_content_to_acc(*tmp_register);
+    reference_address_register.release();
 }
 
 void compiler::end_procedure_call_args_declaration(const std::string& procedure_name) {

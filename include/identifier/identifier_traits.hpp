@@ -18,7 +18,7 @@ class abstract_identifier;
 class abstract_lvalue_identifier;
 class variable;
 class vararray;
-class rererence;
+class reference;
 class rvalue;
 class procedure;
 
