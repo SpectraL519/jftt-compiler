@@ -234,7 +234,7 @@ procedure_call_begin:
     T_IDENTIFIER {
         compiler.set_line_no($1.line_no);
         compiler.assert_identifier_defined(
-            *$1.str_ptr, id::type_discriminator::procedure, current_procedure);
+            *$1.str_ptr, id::type_discriminator::procedure);
         current_procedure_call.emplace(*$1.str_ptr);
         delete $1.str_ptr;
     }

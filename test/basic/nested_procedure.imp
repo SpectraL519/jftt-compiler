@@ -1,0 +1,21 @@
+# Simple nested procedure calls test
+
+PROCEDURE print_number_until_zero() IS
+    number
+IN
+    REPEAT
+        READ number;
+    UNTIL number = 0;
+    # print_number_until_zero_twice();
+END
+
+PROCEDURE print_number_until_zero_twice() IS
+IN
+    print_number_until_zero();
+    print_number_until_zero();
+END
+
+PROGRAM IS
+IN
+    print_number_until_zero_twice();
+END

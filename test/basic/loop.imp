@@ -17,8 +17,7 @@ IN
 
     WRITE 101;
 
-    # should print c sequence only once as b = 0 at the beginning of the loop (o + 1) > 1
-    # expected out: 0 0 1
+    # in: 3, expected out: 0 0 1
     REPEAT
         WRITE b;
         b := b + 1;
