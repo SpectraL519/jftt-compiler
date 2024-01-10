@@ -7,11 +7,14 @@
 
 #include <iostream>
 #include <optional>
+#include <vector>
 
 // utility
 jftt::compiler compiler;
 std::optional<std::string> current_procedure;
 std::optional<std::string> current_procedure_call;
+const std::vector<id::type_discriminator> var_discriminators_list{
+    id::type_discriminator::variable, id::type_discriminator::vararray};
 
 // Flex & Bison utility
 int yylex();
@@ -378,17 +381,19 @@ identifier:
         compiler.set_line_no($1.line_no);
         assert_identifier_token($1.discriminator);
 
-        // TODO: this does not work because the reference is not set yet
         compiler.assert_identifier_defined(
-            *$1.str_ptr, id::type_discriminator::variable, current_procedure);
+            *$1.str_ptr, var_discriminators_list, current_procedure);
 
         auto identifier{compiler.get_identifier(*$1.str_ptr, current_procedure)};
         if (identifier->discriminator() == id::type_discriminator::reference)
             $$ = new id::reference(
                 *id::shared_ptr_cast<id::type_discriminator::reference>(identifier));
-        else
+        else if (identifier->discriminator() == id::type_discriminator::variable)
             $$ = new id::variable(
                 *id::shared_ptr_cast<id::type_discriminator::variable>(identifier));
+        else
+            $$ = new id::vararray(
+                *id::shared_ptr_cast<id::type_discriminator::vararray>(identifier));
 
         delete $1.str_ptr;
     }
@@ -398,14 +403,22 @@ identifier:
         assert_identifier_token($1.discriminator);
         assert_rvalue_token($3.discriminator);
 
-        // TODO: this does not work for prrocedures because the reference is not set yet
         compiler.assert_identifier_defined(
             *$1.str_ptr, id::type_discriminator::vararray, current_procedure);
-        auto vararray{new id::vararray(
-            *id::shared_ptr_cast<id::type_discriminator::vararray>(
-                compiler.get_identifier(*$1.str_ptr, current_procedure)))};
-        vararray->set_indexer(std::make_shared<id::rvalue>($3.value));
-        $$ = vararray;
+
+        auto identifier{compiler.get_identifier(*$1.str_ptr, current_procedure)};
+        if (identifier->discriminator() == id::type_discriminator::reference) {
+            auto reference_ptr{new id::reference(
+                *id::shared_ptr_cast<id::type_discriminator::reference>(identifier))};
+            reference_ptr->set_indexer(std::make_shared<id::rvalue>($3.value));
+            $$ = reference_ptr;
+        }
+        else {
+            auto varrarray_ptr{new id::vararray(
+                *id::shared_ptr_cast<id::type_discriminator::vararray>(identifier))};
+            varrarray_ptr->set_indexer(std::make_shared<id::rvalue>($3.value));
+            $$ = varrarray_ptr;
+        }
 
         delete $1.str_ptr;
     }
@@ -415,21 +428,28 @@ identifier:
         assert_identifier_token($1.discriminator);
         assert_identifier_token($3.discriminator);
 
-        // TODO: this does not work for procedures because the reference is not set yet
         compiler.assert_identifier_defined(
             *$1.str_ptr, id::type_discriminator::vararray, current_procedure);
         compiler.assert_identifier_defined(
             *$3.str_ptr, id::type_discriminator::variable, current_procedure);
-        compiler.assert_lvalue_initialized(
-            *$3.str_ptr, id::type_discriminator::variable, current_procedure);
 
-        auto vararray{new id::vararray(
-            *id::shared_ptr_cast<id::type_discriminator::vararray>(
-                compiler.get_identifier(*$1.str_ptr, current_procedure)))};
-        vararray->set_indexer(
+        auto identifier{compiler.get_identifier(*$1.str_ptr, current_procedure)};
+        if (identifier->discriminator() == id::type_discriminator::reference) {
+            auto reference_ptr{new id::reference(
+                *id::shared_ptr_cast<id::type_discriminator::reference>(identifier))};
+            reference_ptr->set_indexer(
             id::shared_ptr_cast<id::type_discriminator::variable>(
                 compiler.get_identifier(*$3.str_ptr, current_procedure)));
-        $$ = vararray;
+            $$ = reference_ptr;
+        }
+        else {
+            auto varrarray_ptr{new id::vararray(
+                *id::shared_ptr_cast<id::type_discriminator::vararray>(identifier))};
+            varrarray_ptr->set_indexer(
+            id::shared_ptr_cast<id::type_discriminator::variable>(
+                compiler.get_identifier(*$3.str_ptr, current_procedure)));
+            $$ = varrarray_ptr;
+        }
 
         delete $1.str_ptr;
         delete $3.str_ptr;

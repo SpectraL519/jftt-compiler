@@ -159,8 +159,15 @@ void compiler::pass_procedure_parameter(
             valid_lvalue_discriminator = false;
     }
     else {
-        if (parameter->initializes_underlying_resource())
+        if (parameter->initializes_underlying_resource()) {
             lvalue->initialize();
+        }
+        else if (!lvalue->is_initialized()) {
+            std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+                      << "\tPassing an unitialized identifier `" << lvalue->name()
+                      << "` to a procedure: " << procedure->name() << std::endl;
+            std::exit(1);
+        }
 
         if (lvalue->discriminator() != parameter->reference_discriminator())
             valid_lvalue_discriminator = false;
@@ -624,6 +631,36 @@ void compiler::assert_identifier_defined(
     std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
               << "\tUndefined " << identifier::as_string(discriminator)
               << " identifier `" << identifier_name << '`' << std::endl;
+    std::exit(1);
+}
+
+void compiler::assert_identifier_defined(
+    const std::string& identifier_name,
+    const std::vector<identifier_discriminator>& discriminator_list,
+    const std::optional<std::string>& procedure_name
+) {
+    if (procedure_name) {
+        this->assert_identifier_defined(
+            procedure_name.value(), identifier_discriminator::procedure);
+        auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
+            this->get_identifier(procedure_name.value()))};
+
+        for (const auto discriminator : discriminator_list)
+            if (procedure->has_identifier(identifier_name, discriminator))
+                return;
+
+        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+                  << "\tUndefined identifier `" << identifier_name << "` in procedure: "
+                  << procedure_name.value() << std::endl;
+        std::exit(1);
+    }
+
+    for (const auto discriminator : discriminator_list)
+        if (this->_identifier_manager.has(identifier_name, discriminator))
+            return;
+
+    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+              << "\tUndefined identifier `" << identifier_name << std::endl;
     std::exit(1);
 }
 

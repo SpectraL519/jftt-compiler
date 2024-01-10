@@ -8,6 +8,7 @@
 #include "procedure_call_manager.hpp"
 
 #include <optional>
+#include <vector>
 
 
 
@@ -115,6 +116,10 @@ public:
     void assert_identifier_defined(
         const std::string& identifier_name,
         const identifier_discriminator discriminator,
+        const std::optional<std::string>& procedure_name = std::nullopt);
+    void assert_identifier_defined(
+        const std::string& identifier_name,
+        const std::vector<identifier_discriminator>& discriminator_list,
         const std::optional<std::string>& procedure_name = std::nullopt);
     void assert_lvalue_initialized(
         const std::string& lvalue_name,
