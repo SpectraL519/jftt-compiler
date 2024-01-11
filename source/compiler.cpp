@@ -71,7 +71,7 @@ void compiler::declare_vararray(
         auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
             this->get_identifier(procedure_name.value()))};
 
-        auto identifier{std::make_shared<identifier::type<discriminator>>(name)};
+        auto identifier{std::make_shared<identifier::type<discriminator>>(name, size)};
         identifier->set_address(this->_memory_manager.allocate(identifier->size()));
         procedure->declare_local_identifier(std::move(identifier));
 
@@ -140,8 +140,6 @@ void compiler::pass_procedure_parameter(
     auto lvalue{identifier::shared_ptr_cast<identifier_discriminator::lvalue>(
         this->get_identifier(identifier->name(), current_procedure))};
 
-    std::cout << "passing argument: " << lvalue->name() << " (addr: " << lvalue->address() << ")\n";
-
     this->assert_identifier_defined(procedure_name, discriminator);
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
@@ -188,8 +186,6 @@ void compiler::pass_procedure_parameter(
     if (!accumulator.is_free())
         tmp_register = &this->_asm_builder.move_acc_content_to_tmp_register();
 
-    std::cout << "saving addr: " << lvalue->address() << " in param addr: " << parameter->address() << std::endl;
-
     auto& reference_address_register{this->_memory_manager.acquire_free_register()};
     this->_asm_builder.initialize_value_in_register(parameter->address(), reference_address_register);
     this->_asm_builder.initialize_address_in_register(lvalue, accumulator);
@@ -217,7 +213,6 @@ void compiler::end_procedure_call_args_declaration(const std::string& procedure_
 void compiler::return_from_procedure(const std::string& procedure_name) {
     static constexpr auto discriminator{identifier_discriminator::procedure};
     this->assert_identifier_defined(procedure_name, discriminator);
-    // auto procedure_name{this->_procedure_manager.extract_procedure_call()};
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
 

@@ -428,8 +428,6 @@ identifier:
         assert_identifier_token($1.discriminator);
         assert_identifier_token($3.discriminator);
 
-        std::cout << "accessing vararray: " << *$1.str_ptr << std::endl;
-
         compiler.assert_identifier_defined(
             *$1.str_ptr, id::type_discriminator::vararray, current_procedure);
         compiler.assert_identifier_defined(
@@ -441,10 +439,6 @@ identifier:
                 *id::shared_ptr_cast<id::type_discriminator::reference>(identifier))};
 
             auto indexer{compiler.get_identifier(*$3.str_ptr, current_procedure)};
-            std::cout << "accessing vararray by reference: " << identifier->name()
-                      << " at idx: " << indexer->name() << "("
-                      << id::as_string(indexer->discriminator()) << ")\n";
-
             if (indexer->discriminator() == id::type_discriminator::variable)
                 reference_ptr->set_indexer(
                     id::shared_ptr_cast<id::type_discriminator::variable>(indexer));
@@ -459,10 +453,6 @@ identifier:
                 *id::shared_ptr_cast<id::type_discriminator::vararray>(identifier))};
 
             auto indexer{compiler.get_identifier(*$3.str_ptr, current_procedure)};
-            std::cout << "accessing vararray: " << identifier->name()
-                      << " at idx: " << indexer->name() << "("
-                      << id::as_string(indexer->discriminator()) << ")\n";
-
             if (indexer->discriminator() == id::type_discriminator::variable)
                 vararray_ptr->set_indexer(
                     id::shared_ptr_cast<id::type_discriminator::variable>(indexer));

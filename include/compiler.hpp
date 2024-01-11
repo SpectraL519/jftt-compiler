@@ -5,7 +5,6 @@
 #include "condition/branch_manager.hpp"
 #include "identifier_manager.hpp"
 #include "loop_manager.hpp"
-#include "procedure_call_manager.hpp"
 
 #include <optional>
 #include <vector>
@@ -143,7 +142,6 @@ private:
     condition::branch_manager _condition_manager;
     identifier_manager _identifier_manager;
     loop_manager _loop_manager;
-    procedure_call_manager _procedure_manager;
 };
 
 } // namespace jftt
