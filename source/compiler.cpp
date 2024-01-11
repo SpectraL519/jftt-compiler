@@ -140,6 +140,8 @@ void compiler::pass_procedure_parameter(
     auto lvalue{identifier::shared_ptr_cast<identifier_discriminator::lvalue>(
         this->get_identifier(identifier->name(), current_procedure))};
 
+    std::cout << "passing argument: " << lvalue->name() << " (addr: " << lvalue->address() << ")\n";
+
     this->assert_identifier_defined(procedure_name, discriminator);
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
@@ -175,9 +177,9 @@ void compiler::pass_procedure_parameter(
 
     if (!valid_lvalue_discriminator) {
         std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                    << "\tInvalid parameter passed for procedure: " << procedure->name() << std::endl
-                    << "\texpected - " + identifier::as_string(parameter->reference_discriminator())
-                    << "; got - " + identifier::as_string(lvalue->discriminator()) << std::endl;
+                  << "\tInvalid parameter passed for procedure: " << procedure->name() << std::endl
+                  << "\texpected - " + identifier::as_string(parameter->reference_discriminator())
+                  << "; got - " + identifier::as_string(lvalue->discriminator()) << std::endl;
         std::exit(1);
     }
 
@@ -186,9 +188,11 @@ void compiler::pass_procedure_parameter(
     if (!accumulator.is_free())
         tmp_register = &this->_asm_builder.move_acc_content_to_tmp_register();
 
+    std::cout << "saving addr: " << lvalue->address() << " in param addr: " << parameter->address() << std::endl;
+
     auto& reference_address_register{this->_memory_manager.acquire_free_register()};
     this->_asm_builder.initialize_value_in_register(parameter->address(), reference_address_register);
-    this->_asm_builder.initialize_addres_in_register(lvalue, accumulator);
+    this->_asm_builder.initialize_address_in_register(lvalue, accumulator);
     this->_asm_builder.add_instruction(assembly::instructions::store(reference_address_register));
 
     if (tmp_register)
@@ -363,7 +367,7 @@ void compiler::assign_value_to(
     auto& lvalue_address_register{this->_memory_manager.acquire_free_register()};
 
     auto& tmp_register{this->_asm_builder.move_acc_content_to_tmp_register()};
-    this->_asm_builder.initialize_addres_in_register(lvalue, lvalue_address_register);
+    this->_asm_builder.initialize_address_in_register(lvalue, lvalue_address_register);
     this->_asm_builder.move_tmp_register_content_to_acc(tmp_register);
     this->_asm_builder.add_instruction(assembly::instructions::store(lvalue_address_register));
 

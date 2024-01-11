@@ -34,7 +34,7 @@ public:
         architecture::vm_register& reg);
     void initialize_value_in_register(
         const architecture::value_type value, architecture::vm_register& reg);
-    void initialize_addres_in_register(
+    void initialize_address_in_register(
         const std::shared_ptr<identifier::abstract_lvalue_identifier>& lvalue,
         architecture::vm_register& reg);
 

@@ -49,6 +49,8 @@ public:
             break; // valid indexer
         case type_discriminator::variable:
             break; // valid indexer
+        case type_discriminator::reference:
+            break; // valid indexer
         default:
             std::cerr << "[ERROR] : Invalid array indexer type" << std::endl;
             std::exit(1);

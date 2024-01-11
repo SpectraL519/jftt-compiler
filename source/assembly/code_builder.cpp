@@ -45,7 +45,7 @@ void code_builder::read_lvalue(
     auto& address_register{this->_memory_manager.acquire_free_register()};
 
     // read the array element
-    this->initialize_addres_in_register(lvalue, address_register);
+    this->initialize_address_in_register(lvalue, address_register);
     this->add_instruction(instructions::read());
     this->add_instruction(instructions::store(address_register));
     address_register.release();
@@ -78,7 +78,7 @@ void code_builder::initialize_identifier_value_in_register(
     }
     else {
         if (architecture::is_accumulator(reg)) {
-            this->initialize_addres_in_register(
+            this->initialize_address_in_register(
                 identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier), reg);
             this->add_instruction(instructions::load(reg));
         }
@@ -87,7 +87,7 @@ void code_builder::initialize_identifier_value_in_register(
             if (!this->_memory_manager.get_accumulator().is_free())
                 tmp_register = &this->move_acc_content_to_tmp_register();
 
-            this->initialize_addres_in_register(
+            this->initialize_address_in_register(
                 identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier), reg);
             this->add_instruction(instructions::load(reg));
             this->add_instruction(instructions::put(reg));
@@ -120,7 +120,7 @@ void code_builder::initialize_value_in_register(
         this->add_instruction(instructions::inc(reg));
 }
 
-void code_builder::initialize_addres_in_register(
+void code_builder::initialize_address_in_register(
     const std::shared_ptr<identifier::abstract_lvalue_identifier>& lvalue,
     architecture::vm_register& reg
 ) {
@@ -130,8 +130,6 @@ void code_builder::initialize_addres_in_register(
     }
 
     auto& accumulator{this->_memory_manager.get_accumulator()};
-
-
     std::shared_ptr<identifier::abstract_identifier> indexer;
 
     if (lvalue->discriminator() == identifier_discriminator::reference) {
@@ -161,6 +159,13 @@ void code_builder::initialize_addres_in_register(
                 identifier::shared_ptr_cast<identifier_discriminator::rvalue>(indexer)->value(),
                 accumulator);
         }
+        else if (indexer->discriminator() == identifier_discriminator::reference) {
+            const auto reference{
+                identifier::shared_ptr_cast<identifier_discriminator::reference>(indexer)};
+            this->initialize_value_in_register(reference->address(), accumulator);
+            this->add_instruction(instructions::load(accumulator));
+            this->add_instruction(instructions::load(accumulator));
+        }
         else {
             // acc = *index_variable
             this->initialize_value_in_register(
@@ -174,10 +179,10 @@ void code_builder::initialize_addres_in_register(
         address_register.release();
     }
 
+
     if (!architecture::is_accumulator(reg))
         this->add_instruction(instructions::put(reg));
 }
-
 
 architecture::vm_register& code_builder::move_acc_content_to_tmp_register() {
     auto& tmp_register{this->_memory_manager.acquire_free_register()};
@@ -652,7 +657,7 @@ void code_builder::_write_lvalue(
         tmp_register = &this->move_acc_content_to_tmp_register();
 
     // read the array element
-    this->initialize_addres_in_register(lvalue, accumulator);
+    this->initialize_address_in_register(lvalue, accumulator);
     this->add_instruction(instructions::load(accumulator));
     this->add_instruction(instructions::write());
 
