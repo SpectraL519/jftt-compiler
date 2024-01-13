@@ -105,6 +105,7 @@ main:
 
 program_begin:
     T_PROGRAM T_IS {
+        compiler.set_line_no($1.line_no);
         compiler.begin_program();
     }
 
@@ -122,6 +123,7 @@ commands:
 
 command:
     identifier T_ASSIGN expression T_SEMICOLON {
+        compiler.set_line_no($2.line_no);
         compiler.assign_value_to($1, current_procedure);
         compiler.release_accumulator();
     }
@@ -137,10 +139,12 @@ command:
     procedure_call T_SEMICOLON {}
     |
     T_READ identifier T_SEMICOLON {
+        compiler.set_line_no($1.line_no);
         compiler.scan($2, current_procedure);
     }
     |
     T_WRITE value T_SEMICOLON {
+        compiler.set_line_no($1.line_no);
         compiler.print($2, current_procedure);
     }
     ;
@@ -148,6 +152,7 @@ command:
 
 procedure_decl:
     T_PROCEDURE T_IDENTIFIER {
+        compiler.set_line_no($1.line_no);
         compiler.with_procedurers();
         compiler.declare_procedure(*$2.str_ptr);
         current_procedure.emplace(*$2.str_ptr);
@@ -157,24 +162,28 @@ procedure_decl:
 
 procedure_params_decl:
     procedure_params_decl T_COMMA T_IDENTIFIER {
+        compiler.set_line_no($3.line_no);
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::variable, *$3.str_ptr);
         delete $3.str_ptr;
     }
     |
     procedure_params_decl T_COMMA T_PROCEDURE_T T_IDENTIFIER {
+        compiler.set_line_no($3.line_no);
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::vararray, *$4.str_ptr);
         delete $4.str_ptr;
     }
     |
     T_IDENTIFIER {
+        compiler.set_line_no($1.line_no);
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::variable, *$1.str_ptr);
         delete $1.str_ptr;
     }
     |
     T_PROCEDURE_T T_IDENTIFIER {
+        compiler.set_line_no($1.line_no);
         compiler.declare_procedure_parameter(
             current_procedure.value(), id::type_discriminator::vararray, *$2.str_ptr);
         delete $2.str_ptr;
@@ -185,12 +194,14 @@ procedure_params_decl:
 
 procedure_begin:
     T_IN {
+        compiler.set_line_no($1.line_no);
         compiler.begin_procedure_implementation(current_procedure.value());
     }
     ;
 
 procedure_end:
     T_END {
+        compiler.set_line_no($1.line_no);
         compiler.return_from_procedure(current_procedure.value());
         current_procedure = std::nullopt;
     }
@@ -264,26 +275,31 @@ expression:
     }
     |
     value T_ADD value {
+        compiler.set_line_no($2.line_no);
         compiler.acquire_accumulator();
         compiler.add($1, $3, current_procedure);
     }
     |
     value T_SUB value {
+        compiler.set_line_no($2.line_no);
         compiler.acquire_accumulator();
         compiler.subtract($1, $3, current_procedure);
     }
     |
     value T_MUL value {
+        compiler.set_line_no($2.line_no);
         compiler.acquire_accumulator();
         compiler.multiply($1, $3, current_procedure);
     }
     |
     value T_DIV value {
+        compiler.set_line_no($2.line_no);
         compiler.acquire_accumulator();
         compiler.divide($1, $3, current_procedure);
     }
     |
     value T_MOD value {
+        compiler.set_line_no($2.line_no);
         compiler.acquire_accumulator();
         compiler.modulo($1, $3, current_procedure);
     }
@@ -291,33 +307,40 @@ expression:
 
 
 if_condition:
-    T_IF condition T_THEN {}
+    T_IF condition T_THEN {
+        compiler.set_line_no($1.line_no);
+    }
     ;
 
 if_else:
     commands T_ELSE {
+        compiler.set_line_no($2.line_no);
         compiler.end_latest_condition_with_else();
     }
 
 if_end:
     commands T_ENDIF {
+        compiler.set_line_no($2.line_no);
         compiler.end_latest_condition_without_else();
     }
 
 
 while_loop:
     while_loop_begin condition T_DO {
+        compiler.set_line_no($3.line_no);
         compiler.set_latest_loop_end_label();
     }
 
 while_loop_begin:
     T_WHILE {
+        compiler.set_line_no($1.line_no);
         compiler.add_loop(jftt::loop_discriminator::while_do);
     }
     ;
 
 while_loop_end:
     commands T_ENDWHILE {
+        compiler.set_line_no($2.line_no);
         compiler.end_loop(jftt::loop_discriminator::while_do);
     }
     ;
@@ -325,12 +348,14 @@ while_loop_end:
 
 repeat_loop:
     T_REPEAT {
+        compiler.set_line_no($1.line_no);
         compiler.add_loop(jftt::loop_discriminator::repeat_until);
     }
     ;
 
 repeat_loop_end:
     commands T_UNTIL condition T_SEMICOLON {
+        compiler.set_line_no($2.line_no);
         compiler.set_latest_loop_end_label();
         compiler.end_loop(jftt::loop_discriminator::repeat_until);
     }
@@ -339,26 +364,32 @@ repeat_loop_end:
 
 condition:
     value T_EQ value {
+        compiler.set_line_no($2.line_no);
         compiler.add_condition(jftt::condition_discriminator::eq, $1, $3, current_procedure);
     }
     |
     value T_NEQ value {
+        compiler.set_line_no($2.line_no);
         compiler.add_condition(jftt::condition_discriminator::neq, $1, $3, current_procedure);
     }
     |
     value T_LE value {
+        compiler.set_line_no($2.line_no);
         compiler.add_condition(jftt::condition_discriminator::le, $1, $3, current_procedure);
     }
     |
     value T_LEQ value {
+        compiler.set_line_no($2.line_no);
         compiler.add_condition(jftt::condition_discriminator::leq, $1, $3, current_procedure);
     }
     |
     value T_GE value {
+        compiler.set_line_no($2.line_no);
         compiler.add_condition(jftt::condition_discriminator::ge, $1, $3, current_procedure);
     }
     |
     value T_GEQ value {
+        compiler.set_line_no($2.line_no);
         compiler.add_condition(jftt::condition_discriminator::geq, $1, $3, current_procedure);
     }
     ;
@@ -366,6 +397,7 @@ condition:
 
 value:
     T_NUMBER {
+        compiler.set_line_no($1.line_no);
         assert_rvalue_token($1.discriminator);
         $$ = new id::rvalue($1.value);
     }
@@ -381,8 +413,13 @@ identifier:
         compiler.set_line_no($1.line_no);
         assert_identifier_token($1.discriminator);
 
-        compiler.assert_identifier_defined(
-            *$1.str_ptr, var_discriminators_list, current_procedure);
+        if (current_procedure_call)
+            compiler.assert_identifier_defined(
+                *$1.str_ptr, var_discriminators_list, current_procedure);
+        else
+            compiler.assert_identifier_defined(
+                *$1.str_ptr, id::type_discriminator::variable, current_procedure);
+
 
         auto identifier{compiler.get_identifier(*$1.str_ptr, current_procedure)};
         if (identifier->discriminator() == id::type_discriminator::reference)

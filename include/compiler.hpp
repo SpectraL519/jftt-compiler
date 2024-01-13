@@ -39,7 +39,7 @@ public:
         const identifier_discriminator param_discriminator,
         const std::string& local_name);
     void begin_procedure_implementation(const std::string& procedure_name);
-    void pass_procedure_parameter( // TODO: add current procedure
+    void pass_procedure_parameter(
         const std::string& procedure_name,
         identifier::abstract_identifier* lvalue,
         const std::optional<std::string>& current_procedure);
