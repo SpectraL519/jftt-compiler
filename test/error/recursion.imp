@@ -1,0 +1,11 @@
+# Simple recursion error test
+
+PROCEDURE recursive() IS
+IN
+    recursive();
+END
+
+PROGRAM IS
+IN
+    recursive();
+END

@@ -316,7 +316,13 @@ WRITE {
 }
 
 
-. { yyerror("[SYNTAX ERROR] : [line = TODO] \n\t msg = TODO"); }
+. {
+    std::string error_msg{
+        "[SYNTAX ERROR] In line: " +
+        std::to_string(program_line_no) +
+        " \n\tUnknown symbol: " + yytext};
+    yyerror(error_msg.c_str());
+}
 
 %%
 
