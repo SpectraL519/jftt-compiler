@@ -1,19 +1,5 @@
 # Simple reference vararray indexing test
 
-# PROCEDURE print_at(T t, i) IS
-# IN
-#     WRITE t[i];
-# END
-
-# PROGRAM IS
-#     t[10], i
-# IN
-#     READ i;
-#     READ t[i];
-#     WRITE t[i];
-#     print_at(t, i);
-# END
-
 PROCEDURE factorial(T s,n) IS
   i,j
 IN

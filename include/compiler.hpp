@@ -124,17 +124,14 @@ public:
         const std::string& lvalue_name,
         const identifier_discriminator discriminator,
         const std::optional<std::string>& procedure_name = std::nullopt);
+    void assert_index_in_range(
+        const std::string& vararray_name,
+        const architecture::value_type index,
+        const std::optional<std::string>& procedure_name);
 
 private:
     std::size_t _line_no{1u};
     std::optional<std::string> _program_begin_label;
-
-    // k:     strk a
-    // k + 1: add offset_register
-    // k + 2: store return_point_address_register
-    // k + 3: jump procedure_begin_label
-    // k + 4: retun point
-    architecture::value_type _prrocedure_return_point_offset{4u};
 
     assembly::code_builder _asm_builder;
 

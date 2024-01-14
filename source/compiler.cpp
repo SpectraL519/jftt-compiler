@@ -702,5 +702,27 @@ void compiler::assert_lvalue_initialized(
     std::exit(1);
 }
 
+void compiler::assert_index_in_range(
+    const std::string& vararray_name,
+    const architecture::value_type index,
+    const std::optional<std::string>& procedure_name
+) {
+    this->assert_identifier_defined(
+        vararray_name, identifier_discriminator::vararray, procedure_name);
+
+    auto identifier{this->get_identifier(vararray_name, procedure_name)};
+    if (identifier->discriminator() == identifier_discriminator::reference)
+        return;
+
+    auto vararray{
+        identifier::shared_ptr_cast<identifier_discriminator::vararray>(identifier)};
+    if (index < vararray->size())
+        return;
+
+    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
+              << "\tIndex " << index << " out of range for vararray: `"
+              << vararray->name() << "`" << std::endl;
+    std::exit(1);
+}
 
 } // namespace jftt

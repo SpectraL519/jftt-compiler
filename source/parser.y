@@ -447,8 +447,7 @@ identifier:
         assert_identifier_token($1.discriminator);
         assert_rvalue_token($3.discriminator);
 
-        compiler.assert_identifier_defined(
-            *$1.str_ptr, id::type_discriminator::vararray, current_procedure);
+        compiler.assert_index_in_range(*$1.str_ptr, $3.value, current_procedure);
 
         auto identifier{compiler.get_identifier(*$1.str_ptr, current_procedure)};
         if (identifier->discriminator() == id::type_discriminator::reference) {

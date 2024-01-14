@@ -1,0 +1,14 @@
+# Simple index out of range error test for procedures
+
+PROCEDURE index_test() IS
+    t[10]
+IN
+    t[3] := 1;
+    WRITE t[3];
+    WRITE t[12];
+END
+
+PROGRAM IS
+IN
+    index_test();
+END

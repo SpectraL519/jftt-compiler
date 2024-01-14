@@ -1,0 +1,7 @@
+# Simple index out of range error test
+PROGRAM IS
+    t[5]
+IN
+    READ t[0];
+    READ t[5];
+END
