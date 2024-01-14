@@ -129,6 +129,20 @@ void compiler::begin_procedure_implementation(const std::string& procedure_name)
         this->_asm_builder.new_jump_label(procedure_name + "_begin")};
     procedure->set_begin_label(procedure_begin_label);
     this->_asm_builder.insert_jump_point_label(procedure_begin_label);
+
+    // store the procedure return point in the specified memory address
+    auto& accumulator{this->_memory_manager.get_accumulator()};
+    auto& return_point_address_register{this->_memory_manager.acquire_free_register()};
+
+    this->_asm_builder.initialize_value_in_register(
+        procedure->return_point_address(), return_point_address_register);
+
+    this->_asm_builder.add_instruction(assembly::instructions::inc(accumulator));
+    this->_asm_builder.add_instruction(assembly::instructions::inc(accumulator));
+    this->_asm_builder.add_instruction(
+        assembly::instructions::store(return_point_address_register));
+
+    return_point_address_register.release();
 }
 
 void compiler::pass_procedure_parameter(
@@ -233,26 +247,12 @@ void compiler::call_procedure(const std::string& procedure_name) {
     auto procedure{
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
 
-    // initialize the return point in procedure's return point address
-    auto& offset_register{this->_memory_manager.acquire_free_register()};
-    auto& return_point_address_register{this->_memory_manager.acquire_free_register()};
-
-    this->_asm_builder.initialize_value_in_register(
-        this->_prrocedure_return_point_offset, offset_register);
-    this->_asm_builder.initialize_value_in_register(
-        procedure->return_point_address(), return_point_address_register);
-
+    // initialize the current asm line in accumulator
     this->_asm_builder.add_instruction(
         assembly::instructions::strk(this->_memory_manager.get_accumulator()));
-    this->_asm_builder.add_instruction(assembly::instructions::add(offset_register));
-    this->_asm_builder.add_instruction(
-        assembly::instructions::store(return_point_address_register));
 
     // jump to the begin of the procedure
     this->_asm_builder.set_jump_point(procedure->begin_label());
-
-    offset_register.release();
-    return_point_address_register.release();
 }
 
 std::shared_ptr<identifier::abstract_identifier> compiler::get_identifier(
