@@ -250,11 +250,8 @@ procedure_call_begin:
         compiler.assert_identifier_defined(
             *$1.str_ptr, id::type_discriminator::procedure);
 
-        if (current_procedure && *$1.str_ptr == current_procedure.value()) {
-            std::cerr << "[ERROR] In line: " << $1.line_no << std::endl
-                      << "\tRecursive procedure call: " << *$1.str_ptr << std::endl;
-            std::exit(1);
-        }
+        if (current_procedure && *$1.str_ptr == current_procedure.value())
+            compiler.throw_error("Recursive procedure call: " + *$1.str_ptr);
 
         current_procedure_call.emplace(*$1.str_ptr);
         delete $1.str_ptr;

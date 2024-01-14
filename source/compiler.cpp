@@ -106,12 +106,8 @@ void compiler::declare_procedure_parameter(
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
 
     auto reference_variant{procedure->declare_parameter(local_name, param_discriminator)};
-    if (std::holds_alternative<std::string>(reference_variant)) {
-        // error
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\t" << std::get<std::string>(reference_variant) << std::endl;
-        std::exit(1);
-    }
+    if (std::holds_alternative<std::string>(reference_variant))
+        this->throw_error(std::get<std::string>(reference_variant));
 
     // allocate memory for parameter reference addres
     auto reference{std::get<std::shared_ptr<identifier::reference>>(reference_variant)};
@@ -159,12 +155,8 @@ void compiler::pass_procedure_parameter(
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
 
     std::shared_ptr<identifier::reference> parameter{procedure->get_next_parameter()};
-    if (!parameter) {
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\tToo many parameters passed for procedure: "
-                  << procedure->name() << std::endl;
-        std::exit(1);
-    }
+    if (!parameter)
+        this->throw_error("Too many parameters passed for procedure: " + procedure->name());
 
     bool valid_lvalue_discriminator{true};
     if (lvalue->discriminator() == identifier_discriminator::reference) {
@@ -173,27 +165,22 @@ void compiler::pass_procedure_parameter(
             valid_lvalue_discriminator = false;
     }
     else {
-        if (parameter->initializes_underlying_resource()) {
+        if (parameter->initializes_underlying_resource())
             lvalue->initialize();
-        }
-        else if (!lvalue->is_initialized()) {
-            std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                      << "\tPassing an unitialized identifier `" << lvalue->name()
-                      << "` to a procedure: " << procedure->name() << std::endl;
-            std::exit(1);
-        }
+        else if (!lvalue->is_initialized())
+            this->throw_error(
+                "Passing an unitialized identifier `" + lvalue->name() +
+                "` to a procedure: " + procedure->name());
 
         if (lvalue->discriminator() != parameter->reference_discriminator())
             valid_lvalue_discriminator = false;
     }
 
-    if (!valid_lvalue_discriminator) {
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\tInvalid parameter passed for procedure: " << procedure->name() << std::endl
-                  << "\texpected - " + identifier::as_string(parameter->reference_discriminator())
-                  << "; got - " + identifier::as_string(lvalue->discriminator()) << std::endl;
-        std::exit(1);
-    }
+    if (!valid_lvalue_discriminator)
+        this->throw_error(
+            "Invalid parameter passed for procedure: " + procedure->name() +
+            "\n\texpected - " + identifier::as_string(parameter->reference_discriminator()) +
+            "; got - " + identifier::as_string(lvalue->discriminator()));
 
     architecture::vm_register* tmp_register{nullptr};
     auto& accumulator{this->_memory_manager.get_accumulator()};
@@ -217,11 +204,8 @@ void compiler::end_procedure_call_args_declaration(const std::string& procedure_
         identifier::shared_ptr_cast<discriminator>(this->get_identifier(procedure_name))};
 
     auto error_opt{procedure->finish_parameter_passing()};
-    if (error_opt) {
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\t" << error_opt.value() << std::endl;
-        std::exit(1);
-    }
+    if (error_opt)
+        this->throw_error(error_opt.value());
 }
 
 void compiler::return_from_procedure(const std::string& procedure_name) {
@@ -316,9 +300,7 @@ void compiler::scan(
     }
 
     default:
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\tCannot read identifier: " << identifier->name() << std::endl;
-        std::exit(1);
+        this->throw_error("Cannot read identifier: " + identifier->name());
     }
 }
 
@@ -562,18 +544,15 @@ void compiler::assert_no_identifier_redeclaration(
         if (!procedure->has_identifier(identifier_name))
             return;
 
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\tIdentifier `" << identifier_name << "` already defined in procedure: "
-                  << procedure_name.value() << std::endl;
-        std::exit(1);
+        this->throw_error(
+            "Identifier `" + identifier_name +
+            "` already defined in procedure: " + procedure_name.value());
     }
 
     if (!this->_identifier_manager.has(identifier_name))
         return;
 
-    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-              << "\tIdentifier `" << identifier_name << "` already defined" << std::endl;
-    std::exit(1);
+    this->throw_error("Identifier `" + identifier_name + "` already defined");
 }
 
 void compiler::assert_identifier_defined(
@@ -589,18 +568,14 @@ void compiler::assert_identifier_defined(
         if (procedure->has_identifier(identifier_name))
             return;
 
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\tUndefined identifier `" << identifier_name << "` in procedure: "
-                  << procedure_name.value() << std::endl;
-        std::exit(1);
+        this->throw_error(
+            "Undefined identifier `" + identifier_name + "` in procedure" + procedure_name.value());
     }
 
     if (this->_identifier_manager.has(identifier_name))
         return;
 
-    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-              << "\tUndefined identifier `" << identifier_name << '`' << std::endl;
-    std::exit(1);
+    this->throw_error("Undefined identifier `" + identifier_name + "`");
 }
 
 void compiler::assert_identifier_defined(
@@ -617,20 +592,16 @@ void compiler::assert_identifier_defined(
         if (procedure->has_identifier(identifier_name, discriminator))
             return;
 
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                << "\tUndefined " << identifier::as_string(discriminator)
-                << " identifier `" << identifier_name << "` in procedure: "
-                << procedure_name.value() << std::endl;
-        std::exit(1);
+        this->throw_error(
+            "Undefined " + identifier::as_string(discriminator) + " identifier `" +
+            identifier_name + "` in procedure" + procedure_name.value());
     }
 
     if (this->_identifier_manager.has(identifier_name, discriminator))
         return;
 
-    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-              << "\tUndefined " << identifier::as_string(discriminator)
-              << " identifier `" << identifier_name << '`' << std::endl;
-    std::exit(1);
+    this->throw_error(
+        "Undefined" + identifier::as_string(discriminator) + "identifier `" + identifier_name + "`");
 }
 
 void compiler::assert_identifier_defined(
@@ -648,19 +619,16 @@ void compiler::assert_identifier_defined(
             if (procedure->has_identifier(identifier_name, discriminator))
                 return;
 
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\tUndefined identifier `" << identifier_name << "` in procedure: "
-                  << procedure_name.value() << std::endl;
-        std::exit(1);
+        this->throw_error(
+            "Uninitialized identifier `" + identifier_name +
+            "` in procedure" + procedure_name.value());
     }
 
     for (const auto discriminator : discriminator_list)
         if (this->_identifier_manager.has(identifier_name, discriminator))
             return;
 
-    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-              << "\tUndefined identifier `" << identifier_name << std::endl;
-    std::exit(1);
+    this->throw_error("Uninitialized identifier `" + identifier_name + "`");
 }
 
 void compiler::assert_lvalue_initialized(
@@ -684,10 +652,9 @@ void compiler::assert_lvalue_initialized(
         if (local_identifier->is_initialized())
             return;
 
-        std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-                  << "\tUninitialized identifier `" << identifier_name << "` in procedure: "
-                  << procedure_name.value() << std::endl;
-        std::exit(1);
+        this->throw_error(
+            "Uninitialized identifier `" + identifier_name +
+            "` in procedure" + procedure_name.value());
     }
 
     this->assert_identifier_defined(identifier_name);
@@ -697,9 +664,7 @@ void compiler::assert_lvalue_initialized(
     if (lvalue->is_initialized())
         return;
 
-    std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-              << "\tUninitialized identifier `" << identifier_name << '`' << std::endl;
-    std::exit(1);
+    this->throw_error("Uninitialized identifier `" + identifier_name + "`");
 }
 
 void compiler::assert_index_in_range(
@@ -719,9 +684,14 @@ void compiler::assert_index_in_range(
     if (index < vararray->size())
         return;
 
+    this->throw_error(
+        "Index " + std::to_string(index) + " out of range for vararray: `" +
+        vararray->name() + "`");
+}
+
+void compiler::throw_error(const std::string& msg) const {
     std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
-              << "\tIndex " << index << " out of range for vararray: `"
-              << vararray->name() << "`" << std::endl;
+              << "\t" << msg << std::endl;
     std::exit(1);
 }
 

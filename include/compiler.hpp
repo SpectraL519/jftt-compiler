@@ -106,6 +106,7 @@ public:
         identifier::abstract_identifier* b,
         const std::optional<std::string>& procedure_name = std::nullopt);
 
+    // asserts should be const
     void assert_no_identifier_redeclaration(
         const std::string& identifier_name,
         const std::optional<std::string>& procedure_name = std::nullopt);
@@ -128,6 +129,8 @@ public:
         const std::string& vararray_name,
         const architecture::value_type index,
         const std::optional<std::string>& procedure_name);
+
+    void throw_error(const std::string& msg) const;
 
 private:
     std::size_t _line_no{1u};
