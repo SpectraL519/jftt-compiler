@@ -516,8 +516,8 @@ identifier:
 
 
 int yyerror(const char* msg) {
-    std::cerr << "[ERROR] : [line = " << yylval.token.line_no << "] " << msg << std::endl;
-    return 1;
+    std::cerr << msg << std::endl;
+    std::exit(1);
 }
 
 

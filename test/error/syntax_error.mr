@@ -1,0 +1,7 @@
+# Simple syntax error test
+PROGRAM IS
+    var
+IN
+    READ var;
+    WRITE var;
+NED

@@ -16,6 +16,7 @@ namespace parser = jftt::parser;
 uint64_t program_line_no{1};
 static constexpr uint64_t default_token_line_no{0};
 static constexpr uint64_t default_token_value{0};
+std::string unknown_symbol{""};
 
 static int normal_token(int token);
 static int identifier_token(int token);
@@ -35,6 +36,10 @@ p_whitespace [ \t]
 p_comment \#.*$
 p_identifier [_a-z]+
 p_number [0-9]+
+
+
+/* error state */
+%x S_ERROR
 
 
 %%
@@ -317,16 +322,23 @@ WRITE {
 
 
 . {
+    BEGIN(S_ERROR);
+    unknown_symbol += yytext;
+}
+
+<S_ERROR>. {
+    unknown_symbol += yytext;
+}
+
+<S_ERROR>[ \t\n\r\f\v]+ {
     std::string error_msg{
         "[SYNTAX ERROR] In line: " +
         std::to_string(program_line_no) +
-        " \n\tUnknown symbol: " + yytext};
+        " \n\tUnknown symbol: " + unknown_symbol};
     yyerror(error_msg.c_str());
 }
 
 %%
-
-
 
 
 /* function definitions */
