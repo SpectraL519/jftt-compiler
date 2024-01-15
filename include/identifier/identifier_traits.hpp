@@ -71,4 +71,6 @@ using type = typename type_traits<TypeDiscriminator>::type;
 
 [[nodiscard]] const std::string& as_string(const type_discriminator discriminator);
 
+[[nodiscard]] bool is_lvalue(const type_discriminator discriminator);
+
 } // namespace jftt::identifier

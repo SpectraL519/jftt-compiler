@@ -1,0 +1,23 @@
+# Simple reference test
+
+PROCEDURE print_number(n) IS
+IN
+    WRITE n;
+END
+
+PROCEDURE print_number_mul(n) IS
+IN
+    print_number(n);
+    n := n * 2;
+    print_number(n);
+    n := n * 2;
+    print_number(n);
+END
+
+PROGRAM IS
+    n
+IN
+    READ n;
+    print_number_mul(n);
+    WRITE n;
+END

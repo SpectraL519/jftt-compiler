@@ -9,10 +9,10 @@ IN
     c := 0;
     WHILE c < 5 DO
         IF c = 0 THEN
-        b := 5;
+            b := 5;
         ENDIF
         IF c > 0 THEN
-        b := b + 5;
+            b := b + 5;
         ENDIF
         c := c + 1;
     ENDWHILE

@@ -24,6 +24,10 @@ public:
         return top_branch;
     }
 
+    [[nodiscard]] bool has_branches() const {
+        return !this->_branch_stack.empty();
+    }
+
 private:
     std::stack<branch> _branch_stack;
 };

@@ -122,17 +122,21 @@ public:
         const std::vector<identifier_discriminator>& discriminator_list,
         const std::optional<std::string>& procedure_name = std::nullopt);
     void assert_lvalue_initialized(
-        const std::string& lvalue_name,
+        const std::string& identifier_name,
         const identifier_discriminator discriminator,
         const std::optional<std::string>& procedure_name = std::nullopt);
     void assert_index_in_range(
         const std::string& vararray_name,
         const architecture::value_type index,
-        const std::optional<std::string>& procedure_name);
+        const std::optional<std::string>& procedure_name = std::nullopt);
 
     void throw_error(const std::string& msg) const;
 
 private:
+    void _warn_uninitialized_identifier_condition(
+        const std::string& identifier_name,
+        const std::optional<std::string>& procedure_name = std::nullopt);
+
     std::size_t _line_no{1u};
     std::optional<std::string> _program_begin_label;
 

@@ -46,7 +46,6 @@ void compiler::declare_variable(
         auto identifier{std::make_shared<identifier::type<discriminator>>(name)};
         identifier->set_address(this->_memory_manager.allocate(identifier->size()));
         procedure->declare_local_identifier(std::move(identifier));
-
         return;
     }
 
@@ -638,8 +637,13 @@ void compiler::assert_lvalue_initialized(
 ) {
     // TODO: vararray initialization should be checked per index
 
-    if (discriminator == identifier_discriminator::rvalue)
+    if (!identifier::is_lvalue(discriminator))
         return;
+
+    if (this->_condition_manager.has_branches()) {
+        this->_warn_uninitialized_identifier_condition(identifier_name, procedure_name);
+        return;
+    }
 
     if (procedure_name) {
         this->assert_identifier_defined(
@@ -687,6 +691,36 @@ void compiler::assert_index_in_range(
     this->throw_error(
         "Index " + std::to_string(index) + " out of range for vararray: `" +
         vararray->name() + "`");
+}
+
+void compiler::_warn_uninitialized_identifier_condition(
+    const std::string& identifier_name,
+    const std::optional<std::string>& procedure_name
+) {
+    if (procedure_name) {
+        this->assert_identifier_defined(
+            procedure_name.value(), identifier_discriminator::procedure);
+        auto procedure{identifier::shared_ptr_cast<identifier_discriminator::procedure>(
+            this->get_identifier(procedure_name.value()))};
+
+        this->assert_identifier_defined(identifier_name, procedure_name);
+        const auto local_lvalue{procedure->get_identifier(identifier_name)};
+        if (!local_lvalue->is_initialized())
+            std::cerr << "[WARNING] In line: " << this->_line_no << std::endl
+                      << "\tUsing an uninitialized identifier `" << identifier_name
+                      << "` in a condition block in procedure: " << procedure_name.value() << std::endl;
+
+        return;
+    }
+
+    this->assert_identifier_defined(identifier_name);
+    const auto lvalue{
+        this->_identifier_manager.get<identifier_discriminator::lvalue>(identifier_name)};
+
+    if (!lvalue->is_initialized())
+        std::cerr << "[WARNING] In line: " << this->_line_no << std::endl
+                  << "\tUsing an uninitialized identifier `" << identifier_name
+                  << "` in a condition block" << std::endl;
 }
 
 void compiler::throw_error(const std::string& msg) const {

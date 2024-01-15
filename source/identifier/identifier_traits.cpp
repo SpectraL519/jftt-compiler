@@ -25,4 +25,25 @@ const std::string& as_string(const type_discriminator discriminator) {
     return type_traits<type_discriminator::base>::str;
 }
 
+bool is_lvalue(const type_discriminator discriminator) {
+    switch (discriminator) {
+    case type_discriminator::lvalue:
+        return true;
+    case type_discriminator::variable:
+        return true;
+    case type_discriminator::vararray:
+        return true;
+    case type_discriminator::reference:
+        return true;
+    case type_discriminator::procedure:
+        return false;
+    case type_discriminator::rvalue:
+        return false;
+    default:
+        break;
+    }
+    // avoid reached end of non-void function warnings
+    return false;
+}
+
 } // namespace jftt::identifier
