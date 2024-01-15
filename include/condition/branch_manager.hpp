@@ -2,7 +2,6 @@
 
 #include "branch.hpp"
 
-#include <string>
 #include <stack>
 
 
