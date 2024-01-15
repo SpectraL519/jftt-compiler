@@ -1,5 +1,7 @@
 # Simple uninitialized vararray error test
-# vararray initialization should be checked per index
+# Vararray initialization should be checked per index
+# This can be achieved only for static indexing
+# Hence this is not implemented
 PROGRAM IS
     a, b[5], sum
 IN

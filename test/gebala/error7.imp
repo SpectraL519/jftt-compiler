@@ -1,4 +1,5 @@
 # błąd: niewłaściwe użycie procedudy pa w linii 6
+# błędny test: ponowna deklaracja identyfikatora a
 PROCEDURE pa(T a, b) IS
  c[5], a
 IN
@@ -14,4 +15,3 @@ IN
   pa(a,b);
   WRITE a[b];
 END
-

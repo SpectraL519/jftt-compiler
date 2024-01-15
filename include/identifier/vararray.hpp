@@ -50,6 +50,8 @@ public:
         this->_indexer_identifier = indexer;
     }
 
+    // ? Should vararray be initialized by default ?
+
 private:
     architecture::memory_size_type _size{1u};
     std::shared_ptr<identifier::abstract_identifier> _indexer_identifier;

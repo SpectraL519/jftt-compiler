@@ -568,7 +568,7 @@ void compiler::assert_identifier_defined(
             return;
 
         this->throw_error(
-            "Undefined identifier `" + identifier_name + "` in procedure" + procedure_name.value());
+            "Undefined identifier `" + identifier_name + "` in procedure: " + procedure_name.value());
     }
 
     if (this->_identifier_manager.has(identifier_name))
@@ -593,14 +593,14 @@ void compiler::assert_identifier_defined(
 
         this->throw_error(
             "Undefined " + identifier::as_string(discriminator) + " identifier `" +
-            identifier_name + "` in procedure" + procedure_name.value());
+            identifier_name + "` in procedure: " + procedure_name.value());
     }
 
     if (this->_identifier_manager.has(identifier_name, discriminator))
         return;
 
     this->throw_error(
-        "Undefined" + identifier::as_string(discriminator) + "identifier `" + identifier_name + "`");
+        "Undefined " + identifier::as_string(discriminator) + " identifier `" + identifier_name + "`");
 }
 
 void compiler::assert_identifier_defined(
@@ -620,7 +620,7 @@ void compiler::assert_identifier_defined(
 
         this->throw_error(
             "Uninitialized identifier `" + identifier_name +
-            "` in procedure" + procedure_name.value());
+            "` in procedure: " + procedure_name.value());
     }
 
     for (const auto discriminator : discriminator_list)
@@ -658,7 +658,7 @@ void compiler::assert_lvalue_initialized(
 
         this->throw_error(
             "Uninitialized identifier `" + identifier_name +
-            "` in procedure" + procedure_name.value());
+            "` in procedure: " + procedure_name.value());
     }
 
     this->assert_identifier_defined(identifier_name);

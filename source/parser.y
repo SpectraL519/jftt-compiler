@@ -472,6 +472,8 @@ identifier:
             *$1.str_ptr, id::type_discriminator::vararray, current_procedure);
         compiler.assert_identifier_defined(
             *$3.str_ptr, id::type_discriminator::variable, current_procedure);
+        compiler.assert_lvalue_initialized(
+            *$3.str_ptr, id::type_discriminator::variable, current_procedure);
 
         auto identifier{compiler.get_identifier(*$1.str_ptr, current_procedure)};
         if (identifier->discriminator() == id::type_discriminator::reference) {

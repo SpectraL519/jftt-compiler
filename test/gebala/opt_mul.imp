@@ -1,4 +1,7 @@
 # Rozklad na czynniki pierwsze
+# 1234567890 -> *******, io: 1100
+# 12345678901 -> *******, io: 500
+# 12345678903 -> *********, io: 500
 
 PROCEDURE check(n, d, p) IS
     r

@@ -13,4 +13,3 @@ IN
   pa(a,b);
   WRITE a[b];
 END
-

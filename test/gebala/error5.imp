@@ -1,4 +1,5 @@
 # błąd: niewłaściwe parametry procedury pa w linii 13
+# TODO: czy tablica powinna byc zainicjalizowana by default
 PROCEDURE pa(T a, b) IS
  c[5],d
 IN
@@ -13,4 +14,3 @@ IN
   pa(b,a);
   WRITE a[b];
 END
-
