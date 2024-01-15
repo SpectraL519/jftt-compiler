@@ -23,8 +23,17 @@ public:
         return this->_size;
     }
 
+    [[nodiscard]] bool is_initialized() const override {
+        return this->_initialized;
+    }
+
+    virtual void initialize() override {
+        this->_initialized = true;
+    }
+
 private:
     static constexpr architecture::memory_size_type _size{1u};
+    bool _initialized{false};
 };
 
 } // namespace jftt::identifier

@@ -1,5 +1,4 @@
 # błąd: niewłaściwe użycie tablicy w linii 12
-# TODO: czy tablica powinna byc zainicjalizowana by default
 PROCEDURE pa(T a, b) IS
  c[5],d
 IN

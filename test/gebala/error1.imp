@@ -1,7 +1,6 @@
 # błąd: niezadeklarowana zmienna e w linii 5
-# błędny test: niewłaściwe użycie tablicy c
 PROCEDURE pa(T a, b) IS
- c[5],d
+ c,d
 IN
   c:=e;
   a:=c+d;

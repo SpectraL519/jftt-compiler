@@ -28,14 +28,8 @@ public:
     }
 
     virtual architecture::memory_size_type size() const = 0;
-
-    [[nodiscard]] virtual bool is_initialized() const {
-        return this->_initialized;
-    }
-
-    virtual void initialize() {
-        this->_initialized = true;
-    }
+    virtual bool is_initialized() const = 0;
+    virtual void initialize() = 0;
 
 protected:
     abstract_lvalue_identifier(type_discriminator discriminator, const std::string& name)

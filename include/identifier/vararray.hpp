@@ -50,10 +50,15 @@ public:
         this->_indexer_identifier = indexer;
     }
 
-    // ? Should vararray be initialized by default ?
+    [[nodiscard]] bool is_initialized() const override {
+        return this->_initialized;
+    }
+
+    virtual void initialize() override {}
 
 private:
     architecture::memory_size_type _size{1u};
+    static constexpr bool _initialized{true};
     std::shared_ptr<identifier::abstract_identifier> _indexer_identifier;
 };
 

@@ -34,6 +34,10 @@ public:
         return this->_indexer_identifier;
     }
 
+    [[nodiscard]] bool is_initialized() const override {
+        return this->_initialized;
+    }
+
     [[nodiscard]] const bool initializes_underlying_resource() const {
         return this->_resouce_initialized;
     }
@@ -59,6 +63,8 @@ public:
         this->_indexer_identifier = indexer;
     }
 
+    virtual void initialize() override {}
+
     void initialize_resource() {
         this->_resouce_initialized = true;
     }
@@ -67,6 +73,7 @@ private:
     static constexpr architecture::memory_size_type _size{1u};
     type_discriminator _reference_discriminator;
     std::shared_ptr<identifier::abstract_identifier> _indexer_identifier;
+    static constexpr bool _initialized{true};
     bool _resouce_initialized{false};
 };
 

@@ -111,7 +111,6 @@ void compiler::declare_procedure_parameter(
     // allocate memory for parameter reference addres
     auto reference{std::get<std::shared_ptr<identifier::reference>>(reference_variant)};
     reference->set_address(this->_memory_manager.allocate(reference->size()));
-    reference->initialize();
 }
 
 void compiler::begin_procedure_implementation(const std::string& procedure_name) {
