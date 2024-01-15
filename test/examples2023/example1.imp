@@ -1,4 +1,6 @@
 # Równanie diofantyczne mx-ny=nwd(m,n) (z)
+# in: 3, 5
+# out: 2, 1, 1
 
 PROCEDURE de(m,n,x,y,z) IS
   a,b,r,s,reszta,iloraz,rr,ss,tmp

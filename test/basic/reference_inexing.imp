@@ -7,7 +7,7 @@ IN
   i:=1;
   j:=0;
   WHILE i<=n DO
-    s[i]:=s[j]*i;
+    s[i]:=s[j]*s[i];
     i:=i+1;
     j:=j+1;
   ENDWHILE
@@ -42,5 +42,7 @@ IN
         print_array(s, n);
         WRITE 1234567890;
         factorial(s, n);
+        i := n - 1;
+        WRITE s[i];
     ENDIF
 END
