@@ -18,12 +18,9 @@ public:
 
     ~rvalue() = default;
 
-    rvalue(const architecture::value_type value)
-    : abstract_identifier(type_discriminator::rvalue, _name), _value(value) {}
+    rvalue(const architecture::value_type value);
 
-    [[nodiscard]] architecture::value_type value() const {
-        return this->_value;
-    }
+    [[nodiscard]] architecture::value_type value() const;
 
 private:
     const architecture::value_type _value;

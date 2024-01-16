@@ -2,8 +2,6 @@
 
 #include "abstract_lvalue_identifier.hpp"
 
-#include <iostream>
-
 
 
 namespace jftt::identifier {
@@ -11,12 +9,10 @@ namespace jftt::identifier {
 class vararray : public abstract_lvalue_identifier {
 public:
     // static size declaration
-    vararray(const std::string& name, const architecture::memory_size_type size)
-    : abstract_lvalue_identifier(type_discriminator::vararray, name), _size(size) {}
+    vararray(const std::string& name, const architecture::memory_size_type size);
 
     // dynamic size declaration - for procedures
-    vararray(const std::string& name)
-    : abstract_lvalue_identifier(type_discriminator::vararray, name) {}
+    vararray(const std::string& name);
 
     vararray(const vararray&) = default;
     vararray(vararray&&) = default;
@@ -26,35 +22,13 @@ public:
 
     ~vararray() = default;
 
-    [[nodiscard]] architecture::memory_size_type size() const override {
-        return this->_size;
-    }
+    [[nodiscard]] architecture::memory_size_type size() const override;
 
-    [[nodiscard]] std::shared_ptr<identifier::abstract_identifier> indexer() const {
-        return this->_indexer_identifier;
-    }
+    [[nodiscard]] std::shared_ptr<identifier::abstract_identifier> indexer() const;
+    void set_indexer(const std::shared_ptr<identifier::abstract_identifier>& indexer);
 
-    void set_indexer(const std::shared_ptr<identifier::abstract_identifier>& indexer) {
-        switch (indexer->discriminator()) {
-        case type_discriminator::rvalue:
-            break; // valid indexer
-        case type_discriminator::variable:
-            break; // valid indexer
-        case type_discriminator::reference:
-            break; // valid indexer
-        default:
-            std::cerr << "[ERROR] : Invalid array indexer type" << std::endl;
-            std::exit(1);
-        }
-
-        this->_indexer_identifier = indexer;
-    }
-
-    [[nodiscard]] bool is_initialized() const override {
-        return this->_initialized;
-    }
-
-    virtual void initialize() override {}
+    [[nodiscard]] bool is_initialized() const override;
+    void initialize() override;
 
 private:
     architecture::memory_size_type _size{1u};

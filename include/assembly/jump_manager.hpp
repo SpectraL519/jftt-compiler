@@ -33,7 +33,6 @@ private:
     static constexpr std::size_t _invalid_jump_to{0u};
     inline static const std::string _default_label_name{"label"};
 
-    // TODO: extract pair to struct
     std::map<std::string, jump_label> _labels;
 };
 

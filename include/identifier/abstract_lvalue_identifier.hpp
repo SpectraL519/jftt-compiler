@@ -19,21 +19,16 @@ public:
 
     ~abstract_lvalue_identifier() = default;
 
-    [[nodiscard]] architecture::memory_address_type address() const {
-        return this->_address;
-    }
-
-    void set_address(const architecture::memory_address_type address) {
-        this->_address = address;
-    }
+    [[nodiscard]] architecture::memory_address_type address() const;
+    void set_address(const architecture::memory_address_type address);
 
     virtual architecture::memory_size_type size() const = 0;
     virtual bool is_initialized() const = 0;
     virtual void initialize() = 0;
 
 protected:
-    abstract_lvalue_identifier(type_discriminator discriminator, const std::string& name)
-    : abstract_identifier(discriminator, name) {}
+    abstract_lvalue_identifier(
+        const type_discriminator discriminator, const std::string& name);
 
     architecture::memory_address_type _address;
     bool _initialized{false};

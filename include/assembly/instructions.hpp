@@ -25,10 +25,6 @@ namespace jftt::assembly::instructions {
 [[nodiscard]] std::string shl(const jftt::architecture::vm_register& reg);
 [[nodiscard]] std::string shr(const jftt::architecture::vm_register& reg);
 
-[[nodiscard]] std::string jump(const jftt::architecture::instruction_counter_type instr_no);
-[[nodiscard]] std::string jpos(const jftt::architecture::instruction_counter_type instr_no);
-[[nodiscard]] std::string jzero(const jftt::architecture::instruction_counter_type instr_no);
-
 [[nodiscard]] std::string strk(const jftt::architecture::vm_register& reg);
 [[nodiscard]] std::string jumpr(const jftt::architecture::vm_register& reg);
 
@@ -39,6 +35,5 @@ namespace jftt::assembly::instructions {
 const std::string jump_label{"JUMP "};
 const std::string jpos_label{"JPOS "};
 const std::string jzero_label{"JZERO "};
-const std::string jumpr_label{"JUMPR "};
 
 } // namespace jftt::assembly::instructions

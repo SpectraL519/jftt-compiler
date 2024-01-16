@@ -72,28 +72,6 @@ std::string shr(const jftt::architecture::vm_register& reg) {
 }
 
 
-std::string jump(
-    const jftt::architecture::instruction_counter_type instr_no
-) {
-    static const std::string instruction{"JUMP "};
-    return instruction + std::to_string(instr_no);
-}
-
-std::string jpos(
-    const jftt::architecture::instruction_counter_type instr_no
-) {
-    static const std::string instruction{"JPOS "};
-    return instruction + std::to_string(instr_no);
-}
-
-std::string jzero(
-    const jftt::architecture::instruction_counter_type instr_no
-) {
-    static const std::string instruction{"JZERO "};
-    return instruction + std::to_string(instr_no);
-}
-
-
 std::string strk(const jftt::architecture::vm_register& reg) {
     static const std::string instruction{"STRK "};
     return instruction + jftt::architecture::as_string(reg);

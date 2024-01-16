@@ -16,8 +16,7 @@ public:
     abstract_loop(
         const type_discriminator discriminator,
         const std::string& begin_label,
-        const std::string& end_label
-    ) : _discriminator(discriminator), _begin_label(begin_label), _end_label(end_label) {}
+        const std::string& end_label);
 
     abstract_loop(const abstract_loop&) = default;
     abstract_loop(abstract_loop&&) = default;
@@ -27,25 +26,13 @@ public:
 
     virtual ~abstract_loop() = default;
 
-    [[nodiscard]] const type_discriminator discriminator() const {
-        return this->_discriminator;
-    }
+    [[nodiscard]] const type_discriminator discriminator() const;
 
-    [[nodiscard]] const std::string& begin_label() const {
-        return this->_begin_label;
-    }
+    [[nodiscard]] const std::string& begin_label() const;
+    [[nodiscard]] const std::string& end_label() const;
 
-    [[nodiscard]] const std::string& end_label() const {
-        return this->_end_label;
-    }
-
-    void set_begin_label(const std::string& begin_label) {
-        this->_begin_label = begin_label;
-    }
-
-    void set_end_label(const std::string& end_label) {
-        this->_end_label = end_label;
-    }
+    void set_begin_label(const std::string& begin_label);
+    void set_end_label(const std::string& end_label);
 
 private:
     type_discriminator _discriminator;

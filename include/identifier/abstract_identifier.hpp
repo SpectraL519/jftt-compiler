@@ -21,17 +21,11 @@ public:
 
     virtual ~abstract_identifier() = default;
 
-    [[nodiscard]] virtual type_discriminator discriminator() const {
-        return this->_discriminator;
-    }
-
-    [[nodiscard]] virtual const std::string& name() const {
-        return this->_name;
-    }
+    [[nodiscard]] virtual type_discriminator discriminator() const;
+    [[nodiscard]] virtual const std::string& name() const;
 
 protected:
-    abstract_identifier(type_discriminator discriminator, const std::string& name)
-    : _discriminator(discriminator), _name(name) {}
+    abstract_identifier(type_discriminator discriminator, const std::string& name);
 
     type_discriminator _discriminator{type_discriminator::base};
     std::string _name;

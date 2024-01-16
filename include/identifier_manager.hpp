@@ -26,25 +26,13 @@ public:
         this->_identifiers[identifier->name()] = std::move(identifier);
     }
 
-    [[nodiscard]] bool has(const std::string& name) const {
-        return this->_identifiers.find(name) != this->_identifiers.cend();
-    }
-
+    [[nodiscard]] bool has(const std::string& name) const;
     [[nodiscard]] bool has(
-        const std::string& name, const identifier_discriminator discriminator
-    ) const {
-        const auto& identifier = this->_identifiers.find(name);
-        return identifier != this->_identifiers.end() &&
-               identifier->second->discriminator() == discriminator;
-    }
+        const std::string& name, const identifier_discriminator discriminator) const;
 
-    void initialize_lvalue_identifier(const std::string& name) {
-        this->get<identifier_discriminator::lvalue>(name)->initialize();
-    }
+    void initialize_lvalue_identifier(const std::string& name);
 
-    [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get(const std::string& name) {
-        return this->_identifiers.at(name);
-    }
+    [[nodiscard]] const std::shared_ptr<identifier::abstract_identifier>& get(const std::string& name);
 
     template <identifier_discriminator IdentifierDiscriminator>
     [[nodiscard]] std::shared_ptr<identifier::type<IdentifierDiscriminator>> get(
@@ -53,9 +41,7 @@ public:
         return identifier::shared_ptr_cast<IdentifierDiscriminator>(this->_identifiers.at(name));
     }
 
-    void remove(const std::string& name) {
-        this->_identifiers.erase(name);
-    }
+    void remove(const std::string& name);
 
 private:
     std::map<std::string, std::shared_ptr<identifier::abstract_identifier>> _identifiers;

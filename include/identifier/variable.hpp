@@ -8,8 +8,7 @@ namespace jftt::identifier {
 
 class variable : public abstract_lvalue_identifier {
 public:
-    variable(const std::string& name)
-    : abstract_lvalue_identifier(type_discriminator::variable, name) {}
+    variable(const std::string& name);
 
     variable(const variable&) = default;
     variable(variable&&) = default;
@@ -19,17 +18,10 @@ public:
 
     ~variable() = default;
 
-    [[nodiscard]] architecture::memory_size_type size() const override {
-        return this->_size;
-    }
+    [[nodiscard]] architecture::memory_size_type size() const override;
 
-    [[nodiscard]] bool is_initialized() const override {
-        return this->_initialized;
-    }
-
-    virtual void initialize() override {
-        this->_initialized = true;
-    }
+    [[nodiscard]] bool is_initialized() const override;
+    void initialize() override;
 
 private:
     static constexpr architecture::memory_size_type _size{1u};
