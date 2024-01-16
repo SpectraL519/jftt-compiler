@@ -457,7 +457,6 @@ void compiler::end_loop(const loop_discriminator discriminator) {
     }
 }
 
-// TODO: arithmetic_operation(discriminator, a, b)
 void compiler::add(
     identifier::abstract_identifier* a,
     identifier::abstract_identifier* b,
@@ -477,7 +476,6 @@ void compiler::add(
     a_register.release();
 }
 
-// TODO: arithmetic_operation(discriminator, a, b)
 void compiler::subtract(
     identifier::abstract_identifier* a,
     identifier::abstract_identifier* b,
@@ -490,7 +488,6 @@ void compiler::subtract(
         identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
 
-// TODO: arithmetic_operation(discriminator, a, b)
 void compiler::multiply(
     identifier::abstract_identifier* a,
     identifier::abstract_identifier* b,
@@ -503,7 +500,6 @@ void compiler::multiply(
         identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
 
-// TODO: arithmetic_operation(discriminator, a, b)
 void compiler::divide(
     identifier::abstract_identifier* a,
     identifier::abstract_identifier* b,
@@ -516,7 +512,6 @@ void compiler::divide(
         identifier::shared_ptr_cast(a), identifier::shared_ptr_cast(b));
 }
 
-// TODO: arithmetic_operation(discriminator, a, b)
 void compiler::modulo(
     identifier::abstract_identifier* a,
     identifier::abstract_identifier* b,
@@ -634,12 +629,17 @@ void compiler::assert_lvalue_initialized(
     const identifier_discriminator discriminator,
     const std::optional<std::string>& procedure_name
 ) {
-    // TODO: vararray initialization should be checked per index
-
     if (!identifier::is_lvalue(discriminator))
         return;
 
     if (this->_condition_manager.has_branches()) {
+        this->_warn_uninitialized_identifier_condition(identifier_name, procedure_name);
+        return;
+    }
+
+    if (this->_loop_manager.has_loops() &&
+        this->_loop_manager.get_loop()->discriminator() == loop_discriminator::while_do
+    ) {
         this->_warn_uninitialized_identifier_condition(identifier_name, procedure_name);
         return;
     }

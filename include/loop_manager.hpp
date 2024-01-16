@@ -15,6 +15,7 @@ public:
     ~loop_manager() = default;
 
     void add_loop(std::shared_ptr<loop::abstract_loop> loop);
+    [[nodiscard]] bool has_loops() const;
     [[nodiscard]] const std::shared_ptr<loop::abstract_loop>& get_loop() const;
     [[nodiscard]] std::shared_ptr<loop::abstract_loop> extract_loop();
 

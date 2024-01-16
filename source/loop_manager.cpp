@@ -8,6 +8,10 @@ void loop_manager::add_loop(std::shared_ptr<loop::abstract_loop> loop) {
     this->_loop_stack.push(std::move(loop));
 }
 
+bool loop_manager::has_loops() const {
+    return !this->_loop_stack.empty();
+}
+
 const std::shared_ptr<loop::abstract_loop>& loop_manager::get_loop() const {
     return this->_loop_stack.top();
 }

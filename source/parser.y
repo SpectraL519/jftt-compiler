@@ -1,5 +1,3 @@
-// TODO: add compiler.set_line_no to every place possible
-
 %code {
 
 #include "io.hpp"

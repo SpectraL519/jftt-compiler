@@ -199,12 +199,10 @@ std::string code_builder::new_jump_label(const std::string& label_name) {
     return this->_jump_manager.new_label(label_name);
 }
 
-// TODO: come up with a better name
 void code_builder::insert_jump_point_label(const std::string& label) {
     this->_jump_manager.insert_label(label);
 }
 
-// TODO: come up with a better name
 void code_builder::set_jump_point(const std::string& label) {
     this->_jump_manager.jump_to_label(instructions::jump_label, label);
 }

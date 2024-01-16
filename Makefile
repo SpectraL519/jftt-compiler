@@ -22,7 +22,6 @@ RM = rm -rf
 
 
 # Rules
-# TODO: vm
 .PHONY: all compiler parser lexer clean vm cleanvm cleanall
 
 all: compiler vm
