@@ -3,10 +3,9 @@ APP_DIR 	= ./app
 INCLUDE_DIR = ./include
 SOURCE_DIR  = ./source
 EXEC 		= compiler
-
-# Source files
-SOURCE_FILES 	 := $(wildcard $(SOURCE_DIR)/*.cpp) $(wildcard $(SOURCE_DIR)/**/*.cpp)
-APP_SOURCE_FILES := $(wildcard $(APP_DIR)/*.cpp)
+PARSER_SRC  = $(SOURCE_DIR)/parser.cpp
+PARSER_INC  = $(INCLUDE_DIR)/parser.hpp
+LEXER_SRC   = $(SOURCE_DIR)/lexer.cpp
 
 # Generators
 FF := flex
@@ -24,37 +23,36 @@ RM = rm -rf
 # Rules
 .PHONY: all compiler parser lexer clean vm cleanvm cleanall
 
-all: compiler vm
+all: cleanall compiler vm
 
 
-compiler: parser lexer
+compiler: clean parser lexer
 	@echo Building the compiler
-	@$(CXX) -o $(EXEC) -I $(INCLUDE_DIR) $(CXX_FLAGS) \
-		$(APP_SOURCE_FILES) $(SOURCE_FILES) $(SOURCE_DIR)/parser.cpp $(SOURCE_DIR)/lexer.cpp
+	@$(CXX) $(CXX_FLAGS) -o $(EXEC) -I $(INCLUDE_DIR) \
+		$(wildcard $(APP_DIR)/*.cpp) $(wildcard $(SOURCE_DIR)/*.cpp) $(wildcard $(SOURCE_DIR)/**/*.cpp)
 	@echo Build successful!
-	@echo
 
 
 lexer:
 	@echo Generating lexer
-	@$(FF) -o $(SOURCE_DIR)/lexer.cpp $(SOURCE_DIR)/lexer.l
+	@$(FF) -o $(LEXER_SRC) $(SOURCE_DIR)/lexer.l
 
 
 parser:
 	@echo Generating parser
-	@$(BB) -o $(SOURCE_DIR)/parser.cpp --defines=$(INCLUDE_DIR)/parser.hpp $(SOURCE_DIR)/parser.y
+	@$(BB) -o $(PARSER_SRC) --defines=$(PARSER_INC) $(SOURCE_DIR)/parser.y
 
 
 clean:
 	@echo Removing compiler generated files
 	@$(RM) $(EXEC)
-	@$(RM) $(SOURCE_DIR)/lexer.cpp
-	@$(RM) $(SOURCE_DIR)/parser.cpp $(INCLUDE_DIR)/parser.hpp
+	@$(RM) $(LEXER_SRC)
+	@$(RM) $(PARSER_SRC) $(PARSER_INC)
 	@$(RM) out/*
 	@echo
 
 
-vm:
+vm: cleanvm
 	@echo Building the virtual machine
 	@cd vm && make all CXX=$(CXX) && cd ..
 	@echo Build successful!

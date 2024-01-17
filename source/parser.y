@@ -30,7 +30,7 @@ extern FILE *yyin;
 #include "identifier.hpp"
 #include "parser/token.hpp"
 
-// utility definitions
+// utility
 namespace id = jftt::identifier;
 namespace parser = jftt::parser;
 
@@ -532,8 +532,6 @@ void assert_rvalue_token(const parser::token_discriminator discriminator) {
     std::cerr << "[ERROR] : Cannot initialize an rvalue from a non-rvalue token" << std::endl;
     std::exit(1);
 }
-
-void assert_rvalue_token(const parser::token_discriminator);
 
 int compile(const std::string& infile, const std::string& outfile) {
     yyin = fopen(infile.c_str(), "r");
