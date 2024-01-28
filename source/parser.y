@@ -513,7 +513,7 @@ identifier:
 
 int yyerror(const char* msg) {
     std::cerr << msg << std::endl;
-    std::exit(1);
+    std::exit(EXIT_FAILURE);
 }
 
 
@@ -522,7 +522,7 @@ void assert_identifier_token(const parser::token_discriminator discriminator) {
         return;
 
     std::cerr << "[ERROR] : Cannot initialize an identifier from a non-identifier token" << std::endl;
-    std::exit(1);
+    std::exit(EXIT_FAILURE);
 }
 
 void assert_rvalue_token(const parser::token_discriminator discriminator) {
@@ -530,14 +530,14 @@ void assert_rvalue_token(const parser::token_discriminator discriminator) {
         return;
 
     std::cerr << "[ERROR] : Cannot initialize an rvalue from a non-rvalue token" << std::endl;
-    std::exit(1);
+    std::exit(EXIT_FAILURE);
 }
 
 int compile(const std::string& infile, const std::string& outfile) {
     yyin = fopen(infile.c_str(), "r");
     if (yyin == NULL) {
         std::cerr << "[ERROR] Failed to open file: " << infile << std::endl;
-        std::exit(1);
+        std::exit(EXIT_FAILURE);
     }
 
     const int yyresult = yyparse();

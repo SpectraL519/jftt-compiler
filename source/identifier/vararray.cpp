@@ -30,7 +30,7 @@ void vararray::set_indexer(const std::shared_ptr<identifier::abstract_identifier
         break; // valid indexer
     default:
         std::cerr << "[ERROR] : Invalid array indexer type" << std::endl;
-        std::exit(1);
+        std::exit(EXIT_FAILURE);
     }
 
     this->_indexer_identifier = indexer;

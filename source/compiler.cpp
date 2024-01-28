@@ -282,24 +282,12 @@ void compiler::scan(
     identifier::abstract_identifier* identifier,
     const std::optional<std::string>& procedure_name
 ) {
-    switch (identifier->discriminator()) {
-    case identifier_discriminator::variable: {
-        this->initialize_lvalue_identifier(identifier->name(), procedure_name);
-        this->_asm_builder.read_lvalue(
-            identifier::shared_ptr_cast<identifier_discriminator::variable>(identifier));
-        break;
-    }
-
-    case identifier_discriminator::vararray: {
-        this->initialize_lvalue_identifier(identifier->name());
-        this->_asm_builder.read_lvalue(
-            identifier::shared_ptr_cast<identifier_discriminator::vararray>(identifier));
-        break;
-    }
-
-    default:
+    if (!identifier::is_lvalue(identifier->discriminator()))
         this->throw_error("Cannot read identifier: " + identifier->name());
-    }
+
+    this->initialize_lvalue_identifier(identifier->name(), procedure_name);
+    this->_asm_builder.read_lvalue(
+        identifier::shared_ptr_cast<identifier_discriminator::lvalue>(identifier));
 }
 
 void compiler::print(
@@ -725,7 +713,7 @@ void compiler::_warn_uninitialized_identifier_condition(
 void compiler::throw_error(const std::string& msg) const {
     std::cerr << "[ERROR] In line: " << this->_line_no << std::endl
               << "\t" << msg << std::endl;
-    std::exit(1);
+    std::exit(EXIT_FAILURE);
 }
 
 } // namespace jftt

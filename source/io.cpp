@@ -13,7 +13,7 @@ std::pair<std::string, std::string> parse(int argc, char** argv) {
     if (argc != detail::expected_argc) {
         std::cerr << "Compiler usage: " << std::endl
                   << "./compiler <src-code-file> <asm-out-file>" << std::endl;
-        std::exit(1);
+        std::exit(EXIT_FAILURE);
     }
 
     return std::make_pair(argv[detail::in_idx], argv[detail::out_idx]);

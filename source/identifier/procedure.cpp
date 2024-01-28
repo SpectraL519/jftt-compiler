@@ -86,7 +86,7 @@ std::shared_ptr<identifier::abstract_lvalue_identifier> procedure::get_identifie
     if (identifier_it == this->_local_identifiers.end()) {
         std::cerr << "[ERROR] : Procedure `" << this->_name << "` has no identifier `"
                     << name << "`" << std::endl;
-        std::exit(1);
+        std::exit(EXIT_FAILURE);
     }
 
     return *identifier_it;
@@ -114,7 +114,7 @@ void procedure::_assert_valid_param_discriminator(const type_discriminator discr
     default:
         std::cerr << "[ERROR] : Invalid procedure param discriminator - must be an lvalue"
                     << std::endl;
-        std::exit(1);
+        std::exit(EXIT_FAILURE);
     }
 }
 

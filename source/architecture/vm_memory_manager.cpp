@@ -29,7 +29,7 @@ vm_register& vm_memory_manager::get_free_register() {
             return this->_registers[i];
 
     std::cerr << "[ERROR] No free registers available" << std::endl;
-    std::exit(1);
+    std::exit(EXIT_FAILURE);
 }
 
 vm_register& vm_memory_manager::acquire_free_register() {
@@ -41,14 +41,14 @@ vm_register& vm_memory_manager::acquire_free_register() {
     }
 
     std::cerr << "[ERROR] No free registers available" << std::endl;
-    std::exit(1);
+    std::exit(EXIT_FAILURE);
 }
 
 memory_address_type vm_memory_manager::allocate(const memory_size_type chunk_size) {
     if (this->_first_free_address + chunk_size > VM_MEMORY_SIZE) {
         std::cerr << "[ERROR] Cannot allocate memory chunk of size "
                     << chunk_size << std::endl;
-        std::exit(1);
+        std::exit(EXIT_FAILURE);
     }
 
     const memory_address_type allocated_memory_address = this->_first_free_address;

@@ -1,0 +1,35 @@
+# Simple READ command inside a procedure for a reference test
+PROCEDURE load_array(T array) IS
+IN
+    READ array[0];
+    READ array[1];
+    READ array[2];
+    READ array[3];
+    READ array[4];
+END
+
+PROCEDURE prepare_array(T array) IS
+IN
+    load_array(array);
+    array[0] := array[0] * 2;
+    array[1] := array[1] * 2;
+    array[2] := array[2] * 2;
+    array[3] := array[3] * 2;
+    array[4] := array[4] * 2;
+END
+
+PROCEDURE print_array(T array) IS
+IN
+    WRITE array[0];
+    WRITE array[1];
+    WRITE array[2];
+    WRITE array[3];
+    WRITE array[4];
+END
+
+PROGRAM IS
+    array[5]
+IN
+    prepare_array(array);
+    print_array(array);
+END

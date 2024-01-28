@@ -14,7 +14,7 @@ inline void throw_invalid_identifier_cast_error(
 ) {
     std::cerr << "[ERROR] Invalid identifier cast from " << identifier::as_string(from)
               << " to " << identifier::as_string(to) << std::endl;
-    std::exit(1);
+    std::exit(EXIT_FAILURE);
 }
 
 } // namespace detail

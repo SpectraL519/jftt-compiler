@@ -1,4 +1,4 @@
-# Simple + operator test
+# Simple arithmetic operators test
 PROGRAM IS
     a, b, sum, diff, prod, quot, mod
 IN
